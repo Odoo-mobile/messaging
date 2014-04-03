@@ -506,19 +506,21 @@ public class NoteComposeActivity extends Activity implements
 						String stageName = stage.getText().toString();
 						OEValues values = new OEValues();
 						values.put("name", stageName);
-						int newId = oe.create(values);
-						mActionbarSpinnerItems.add(
-								mActionbarSpinnerItems.size() - 1,
-								new SpinnerNavItem(newId, stageName));
-						mActionbarSpinnerItemsPositions.put("key_" + newId,
-								mActionbarSpinnerItems.size() - 2);
-						mActionbar
-								.setSelectedNavigationItem(mActionbarSpinnerItemsPositions
-										.get("key_" + newId));
-						mStageId = newId;
-						mNoteStageAdapter
-								.notifiyDataChange(mActionbarSpinnerItems);
-						mToast = "Stage created";
+						Integer newId = oe.create(values);
+						if (newId != null) {
+							mActionbarSpinnerItems.add(
+									mActionbarSpinnerItems.size() - 1,
+									new SpinnerNavItem(newId, stageName));
+							mActionbarSpinnerItemsPositions.put("key_" + newId,
+									mActionbarSpinnerItems.size() - 2);
+							mActionbar
+									.setSelectedNavigationItem(mActionbarSpinnerItemsPositions
+											.get("key_" + newId));
+							mStageId = newId;
+							mNoteStageAdapter
+									.notifiyDataChange(mActionbarSpinnerItems);
+							mToast = "Stage created";
+						}
 					}
 				}
 				Toast.makeText(mContext, mToast, Toast.LENGTH_SHORT).show();
