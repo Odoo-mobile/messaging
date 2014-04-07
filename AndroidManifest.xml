@@ -62,7 +62,8 @@
             </intent-filter>
         </activity>
         <activity android:name="com.openerp.addons.note.NoteComposeActivity" />
-        <activity android:name="com.openerp.addons.message.MessageComposeActivity" >
+        <activity android:name="com.openerp.addons.message.MessageComposeActivity" 
+            android:label="@string/title_activity_message_compose">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <action android:name="android.intent.action.VIEW" />

@@ -29,6 +29,7 @@
     <string name="account_sync_wizard_button">Continue</string>
 
     <!-- Message Fragment -->
+    <string name="title_activity_message_compose">OpenERP Message</string>
     <string name="message_inbox_all_read"><b>Good Job!</b> Your inbox is empty.\n \n
 
 Your inbox contains private messages or emails sent to you as well as information related to documents or people you follow.</string>

@@ -115,11 +115,19 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_message_compose);
 		mContext = this;
-		initDBs();
-		initActionbar();
-		handleIntent();
-		initControls();
-		checkForContact();
+
+		if (OEUser.current(mContext) == null) {
+			// No Account
+			Toast.makeText(mContext, "No Account Found", Toast.LENGTH_LONG)
+					.show();
+			finish();
+		} else {
+			initDBs();
+			initActionbar();
+			handleIntent();
+			initControls();
+			checkForContact();
+		}
 	}
 
 	private void initControls() {
