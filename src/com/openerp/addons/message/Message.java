@@ -46,6 +46,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView.MultiChoiceModeListener;
 import android.widget.AdapterView;
@@ -57,6 +58,7 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.openerp.OESwipeListener.SwipeCallbacks;
 import com.openerp.OETouchListener;
 import com.openerp.R;
 import com.openerp.addons.message.providers.message.MessageProvider;
@@ -77,7 +79,7 @@ import com.openerp.util.drawer.DrawerListener;
 
 public class Message extends BaseFragment implements
 		OETouchListener.OnPullListener, OnItemLongClickListener,
-		OnItemClickListener {
+		OnItemClickListener, SwipeCallbacks {
 
 	public static final String TAG = "com.openerp.addons.message.Message";
 
@@ -164,6 +166,8 @@ public class Message extends BaseFragment implements
 		mListView.setMultiChoiceModeListener(mMessageViewMultiChoiceListener);
 		mTouchAttacher = scope.main().getTouchAttacher();
 		mTouchAttacher.setPullableView(mListView, this);
+		mTouchAttacher.setSwipeableView(mListView, this);
+		mListView.setOnScrollListener(mTouchAttacher.makeScrollListener());
 		initData();
 	}
 
@@ -937,4 +941,38 @@ public class Message extends BaseFragment implements
 		}
 
 	}
+
+	int mRecentSwiped = -1;
+
+	@Override
+	public boolean canSwipe(int position) {
+		/*
+		 * if (mRecentSwiped > -1) { mMessageObjects.remove(mRecentSwiped);
+		 * mListViewAdapter.notifiyDataChange(mMessageObjects); }
+		 */
+		if (mRecentSwiped != position)
+			return true;
+		return false;
+	}
+
+	@Override
+	public void onSwipe(View view, int[] ids) {
+		for (int id : ids) {
+			mRecentSwiped = id;
+			final View child_view = mListView.getChildAt(id);
+			child_view.findViewById(R.id.messageArchiveView).setVisibility(
+					View.VISIBLE);
+			child_view.findViewById(R.id.undoArchived).setOnClickListener(
+					new OnClickListener() {
+
+						@Override
+						public void onClick(View v) {
+							child_view.findViewById(R.id.messageArchiveView)
+									.setVisibility(View.GONE);
+							mRecentSwiped = -1;
+						}
+					});
+		}
+	}
+
 }
