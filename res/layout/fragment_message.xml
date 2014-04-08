@@ -17,22 +17,27 @@
         android:paddingTop="5dp"
         android:visibility="gone" />
 
-    <com.openerp.util.controls.OETextView
+    <TextView
         android:id="@+id/txvMessageAllReadMessage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="5dp"
+        android:drawableTop="@drawable/ic_message_empty_inbox"
         android:gravity="top|center_horizontal"
-        android:padding="10dp"
+        android:padding="15dp"
         android:text="Woohoo! You&apos;ve read all the messages in your inbox."
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#77778f"
+        android:textColor="#cacaca"
         android:visibility="gone" />
 
     <ListView
         android:id="@+id/lstMessages"
-        android:smoothScrollbar="true"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="wrap_content"
+        android:background="#aaa"
+        android:divider="#E3E9E3"
+        android:dividerHeight="1dp"
+        android:smoothScrollbar="true" >
     </ListView>
 
 </LinearLayout>

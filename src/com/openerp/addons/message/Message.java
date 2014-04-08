@@ -45,9 +45,14 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AbsListView.MultiChoiceModeListener;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -57,6 +62,7 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.openerp.OESwipeListener.SwipeCallbacks;
 import com.openerp.OETouchListener;
 import com.openerp.R;
 import com.openerp.addons.message.providers.message.MessageProvider;
@@ -77,7 +83,7 @@ import com.openerp.util.drawer.DrawerListener;
 
 public class Message extends BaseFragment implements
 		OETouchListener.OnPullListener, OnItemLongClickListener,
-		OnItemClickListener {
+		OnItemClickListener, SwipeCallbacks, OnScrollListener, OnTouchListener {
 
 	public static final String TAG = "com.openerp.addons.message.Message";
 
@@ -85,6 +91,7 @@ public class Message extends BaseFragment implements
 		INBOX, TOME, TODO, ARCHIVE, GROUP
 	}
 
+	Integer mRecentSwiped = -1;
 	Integer mGroupId = null;
 	Integer mSelectedItemPosition = -1;
 	Integer selectedCounter = 0;
@@ -164,6 +171,9 @@ public class Message extends BaseFragment implements
 		mListView.setMultiChoiceModeListener(mMessageViewMultiChoiceListener);
 		mTouchAttacher = scope.main().getTouchAttacher();
 		mTouchAttacher.setPullableView(mListView, this);
+		mTouchAttacher.setSwipeableView(mListView, this);
+		mListView.setOnScrollListener(this);
+		mView.setOnTouchListener(this);
 		initData();
 	}
 
@@ -657,6 +667,9 @@ public class Message extends BaseFragment implements
 	@Override
 	public void onPause() {
 		super.onPause();
+		if (mRecentSwiped > -1) {
+			makeArchive(mRecentSwiped);
+		}
 		scope.context().unregisterReceiver(messageSyncFinish);
 		scope.context().unregisterReceiver(datasetChangeReceiver);
 		Bundle outState = new Bundle();
@@ -665,7 +678,7 @@ public class Message extends BaseFragment implements
 	}
 
 	/*
-	 * Used for Synchronization : Register receiver and unregister receiver
+	 * Used for Synchronisation : Register receiver and unregister receiver
 	 * 
 	 * SyncFinishReceiver
 	 */
@@ -714,6 +727,57 @@ public class Message extends BaseFragment implements
 
 		}
 	};
+
+	private class MarkAsArchive extends AsyncTask<Void, Void, Void> {
+
+		OEDataRow mRow = null;
+		OEHelper mOE = null;
+		boolean mToRead = false;
+		boolean isConnection = true;
+		Context mContext = null;
+
+		public MarkAsArchive(OEDataRow row) {
+			mRow = row;
+			mOE = db().getOEInstance();
+			if (mOE == null)
+				isConnection = false;
+			mToRead = false;
+			mContext = getActivity();
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			if (!isConnection)
+				return null;
+			String default_model = "false";
+			JSONArray ids = new JSONArray();
+			int parent_id = 0, res_id = 0;
+			if (mRow.getString("parent_id").equals("false")) {
+				parent_id = mRow.getInt("id");
+				res_id = mRow.getInt("res_id");
+				default_model = mRow.getString("model");
+			} else {
+				parent_id = mRow.getInt("parent_id");
+			}
+			ids.put(parent_id);
+			for (OEDataRow child : db().select("parent_id = ? ",
+					new String[] { parent_id + "" })) {
+				ids.put(child.getInt("id"));
+			}
+			if (toggleReadUnread(mOE, ids, default_model, res_id, parent_id,
+					mToRead)) {
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			DrawerListener drawer = (DrawerListener) mContext;
+			drawer.refreshDrawer(TAG);
+			drawer.refreshDrawer(MailGroup.TAG);
+		}
+
+	}
 
 	/**
 	 * Making message read or unread or Archive
@@ -937,4 +1001,86 @@ public class Message extends BaseFragment implements
 		}
 
 	}
+
+	@Override
+	public boolean canSwipe(int position) {
+		if (mRecentSwiped != position
+				&& (mType != MType.ARCHIVE && mType != MType.GROUP))
+			return true;
+		return false;
+	}
+
+	@Override
+	public void onSwipe(View view, int[] ids) {
+		for (int id : ids) {
+			int current_pos = id;
+			if (mRecentSwiped > -1) {
+				int archive_pos = mRecentSwiped;
+				if (mRecentSwiped < current_pos && mRecentSwiped != -1) {
+					current_pos = id - 1;
+				} else {
+					if (mRecentSwiped == mMessageObjects.size()) {
+						archive_pos = mRecentSwiped - 1;
+					}
+				}
+				makeArchive(archive_pos);
+				mRecentSwiped = -1;
+			}
+			mRecentSwiped = current_pos;
+			toggleSwipeView(mListView.getChildAt(current_pos), true);
+		}
+	}
+
+	private void makeArchive(int position) {
+		OEDataRow row = (OEDataRow) mMessageObjects.get(position);
+		mMessageObjects.remove(position);
+		mListViewAdapter.notifiyDataChange(mMessageObjects);
+		toggleSwipeView(mListView.getChildAt(position), false);
+		mRecentSwiped = -1;
+		checkMessageStatus();
+		MarkAsArchive archive = new MarkAsArchive(row);
+		archive.execute();
+	}
+
+	private void toggleSwipeView(final View child_view, boolean visible) {
+		if (visible) {
+			child_view.findViewById(R.id.messageArchiveView).setVisibility(
+					View.VISIBLE);
+			child_view.findViewById(R.id.undoArchived).setOnClickListener(
+					new OnClickListener() {
+
+						@Override
+						public void onClick(View v) {
+							child_view.findViewById(R.id.messageArchiveView)
+									.setVisibility(View.GONE);
+							mRecentSwiped = -1;
+						}
+					});
+		} else {
+			child_view.findViewById(R.id.messageArchiveView).setVisibility(
+					View.GONE);
+		}
+	}
+
+	@Override
+	public void onScroll(AbsListView view, int firstVisibleItem,
+			int visibleItemCount, int totalItemCount) {
+
+	}
+
+	@Override
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
+		if (mRecentSwiped > -1) {
+			makeArchive(mRecentSwiped);
+		}
+	}
+
+	@Override
+	public boolean onTouch(View v, MotionEvent event) {
+		if (mRecentSwiped > -1) {
+			makeArchive(mRecentSwiped);
+		}
+		return false;
+	}
+
 }
