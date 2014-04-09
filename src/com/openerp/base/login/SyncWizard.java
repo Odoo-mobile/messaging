@@ -169,6 +169,16 @@ public class SyncWizard extends BaseFragment {
 						SharedPreferences settings = PreferenceManager
 								.getDefaultSharedPreferences(scope.context());
 						Editor editor = settings.edit();
+						if (rdoBtn.getText().equals("Local Contacts")
+								&& rdoBtn.isChecked()) {
+							editor.putBoolean("local_contact_sync", true);
+							editor.putBoolean("server_contact_sync", false);
+						}
+						if (rdoBtn.getText().equals("All Contacts")
+								&& rdoBtn.isChecked()) {
+							editor.putBoolean("server_contact_sync", true);
+							editor.putBoolean("local_contact_sync", false);
+						}
 						editor.commit();
 						String authority = authorities.get(rdoBtn.getId() + "");
 						scope.main().setAutoSync(authority, rdoBtn.isChecked());
