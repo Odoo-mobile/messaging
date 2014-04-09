@@ -27,6 +27,7 @@ import com.openerp.base.res.ResPartnerDB;
 import com.openerp.orm.OEColumn;
 import com.openerp.orm.OEDatabase;
 import com.openerp.orm.OEFields;
+import com.openerp.orm.OEValues;
 
 public class NoteDB extends OEDatabase {
 	Context mContext = null;
@@ -62,6 +63,12 @@ public class NoteDB extends OEDatabase {
 
 	public class NoteStages extends OEDatabase {
 
+		String[] mStageColors = new String[] { "#f56447", "#ffba24", "#eded24",
+				"#b5c4c4", "#b5c4c4", "#76dbba", "#9fc22f", "#7edfff",
+				"#EAC14D", "#cbcca2", "#01B169", "#80A8CC", "#CBD0D3",
+				"#ffe825", "#EFF4FF", "#CDC81E", "#00C0E4", "#edb8ff",
+				"#ffafb7", "#E98B39" };
+
 		public NoteStages(Context context) {
 			super(context);
 		}
@@ -75,7 +82,18 @@ public class NoteDB extends OEDatabase {
 		public List<OEColumn> getModelColumns() {
 			List<OEColumn> cols = new ArrayList<OEColumn>();
 			cols.add(new OEColumn("name", "Name", OEFields.text()));
+			cols.add(new OEColumn("stage_color", "Stage Color", OEFields
+					.varchar(10), false));
 			return cols;
+		}
+
+		@Override
+		public long create(OEValues values) {
+			int total = count();
+			int i = (total > mStageColors.length) ? 0 : total;
+			String stage_color = mStageColors[i];
+			values.put("stage_color", stage_color);
+			return super.create(values);
 		}
 
 	}

@@ -2,7 +2,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#DCE1E3"
-    android:fillViewport="true" >
+    android:clipToPadding="false"
+    android:fillViewport="true"
+    android:paddingTop="?android:attr/actionBarSize" >
 
     <LinearLayout
         android:layout_width="match_parent"

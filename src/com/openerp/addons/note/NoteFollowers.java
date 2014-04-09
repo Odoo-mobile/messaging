@@ -89,6 +89,7 @@ public class NoteFollowers extends BaseFragment implements TokenListener,
 		mArguments = getArguments();
 		getActivity().setTitle(mArguments.getString("note_name"));
 		OEDataRow note = db().select(mArguments.getInt("note_id"));
+		mFollowerList.clear();
 		mFollowerList.addAll(note.getM2MRecord("message_follower_ids")
 				.browseEach());
 		mPartnersLoader = new PartnerLoader(getActivity());

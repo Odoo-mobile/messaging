@@ -46,6 +46,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.openerp.R;
@@ -59,8 +60,6 @@ import com.openerp.orm.OEValues;
 import com.openerp.support.OEUser;
 import com.openerp.support.listview.OEListAdapter;
 import com.openerp.util.HTMLHelper;
-import com.openerp.util.controls.OEEditText;
-import com.openerp.util.controls.OETextView;
 import com.openerp.util.tags.MultiTagsTextView.TokenListener;
 import com.openerp.util.tags.TagsItem;
 import com.openerp.util.tags.TagsView;
@@ -105,8 +104,8 @@ public class NoteComposeActivity extends Activity implements
 	boolean mPadInstalled = false;
 
 	WebView mWebViewPad = null;
-	OEEditText edtNoteTitle = null;
-	OEEditText edtNoteDescription = null;
+	EditText edtNoteTitle = null;
+	EditText edtNoteDescription = null;
 	TagsView mNoteTagsView = null;
 
 	@Override
@@ -138,8 +137,8 @@ public class NoteComposeActivity extends Activity implements
 
 	@SuppressLint("SetJavaScriptEnabled")
 	private void initNote() {
-		edtNoteTitle = (OEEditText) findViewById(R.id.edtNoteTitleInput);
-		edtNoteDescription = (OEEditText) findViewById(R.id.edtNoteComposeDescription);
+		edtNoteTitle = (EditText) findViewById(R.id.edtNoteTitleInput);
+		edtNoteDescription = (EditText) findViewById(R.id.edtNoteComposeDescription);
 		mWebViewPad = (WebView) findViewById(R.id.webNoteComposeWebViewPad);
 		Intent intent = getIntent();
 		if (intent.hasExtra("note_id")) {
@@ -256,14 +255,13 @@ public class NoteComposeActivity extends Activity implements
 							false);
 				}
 				TagsItem row = (TagsItem) mNoteTags.get(position);
-				OETextView txvName = (OETextView) mView
+				TextView txvName = (TextView) mView
 						.findViewById(R.id.txvCustomNoteTagsAdapterViewItem);
 				txvName.setText(row.getSubject());
 				return mView;
 			}
 		};
 		mNoteTagsView.setAdapter(mNoteTagsAdapter);
-		mNoteTagsView.showImage(false);
 		mNoteTagsView.setNewTokenCreateListener(this);
 		mNoteTagsView.setTokenListener(this);
 	}
@@ -296,7 +294,7 @@ public class NoteComposeActivity extends Activity implements
 					mView = getLayoutInflater().inflate(getResource(), parent,
 							false);
 				}
-				OETextView txvTitle = (OETextView) mView
+				TextView txvTitle = (TextView) mView
 						.findViewById(R.id.txvCustomSpinnerItemText);
 				SpinnerNavItem item = (SpinnerNavItem) mActionbarSpinnerItems
 						.get(position);
@@ -312,7 +310,7 @@ public class NoteComposeActivity extends Activity implements
 					mView = getLayoutInflater().inflate(getResource(), parent,
 							false);
 				}
-				OETextView txvTitle = (OETextView) mView
+				TextView txvTitle = (TextView) mView
 						.findViewById(R.id.txvCustomSpinnerItemText);
 				SpinnerNavItem item = (SpinnerNavItem) mActionbarSpinnerItems
 						.get(position);
