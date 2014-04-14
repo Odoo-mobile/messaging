@@ -18,6 +18,10 @@
  */
 package com.openerp.addons.note.services;
 
+import openerp.OEDomain;
+
+import org.json.JSONArray;
+
 import android.accounts.Account;
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
@@ -33,6 +37,8 @@ import android.util.Log;
 import com.openerp.addons.note.NoteDB;
 import com.openerp.addons.note.widgets.NoteWidget;
 import com.openerp.auth.OpenERPAccountManager;
+import com.openerp.base.ir.Ir_AttachmentDBHelper;
+import com.openerp.orm.OEDataRow;
 import com.openerp.orm.OEHelper;
 import com.openerp.receivers.SyncFinishReceiver;
 
@@ -79,7 +85,20 @@ public class NoteSyncService extends Service {
 					account.name));
 			OEHelper oe = note.getOEInstance();
 			if (oe != null) {
-				oe.syncWithServer(true);
+				if (oe.syncWithServer(true)) {
+					// Getting attachment of notes
+					Ir_AttachmentDBHelper attachment = new Ir_AttachmentDBHelper(
+							context);
+					OEDomain domain = new OEDomain();
+					domain.add("res_model", "=", note.getModelName());
+					JSONArray note_ids = new JSONArray();
+					for (OEDataRow row : note.select()) {
+						note_ids.put(row.getInt("id"));
+					}
+
+					domain.add("res_id", "in", note_ids);
+					attachment.getOEInstance().syncWithServer(domain, true);
+				}
 			}
 			if (OpenERPAccountManager.currentUser(context).getAndroidName()
 					.equals(account.name)) {

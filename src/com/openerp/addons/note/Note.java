@@ -35,6 +35,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -46,6 +48,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,6 +58,8 @@ import com.openerp.OETouchListener;
 import com.openerp.R;
 import com.openerp.addons.note.NoteDB.NoteStages;
 import com.openerp.addons.note.providers.note.NoteProvider;
+import com.openerp.base.ir.Attachment;
+import com.openerp.base.ir.Ir_AttachmentDBHelper;
 import com.openerp.orm.OEDataRow;
 import com.openerp.orm.OEHelper;
 import com.openerp.orm.OEValues;
@@ -75,11 +80,11 @@ public class Note extends BaseFragment implements
 		OnItemClickListener, DrawerColorTagListener {
 
 	public static final String TAG = "com.openerp.addons.note.Note";
-	public static final int KEY_NOTE = 1;
+	public static final int KEY_NOTE = 222;
 
 	View mView = null;
-	String mTagColors[] = new String[] { "#9933CC", "#669900", "#FF8800",
-			"#CC0000", "#59A2BE", "#808080", "#192823", "#0099CC", "#218559",
+	String mTagColors[] = new String[] { "#C55C7E", "#6D96B7", "#10AB64",
+			"#C71600", "#FFBB22", "#77DDBB", "#192823", "#0099CC", "#218559",
 			"#EBB035" };
 	static HashMap<String, Integer> mStageTagColors = new HashMap<String, Integer>();
 
@@ -91,6 +96,8 @@ public class Note extends BaseFragment implements
 	NoteLoader mNoteLoader = null;
 	OETouchListener mTouchListener = null;
 	Boolean mSynced = false;
+	EditText edtTitle = null;
+	ImageView mImgBtnShowQuickNote = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -121,6 +128,35 @@ public class Note extends BaseFragment implements
 		Log.d(TAG, "Note->initControls()");
 		mNoteGridView = (GridView) mView.findViewById(R.id.noteGridView);
 		mView.findViewById(R.id.imgBtnCreateQuickNote).setOnClickListener(this);
+		mImgBtnShowQuickNote = (ImageView) mView
+				.findViewById(R.id.imgBtnShowQuickNote);
+		edtTitle = (EditText) mView.findViewById(R.id.edtNoteQuickTitle);
+		edtTitle.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) {
+				if (s.length() != 0) {
+					mImgBtnShowQuickNote.setVisibility(View.VISIBLE);
+				} else {
+					mImgBtnShowQuickNote.setVisibility(View.GONE);
+				}
+
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+			}
+		});
+		mImgBtnShowQuickNote.setOnClickListener(this);
+		mView.findViewById(R.id.imgBtnAttachImage).setOnClickListener(this);
+		mView.findViewById(R.id.imgBtnAttachAudio).setOnClickListener(this);
+		mView.findViewById(R.id.imgBtnAttachFile).setOnClickListener(this);
+		mNotesList.clear();
 		mNoteListAdapter = new OEListAdapter(getActivity(),
 				R.layout.fragment_note_grid_custom_layout, mNotesList) {
 			@Override
@@ -132,11 +168,23 @@ public class Note extends BaseFragment implements
 				}
 				OEDataRow row = (OEDataRow) mNotesList.get(position);
 				TextView txvTitle, txvDesc, txvStage, txvTags;
+				ImageView imgNoteAttachIcon;
 				txvTitle = (TextView) mView.findViewById(R.id.txvNoteTitle);
 				txvDesc = (TextView) mView
 						.findViewById(R.id.txvNoteDescription);
 				txvStage = (TextView) mView.findViewById(R.id.txvNoteStage);
 				txvTags = (TextView) mView.findViewById(R.id.txvNoteTags);
+				imgNoteAttachIcon = (ImageView) mView
+						.findViewById(R.id.imgNoteAttachIcon);
+				Ir_AttachmentDBHelper mAttachmentDB = new Ir_AttachmentDBHelper(
+						getActivity());
+				List<OEDataRow> attachments = mAttachmentDB.select(
+						"res_model = ? AND res_id = ?", new String[] {
+								db().getModelName(), row.getInt("id") + "" });
+				if (attachments.size() > 0)
+					imgNoteAttachIcon.setVisibility(View.VISIBLE);
+				else
+					imgNoteAttachIcon.setVisibility(View.GONE);
 				txvTitle.setText(row.getString("name"));
 				txvDesc.setText(HTMLHelper.htmlToString(row.getString("memo")));
 				OEDataRow stage = row.getM2ORecord("stage_id").browse();
@@ -170,7 +218,6 @@ public class Note extends BaseFragment implements
 		mTouchListener.setPullableView(mNoteGridView, this);
 		mTouchListener.setSwipeableView(mNoteGridView, this);
 		mNoteGridView.setOnScrollListener(mTouchListener.makeScrollListener());
-
 		mNoteLoader = new NoteLoader(mStageId);
 		mNoteLoader.execute();
 	}
@@ -203,9 +250,8 @@ public class Note extends BaseFragment implements
 				whereArgs = new String[] { "true", mStageId + "" };
 				break;
 			}
-			List<OEDataRow> records = db().select(where, whereArgs, null, null,
-					"id DESC");
-			mNotesList.addAll(records);
+			mNotesList.addAll(db().select(where, whereArgs, null, null,
+					"id DESC"));
 			return null;
 		}
 
@@ -226,17 +272,21 @@ public class Note extends BaseFragment implements
 	private void checkStatus() {
 		Log.d(TAG, "Note->checkStatus()");
 		if (mNotesList.size() == 0) {
+			TextView txvSubMessage = (TextView) mView
+					.findViewById(R.id.txvMessageHeaderSubtitle);
 			if (db().isEmptyTable() && !mSynced) {
 				scope.main().requestSync(NoteProvider.AUTHORITY);
 				mView.findViewById(R.id.waitingForSyncToStart).setVisibility(
 						View.VISIBLE);
-				TextView txvSubMessage = (TextView) mView
-						.findViewById(R.id.txvMessageHeaderSubtitle);
+
 				txvSubMessage.setText("Your notes will appear shortly");
 			} else {
 				TextView txvMsg = (TextView) mView
 						.findViewById(R.id.txvNoteAllArchive);
 				txvMsg.setVisibility(View.VISIBLE);
+				mView.findViewById(R.id.waitingForSyncToStart).setVisibility(
+						View.GONE);
+				txvSubMessage.setVisibility(View.GONE);
 			}
 		} else {
 			mView.findViewById(R.id.txvNoteAllArchive).setVisibility(View.GONE);
@@ -430,14 +480,31 @@ public class Note extends BaseFragment implements
 	@Override
 	public void onClick(View v) {
 		Log.d(TAG, "[QuickNote create] Note->onClick()");
-		Intent composeNote = new Intent(scope.context(),
-				NoteComposeActivity.class);
-		EditText edtTitle = (EditText) mView
-				.findViewById(R.id.edtNoteQuickTitle);
-		composeNote.putExtra("note_title", edtTitle.getText().toString());
-		composeNote.putExtra("stage_id", mStageId);
-		startActivityForResult(composeNote, KEY_NOTE);
+		switch (v.getId()) {
+		case R.id.imgBtnAttachImage:
+			requestIntent(Attachment.Types.IMAGE_OR_CAPTURE_IMAGE);
+			break;
+		case R.id.imgBtnAttachAudio:
+			requestIntent(Attachment.Types.AUDIO);
+			break;
+		case R.id.imgBtnAttachFile:
+			requestIntent(Attachment.Types.FILE);
+			break;
+		default:
+			requestIntent(null);
+		}
 		edtTitle.setText(null);
+	}
+
+	private void requestIntent(Attachment.Types attachmentType) {
+		Intent intent = new Intent(getActivity(), NoteComposeActivity.class);
+		if (attachmentType != null) {
+			intent.putExtra("request_code", attachmentType);
+		} else {
+			intent.putExtra("note_title", edtTitle.getText().toString());
+			intent.putExtra("stage_id", mStageId);
+		}
+		startActivityForResult(intent, KEY_NOTE);
 	}
 
 	@Override

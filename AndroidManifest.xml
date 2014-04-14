@@ -25,6 +25,8 @@
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:name="com.openerp.App"
@@ -65,10 +67,17 @@
         </activity>
         <activity
             android:name="com.openerp.addons.note.NoteComposeActivity"
-            android:icon="@drawable/ic_launcher_o" />
+            android:label="@string/title_activity_note_compose" >
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
         <activity
             android:name="com.openerp.addons.message.MessageComposeActivity"
-            android:icon="@drawable/ic_launcher_o"
             android:label="@string/title_activity_message_compose" >
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />

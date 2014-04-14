@@ -55,6 +55,13 @@
                 android:background="@android:color/transparent"
                 android:padding="10dp"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
+            
+            <GridView
+                android:id="@+id/noteGridViewAttach"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:numColumns="auto_fit"
+                android:stretchMode="columnWidth" />
         </LinearLayout>
     </LinearLayout>
 

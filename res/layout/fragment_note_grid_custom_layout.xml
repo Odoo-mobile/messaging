@@ -52,17 +52,31 @@
                 android:text="Tags"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
-            <TextView
-                android:id="@+id/txvNoteStage"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:fontFamily="sans-serif-condensed"
-                android:singleLine="true"
-                android:text="This week"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="#414141"
-                android:textStyle="italic" />
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:id="@+id/txvNoteStage"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif-condensed"
+                    android:singleLine="true"
+                    android:text="This week"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="#414141"
+                    android:textStyle="italic" />
+
+                <ImageView
+                    android:id="@+id/imgNoteAttachIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_action_content_attachment_grid"
+                    android:visibility="gone" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 

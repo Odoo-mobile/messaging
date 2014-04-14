@@ -25,25 +25,34 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.openerp.R;
 import com.openerp.addons.message.MessageComposeActivity;
 import com.openerp.addons.note.Note.NoteToggleStatus;
+import com.openerp.base.ir.Attachment;
+import com.openerp.base.ir.Ir_AttachmentDBHelper;
 import com.openerp.orm.OEDataRow;
 import com.openerp.orm.OEHelper;
 import com.openerp.support.BaseFragment;
 import com.openerp.support.fragment.FragmentListener;
+import com.openerp.support.listview.OEListAdapter;
 import com.openerp.util.HTMLHelper;
 import com.openerp.util.TextViewTags;
 import com.openerp.util.drawer.DrawerItem;
@@ -51,6 +60,7 @@ import com.openerp.util.drawer.DrawerItem;
 public class NoteDetail extends BaseFragment {
 
 	public static final String TAG = "com.openerp.addons.note.NoteDetail";
+
 	View mView = null;
 	Bundle mArgument = null;
 	TextView mNoteDetailTitle, mNoteDetailMemo, mNoteTags = null;
@@ -58,6 +68,11 @@ public class NoteDetail extends BaseFragment {
 	String mPadURL = "";
 	String mNoteMemo = "";
 	String mMessageBody = "";
+	GridView mNoteGridViewAttach = null;
+	List<Object> mNotesListAttach = new ArrayList<Object>();
+	OEListAdapter mNoteListAdapterAttach = null;
+	Ir_AttachmentDBHelper mAttachmentDB = null;
+	Attachment mAttachment = null;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -65,6 +80,7 @@ public class NoteDetail extends BaseFragment {
 		setHasOptionsMenu(true);
 		mView = inflater.inflate(R.layout.fragment_note_detail, container,
 				false);
+		mAttachment = new Attachment(getActivity());
 		return mView;
 	}
 
@@ -86,6 +102,8 @@ public class NoteDetail extends BaseFragment {
 	private void showNoteDetails(int note_id) {
 		mNoteDetailTitle = (TextView) mView
 				.findViewById(R.id.txvNoteDetailTitle);
+		mNoteGridViewAttach = (GridView) mView
+				.findViewById(R.id.noteGridViewAttach);
 		mNoteDetailMemo = (TextView) mView.findViewById(R.id.txvNoteDetailMemo);
 		mNoteTags = (TextView) mView.findViewById(R.id.edtNoteTagsView);
 
@@ -95,7 +113,12 @@ public class NoteDetail extends BaseFragment {
 			mPadURL = result.getString("note_pad_url");
 		}
 		mNoteMemo = result.getString("memo");
-
+		mAttachmentDB = new Ir_AttachmentDBHelper(getActivity());
+		List<OEDataRow> attachments = mAttachmentDB.select(
+				"res_model = ? AND res_id = ?", new String[] {
+						db().getModelName(), note_id + "" });
+		mNotesListAttach.clear();
+		mNotesListAttach.addAll(attachments);
 		List<String> mNoteTagsItems = new ArrayList<String>();
 		for (OEDataRow tag : result.getM2MRecord("tag_ids").browseEach()) {
 			mNoteTagsItems.add(tag.getString("name"));
@@ -108,6 +131,58 @@ public class NoteDetail extends BaseFragment {
 		mNoteDetailTitle.setText(result.getString("name"));
 		mNoteDetailMemo.setText(HTMLHelper.stringToHtml(result
 				.getString("memo")));
+		mNoteListAdapterAttach = new OEListAdapter(getActivity(),
+				R.layout.fragment_note_grid_custom_attachment, mNotesListAttach) {
+			@Override
+			public View getView(final int position, View convertView,
+					ViewGroup parent) {
+				View mView = convertView;
+				if (mView == null) {
+					mView = getActivity().getLayoutInflater().inflate(
+							getResource(), parent, false);
+				}
+				final OEDataRow attachment = (OEDataRow) mNotesListAttach
+						.get(position);
+				ImageView imgNoteAttach = (ImageView) mView
+						.findViewById(R.id.imgNoteAttach);
+				TextView txvNoteattachmentName = (TextView) mView
+						.findViewById(R.id.txvNoteattachmentName);
+				final ImageView imgNoteAttachClose = (ImageView) mView
+						.findViewById(R.id.imgNoteAttachClose);
+				if (attachment.getString("file_type").contains("image")
+						&& !attachment.getString("file_uri").equals("false")) {
+					imgNoteAttach.setImageURI(Uri.parse(attachment
+							.getString("file_uri")));
+				} else {
+					imgNoteAttach.setImageResource(R.drawable.attachment);
+				}
+				imgNoteAttach.setOnClickListener(new OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						if (attachment.get("id") != null)
+							mAttachment.downloadFile(attachment.getInt("id"));
+					}
+				});
+				imgNoteAttachClose
+						.setOnClickListener(new View.OnClickListener() {
+
+							@Override
+							public void onClick(View v) {
+								if (attachment.get("id") != null) {
+									mAttachment.removeAttachment(attachment
+											.getInt("id"));
+								}
+								mNotesListAttach.remove(position);
+								mNoteListAdapterAttach
+										.notifiyDataChange(mNotesListAttach);
+							}
+						});
+				txvNoteattachmentName.setText(attachment.getString("name"));
+				return mView;
+			}
+		};
+		mNoteGridViewAttach.setAdapter(mNoteListAdapterAttach);
 	}
 
 	@Override
@@ -174,6 +249,7 @@ public class NoteDetail extends BaseFragment {
 					NoteComposeActivity.class);
 			Bundle noteArgs = new Bundle();
 			noteArgs.putInt("note_id", mArgument.getInt("note_id"));
+			noteArgs.putString("Attachment", "New");
 			manageNote.putExtras(noteArgs);
 			startActivity(manageNote);
 			return true;
@@ -181,7 +257,6 @@ public class NoteDetail extends BaseFragment {
 		case R.id.menu_note_delete:
 			confirmDeleteNote(mArgument.getInt("note_id"));
 			return true;
-
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -231,4 +306,18 @@ public class NoteDetail extends BaseFragment {
 		return null;
 	}
 
+	public String getRealPathFromURI(Uri contentUri) {
+		String res = null;
+		String[] proj = { MediaStore.Images.Media.DATA };
+		Cursor cursor = getActivity().getContentResolver().query(contentUri,
+				proj, null, null, null);
+
+		if (cursor.moveToFirst()) {
+			int column_index = cursor
+					.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+			res = cursor.getString(column_index);
+		}
+		cursor.close();
+		return res;
+	}
 }
