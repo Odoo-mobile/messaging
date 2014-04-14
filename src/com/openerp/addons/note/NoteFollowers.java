@@ -54,6 +54,7 @@ import com.openerp.util.contactview.OEContactView;
 import com.openerp.util.drawer.DrawerItem;
 import com.openerp.util.tags.MultiTagsTextView.TokenListener;
 import com.openerp.util.tags.TagsView;
+import com.openerp.util.tags.TagsView.CustomTagViewListener;
 
 public class NoteFollowers extends BaseFragment implements TokenListener,
 		OnClickListener {
@@ -66,6 +67,7 @@ public class NoteFollowers extends BaseFragment implements TokenListener,
 	List<Object> mFollowerList = new ArrayList<Object>();
 	List<Object> mPartnersList = new ArrayList<Object>();
 	PartnerLoader mPartnersLoader = null;
+	Context mContext = null;
 
 	UnSubscribeOperation mUnSubscriber = null;
 	SubscribeOperation mSubscriber = null;
@@ -78,6 +80,7 @@ public class NoteFollowers extends BaseFragment implements TokenListener,
 		setHasOptionsMenu(true);
 		mView = inflater.inflate(R.layout.fragment_note_followers, container,
 				false);
+		mContext = getActivity();
 		return mView;
 	}
 
@@ -98,6 +101,26 @@ public class NoteFollowers extends BaseFragment implements TokenListener,
 
 	private void setupTagsView() {
 		mFollowersTag = (TagsView) mView.findViewById(R.id.edtNoteFollowers);
+		mFollowersTag.setCustomTagView(new CustomTagViewListener() {
+
+			@Override
+			public View getViewForTags(LayoutInflater layoutInflater,
+					Object object, ViewGroup tagsViewGroup) {
+				OEDataRow row = (OEDataRow) object;
+				View mView = layoutInflater.inflate(
+						R.layout.fragment_message_receipient_tag_layout, null);
+				TextView txvSubject = (TextView) mView
+						.findViewById(R.id.txvTagSubject);
+				txvSubject.setText(row.getString("name"));
+				ImageView imgPic = (ImageView) mView
+						.findViewById(R.id.imgTagImage);
+				if (!row.getString("image_small").equals("false")) {
+					imgPic.setImageBitmap(Base64Helper.getBitmapImage(mContext,
+							row.getString("image_small")));
+				}
+				return mView;
+			}
+		});
 		mFollowersTag.setTokenListener(this);
 		mTagsAdapter = new OEListAdapter(getActivity(),
 				R.layout.tags_view_partner_item_layout, mPartnersList) {
@@ -108,29 +131,32 @@ public class NoteFollowers extends BaseFragment implements TokenListener,
 					mView = getActivity().getLayoutInflater().inflate(
 							getResource(), parent, false);
 				}
-				OEDataRow item = (OEDataRow) mPartnersList.get(position);
-				TextView txvSubSubject, txvSubject;
-				ImageView imgPic = (ImageView) mView
-						.findViewById(R.id.imgReceipientPic);
-				txvSubject = (TextView) mView.findViewById(R.id.txvSubject);
-				txvSubSubject = (TextView) mView
-						.findViewById(R.id.txvSubSubject);
-				txvSubject.setText(item.getString("name"));
-				if (!item.getString("email").equals("false")) {
-					txvSubSubject.setText(item.getString("email"));
-				} else {
-					txvSubSubject.setText("No email");
-				}
-				if (item.getString("image_small") != null
-						&& !item.getString("image_small").equals("false")) {
-					imgPic.setImageBitmap(Base64Helper.getBitmapImage(
-							getActivity(), item.getString("image_small")));
-				}
-				return mView;
+				return generateView(mView, mPartnersList.get(position));
 			}
 		};
 		mFollowersTag.setAdapter(mTagsAdapter);
 		mView.findViewById(R.id.imgBtnAddFollower).setOnClickListener(this);
+	}
+
+	private View generateView(View mView, Object obj) {
+		OEDataRow item = (OEDataRow) obj;
+		TextView txvSubSubject, txvSubject;
+		ImageView imgPic = (ImageView) mView
+				.findViewById(R.id.imgReceipientPic);
+		txvSubject = (TextView) mView.findViewById(R.id.txvSubject);
+		txvSubSubject = (TextView) mView.findViewById(R.id.txvSubSubject);
+		txvSubject.setText(item.getString("name"));
+		if (!item.getString("email").equals("false")) {
+			txvSubSubject.setText(item.getString("email"));
+		} else {
+			txvSubSubject.setText("No email");
+		}
+		if (item.getString("image_small") != null
+				&& !item.getString("image_small").equals("false")) {
+			imgPic.setImageBitmap(Base64Helper.getBitmapImage(getActivity(),
+					item.getString("image_small")));
+		}
+		return mView;
 	}
 
 	private void setupGridView() {

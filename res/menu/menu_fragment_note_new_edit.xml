@@ -1,14 +1,33 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
-        android:id="@+id/menu_note_write"
-        android:icon="@drawable/ic_menu_save"
+        android:id="@+id/menu_note_speech_to_text"
+        android:icon="@drawable/ic_action_speech_to_text"
         android:showAsAction="always"
-        android:title="Create">
+        android:title="Speech to text"/>
+    <item
+        android:id="@+id/menu_note_attach"
+        android:icon="@drawable/ic_action_content_new_attachment"
+        android:showAsAction="always"
+        android:title="Attachement">
+        <menu>
+            <item
+                android:id="@+id/menu_note_audio"
+                android:title="Audio">
+            </item>
+            <item
+                android:id="@+id/menu_note_image"
+                android:title="Image">
+            </item>
+            <item
+                android:id="@+id/menu_note_file"
+                android:title="File">
+            </item>
+        </menu>
     </item>
     <item
         android:id="@+id/menu_note_cancel"
-        android:showAsAction="always"
+        android:showAsAction="never"
         android:title="Cancel">
     </item>
 

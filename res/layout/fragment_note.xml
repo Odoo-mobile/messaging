@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#DCE1E3"
+    android:background="#E6E6E6"
     android:orientation="vertical"
     android:paddingBottom="10dp"
     android:paddingLeft="10dp"
@@ -14,14 +14,15 @@
         layout="@layout/listview_data_loading_progress"
         android:alpha="99"
         android:paddingBottom="5dp"
-        android:paddingTop="5dp" />
+        android:paddingTop="5dp"
+        android:visibility="gone" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="0dp"
         android:layout_marginTop="10dp"
-        android:background="@drawable/note_quick_text_background"
+        android:background="#ebebeb"
         android:orientation="horizontal"
         android:paddingBottom="1dp"
         android:weightSum="1" >
@@ -29,7 +30,7 @@
         <EditText
             android:id="@+id/edtNoteQuickTitle"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="#fff"
             android:fontFamily="sans-serif-condensed"
@@ -39,14 +40,69 @@
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textStyle="italic|bold" />
 
+
         <ImageView
-            android:id="@+id/imgBtnCreateQuickNote"
+            android:id="@+id/imgBtnShowQuickNote"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:background="@drawable/oe_background_selector"
             android:clickable="true"
             android:padding="3dp"
             android:src="@drawable/ic_menu_new_plus"
+            android:tint="#414141"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:background="#d5d5d5"
+        android:orientation="horizontal"
+        android:paddingBottom="1.5dp" >
+
+        <ImageView
+            android:id="@+id/imgBtnCreateQuickNote"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/oe_background_selector"
+            android:clickable="true"
+            android:padding="5dp"
+            android:src="@drawable/ic_action_note"
+            android:tint="#414141" />
+
+        <ImageView
+            android:id="@+id/imgBtnAttachImage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/oe_background_selector"
+            android:clickable="true"
+            android:padding="5dp"
+            android:src="@drawable/ic_action_image"
+            android:tint="#414141" />
+
+        <ImageView
+            android:id="@+id/imgBtnAttachAudio"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/oe_background_selector"
+            android:clickable="true"
+            android:padding="5dp"
+            android:src="@drawable/ic_action_audio"
+            android:tint="#414141" />
+
+        <ImageView
+            android:id="@+id/imgBtnAttachFile"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/oe_background_selector"
+            android:clickable="true"
+            android:padding="5dp"
+            android:src="@drawable/ic_action_content_new_attachment"
             android:tint="#414141" />
     </LinearLayout>
 
@@ -63,6 +119,7 @@
         android:layout_height="match_parent"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
+
         android:layout_marginTop="10dp"
         android:fontFamily="sans-serif-condensed"
         android:gravity="top|center_horizontal"

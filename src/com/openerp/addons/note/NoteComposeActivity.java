@@ -37,8 +37,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -48,12 +52,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.EditText;
+import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.openerp.R;
 import com.openerp.addons.note.NoteDB.NoteStages;
 import com.openerp.addons.note.NoteDB.NoteTags;
+import com.openerp.base.ir.Attachment;
+import com.openerp.base.ir.Attachment.Types;
 import com.openerp.orm.OEDataRow;
 import com.openerp.orm.OEHelper;
 import com.openerp.orm.OEM2MIds;
@@ -69,8 +77,10 @@ import com.openerp.util.tags.TagsView.NewTokenCreateListener;
 
 public class NoteComposeActivity extends Activity implements
 		OnNavigationListener, NewTokenCreateListener, TokenListener {
+
 	public static final String TAG = "com.openerp.addons.note.NoteComposeActivity";
 
+	public static final int REQUEST_SPEECH_TO_TEXT = 333;
 	Context mContext = null;
 
 	/**
@@ -84,7 +94,7 @@ public class NoteComposeActivity extends Activity implements
 	NoteDB mNoteDB = null;
 	NoteTags mTagsDb = null;
 	NoteStages mNoteStageDB = null;
-	Integer mStageId = null;
+	Integer mStageId = -1;
 	List<Object> mNoteTags = new ArrayList<Object>();
 	OEListAdapter mNoteStageAdapter = null;
 	OEListAdapter mNoteTagsAdapter = null;
@@ -105,10 +115,18 @@ public class NoteComposeActivity extends Activity implements
 	 */
 	boolean mPadInstalled = false;
 
+	boolean isDirty = false;
+
 	WebView mWebViewPad = null;
 	EditText edtNoteTitle = null;
 	EditText edtNoteDescription = null;
 	TagsView mNoteTagsView = null;
+	GridView mNoteAttachmentGrid = null;
+	List<Object> mNoteAttachmentList = new ArrayList<Object>();
+	OEListAdapter mNoteListAdapterAttach = null;
+	Attachment mAttachment = null;
+
+	PackageManager mPackageManager = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -118,6 +136,7 @@ public class NoteComposeActivity extends Activity implements
 		mDb = new NoteDB(mContext);
 		mTagsDb = mDb.new NoteTags(mContext);
 		mOpenERP = mDb.getOEInstance();
+		mAttachment = new Attachment(this);
 		init();
 	}
 
@@ -128,6 +147,22 @@ public class NoteComposeActivity extends Activity implements
 		initNoteTags();
 		checkForPad();
 		initNote();
+		handleIntent();
+	}
+
+	private void handleIntent() {
+		Log.d(TAG, "NoteComposeActivity->handleIntent()");
+		Intent intent = getIntent();
+
+		if (intent.hasExtra("request_code")) {
+			Attachment.Types type = (Types) intent.getExtras().get(
+					"request_code");
+			mAttachment.requestAttachment(type);
+		}
+		if (intent.hasExtra(Intent.EXTRA_TEXT)) {
+			edtNoteDescription.setText(intent.getExtras().getString(
+					Intent.EXTRA_TEXT));
+		}
 	}
 
 	public void checkForPad() {
@@ -139,10 +174,11 @@ public class NoteComposeActivity extends Activity implements
 
 	@SuppressLint("SetJavaScriptEnabled")
 	private void initNote() {
+		Intent intent = getIntent();
+		mNoteAttachmentGrid = (GridView) findViewById(R.id.noteAttachmentGrid);
 		edtNoteTitle = (EditText) findViewById(R.id.edtNoteTitleInput);
 		edtNoteDescription = (EditText) findViewById(R.id.edtNoteComposeDescription);
 		mWebViewPad = (WebView) findViewById(R.id.webNoteComposeWebViewPad);
-		Intent intent = getIntent();
 		if (intent.hasExtra("note_id")) {
 			mEditMode = true;
 			mNoteId = intent.getIntExtra("note_id", 0);
@@ -151,7 +187,9 @@ public class NoteComposeActivity extends Activity implements
 			if (stage != null) {
 				mStageId = stage.getInt("id");
 			}
-
+			List<OEDataRow> attachments = mAttachment.select("note.note",
+					mNoteId);
+			mNoteAttachmentList.addAll(attachments);
 		}
 		if (intent.hasExtra("stage_id")) {
 			mStageId = intent.getIntExtra("stage_id", 0);
@@ -200,7 +238,59 @@ public class NoteComposeActivity extends Activity implements
 				}
 			}
 		}
+		mNoteListAdapterAttach = new OEListAdapter(mContext,
+				R.layout.fragment_note_grid_custom_attachment,
+				mNoteAttachmentList) {
+			@Override
+			public View getView(final int position, View convertView,
+					ViewGroup parent) {
+				View mView = convertView;
+				if (mView == null) {
+					mView = ((Activity) mContext).getLayoutInflater().inflate(
+							getResource(), parent, false);
+				}
+				final OEDataRow attachment = (OEDataRow) mNoteAttachmentList
+						.get(position);
+				ImageView imgNoteAttach = (ImageView) mView
+						.findViewById(R.id.imgNoteAttach);
+				TextView txvNoteattachmentName = (TextView) mView
+						.findViewById(R.id.txvNoteattachmentName);
+				final ImageView imgNoteAttachClose = (ImageView) mView
+						.findViewById(R.id.imgNoteAttachClose);
+				if (attachment.getString("file_type").contains("image")
+						&& !attachment.getString("file_uri").equals("false")) {
+					imgNoteAttach.setImageURI(Uri.parse(attachment
+							.getString("file_uri")));
+				} else {
+					imgNoteAttach.setImageResource(R.drawable.attachment);
+				}
+				imgNoteAttach.setOnClickListener(new View.OnClickListener() {
 
+					@Override
+					public void onClick(View v) {
+						if (attachment.get("id") != null)
+							mAttachment.downloadFile(attachment.getInt("id"));
+					}
+				});
+				imgNoteAttachClose
+						.setOnClickListener(new View.OnClickListener() {
+
+							@Override
+							public void onClick(View v) {
+								if (attachment.get("id") != null) {
+									mAttachment.removeAttachment(attachment
+											.getInt("id"));
+								}
+								mNoteAttachmentList.remove(position);
+								mNoteListAdapterAttach
+										.notifiyDataChange(mNoteAttachmentList);
+							}
+						});
+				txvNoteattachmentName.setText(attachment.getString("name"));
+				return mView;
+			}
+		};
+		mNoteAttachmentGrid.setAdapter(mNoteListAdapterAttach);
 	}
 
 	private String getPadURL(Integer note_id) {
@@ -240,6 +330,7 @@ public class NoteComposeActivity extends Activity implements
 
 	private void initNoteTags() {
 		mNoteTagsView = (TagsView) findViewById(R.id.edtComposeNoteTags);
+
 		mNoteTagsView.setCustomTagView(new CustomTagViewListener() {
 
 			@Override
@@ -256,6 +347,7 @@ public class NoteComposeActivity extends Activity implements
 			}
 		});
 		mNoteTags.addAll(mTagsDb.select());
+
 		mNoteTagsAdapter = new OEListAdapter(mContext,
 				R.layout.custom_note_tags_adapter_view_item, mNoteTags) {
 			@Override
@@ -331,7 +423,6 @@ public class NoteComposeActivity extends Activity implements
 				return mView;
 			}
 		};
-
 		mActionbar.setListNavigationCallbacks(mNoteStageAdapter, this);
 	}
 
@@ -339,58 +430,98 @@ public class NoteComposeActivity extends Activity implements
 	public boolean onCreateOptionsMenu(Menu menu) {
 
 		getMenuInflater().inflate(R.menu.menu_fragment_note_new_edit, menu);
-		MenuItem menu_note_write = menu.findItem(R.id.menu_note_write);
-		if (mEditMode) {
-			menu_note_write.setTitle("Update");
-		}
 		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-
 		switch (item.getItemId()) {
 		case android.R.id.home:
-			finish();
-			return true;
-
-		case R.id.menu_note_write:
-			if (mEditMode) {
+			if (edtNoteTitle.getText().length() != 0
+					|| edtNoteDescription.getText().length() != 0) {
 				saveNote(mNoteId);
-			} else {
-				saveNote(null);
-			}
-			return true;
-
-		case R.id.menu_note_cancel:
-			if (mEditMode) {
-				// if (isContentChanged()) {
-				// openConfirmDiscard("Discard ?",
-				// "Your changes will be discarded. Are you sure?",
-				// "Discard", "Cancel");
-				// } else {
-				// finish();
-				// }
-				// } else {
-				// finish();
 			} else {
 				finish();
 			}
 			return true;
-
+		case R.id.menu_note_audio:
+			mAttachment.requestAttachment(Types.AUDIO);
+			return true;
+		case R.id.menu_note_image:
+			mAttachment.requestAttachment(Types.IMAGE_OR_CAPTURE_IMAGE);
+			return true;
+		case R.id.menu_note_file:
+			mAttachment.requestAttachment(Types.FILE);
+			return true;
+		case R.id.menu_note_speech_to_text:
+			requestSpeechToText();
+			return true;
+		case R.id.menu_note_cancel:
+			finish();
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
 
-	private void saveNote(Integer mNoteId) {
+	private void requestSpeechToText() {
+		mPackageManager = mContext.getPackageManager();
+		List<ResolveInfo> activities = mPackageManager.queryIntentActivities(
+				new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
+		if (activities.size() == 0) {
+			Toast.makeText(mContext, "No audio recorder present.",
+					Toast.LENGTH_LONG).show();
+		} else {
+			Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+			intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+					RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+			intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "speak now...");
+			startActivityForResult(intent, REQUEST_SPEECH_TO_TEXT);
+		}
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+
+		if (resultCode == Activity.RESULT_OK) {
+			if (requestCode != REQUEST_SPEECH_TO_TEXT) {
+				OEDataRow newAttachment = mAttachment.handleResult(requestCode,
+						data);
+				if (newAttachment.getString("content").equals("false")) {
+					mNoteAttachmentList.add(newAttachment);
+					mNoteListAdapterAttach
+							.notifiyDataChange(mNoteAttachmentList);
+				}
+			} else {
+				String noteText = (edtNoteDescription.getText().length() > 0) ? edtNoteDescription
+						.getText().toString() + "\n"
+						: "";
+				ArrayList<String> matches = data
+						.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+				edtNoteDescription.setText(noteText + matches.get(0));
+			}
+		}
+	}
+
+	@Override
+	public void onBackPressed() {
+		if (edtNoteTitle.getText().length() != 0
+				|| edtNoteDescription.getText().length() != 0) {
+			saveNote(mNoteId);
+		} else {
+			super.onBackPressed();
+		}
+	}
+
+	public void saveNote(Integer mNoteId) {
 		if (mOpenERP != null) {
 			OEValues values = new OEValues();
 			String name = edtNoteTitle.getText().toString();
 			String memo = "";
-			if (mStageId == null) {
-				Toast.makeText(mContext, "Please select stage",
-						Toast.LENGTH_LONG).show();
+			if (mStageId == -1) {
+				Toast.makeText(this, "Please select stage", Toast.LENGTH_LONG)
+						.show();
 				return;
 			}
 			if (mPadInstalled) {
@@ -405,7 +536,7 @@ public class NoteComposeActivity extends Activity implements
 				} catch (Exception e) {
 				}
 			} else {
-				memo = edtNoteDescription.getText().toString();
+				memo = name + "<br/>" + edtNoteDescription.getText().toString();
 			}
 			name = noteName(name + "\n" + memo);
 			List<Integer> tag_ids = new ArrayList<Integer>();
@@ -432,6 +563,7 @@ public class NoteComposeActivity extends Activity implements
 				// Creating
 				id = mOpenERP.create(values);
 			}
+			mAttachment.updateAttachments("note.note", id, mNoteAttachmentList);
 			Toast.makeText(mContext, mToast, Toast.LENGTH_LONG).show();
 			Intent data = new Intent();
 			data.putExtra("result", id);
@@ -572,4 +704,5 @@ public class NoteComposeActivity extends Activity implements
 		OEDataRow item = (OEDataRow) token;
 		mSelectedTagsIds.remove("key_" + item.getInt("id"));
 	}
+
 }

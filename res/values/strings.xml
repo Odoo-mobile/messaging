@@ -18,6 +18,7 @@ When you process messages in your inbox, you can mark some as todo. From this me
     <string name="message_your_message_will_appear_shortly">Your messages will appear shortly</string>
 
     <!-- Compose Note Fragment Strings -->
+    <string name="title_activity_note_compose">OpenERP Notes</string>
     <string name="compose_note_tags">Tags</string>
     <string name="compose_note_stages">Stages</string>
     <string name="compose_note_description">Note</string>

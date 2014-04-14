@@ -48,6 +48,14 @@
             android:fontFamily="sans-serif-light"
             android:hint="@string/compose_note_description" />
 
+        <GridView
+            android:id="@+id/noteAttachmentGrid"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:horizontalSpacing="5dp"
+            android:numColumns="2"
+            android:verticalSpacing="5dp" />
+
         <WebView
             android:id="@+id/webNoteComposeWebViewPad"
             android:layout_width="match_parent"
