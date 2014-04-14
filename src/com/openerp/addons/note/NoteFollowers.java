@@ -51,10 +51,8 @@ import com.openerp.support.BaseFragment;
 import com.openerp.support.listview.OEListAdapter;
 import com.openerp.util.Base64Helper;
 import com.openerp.util.contactview.OEContactView;
-import com.openerp.util.controls.OETextView;
 import com.openerp.util.drawer.DrawerItem;
 import com.openerp.util.tags.MultiTagsTextView.TokenListener;
-import com.openerp.util.tags.TagsItem;
 import com.openerp.util.tags.TagsView;
 
 public class NoteFollowers extends BaseFragment implements TokenListener,
@@ -71,7 +69,7 @@ public class NoteFollowers extends BaseFragment implements TokenListener,
 
 	UnSubscribeOperation mUnSubscriber = null;
 	SubscribeOperation mSubscriber = null;
-	HashMap<String, TagsItem> mSelectedPartners = new HashMap<String, TagsItem>();
+	HashMap<String, OEDataRow> mSelectedPartners = new HashMap<String, OEDataRow>();
 	OEListAdapter mTagsAdapter = null;
 
 	@Override
@@ -110,22 +108,23 @@ public class NoteFollowers extends BaseFragment implements TokenListener,
 					mView = getActivity().getLayoutInflater().inflate(
 							getResource(), parent, false);
 				}
-				TagsItem item = (TagsItem) mPartnersList.get(position);
+				OEDataRow item = (OEDataRow) mPartnersList.get(position);
 				TextView txvSubSubject, txvSubject;
 				ImageView imgPic = (ImageView) mView
 						.findViewById(R.id.imgReceipientPic);
 				txvSubject = (TextView) mView.findViewById(R.id.txvSubject);
 				txvSubSubject = (TextView) mView
 						.findViewById(R.id.txvSubSubject);
-				txvSubject.setText(item.getSubject());
-				if (!item.getSub_subject().equals("false")) {
-					txvSubSubject.setText(item.getSub_subject());
+				txvSubject.setText(item.getString("name"));
+				if (!item.getString("email").equals("false")) {
+					txvSubSubject.setText(item.getString("email"));
 				} else {
 					txvSubSubject.setText("No email");
 				}
-				if (item.getImage() != null && !item.getImage().equals("false")) {
+				if (item.getString("image_small") != null
+						&& !item.getString("image_small").equals("false")) {
 					imgPic.setImageBitmap(Base64Helper.getBitmapImage(
-							getActivity(), item.getImage()));
+							getActivity(), item.getString("image_small")));
 				}
 				return mView;
 			}
@@ -151,9 +150,9 @@ public class NoteFollowers extends BaseFragment implements TokenListener,
 				OEContactView imgContact = (OEContactView) mView
 						.findViewById(R.id.imgFollowerPic);
 
-				OETextView txvName = (OETextView) mView
+				TextView txvName = (TextView) mView
 						.findViewById(R.id.txvFollowerName);
-				OETextView txvEmail = (OETextView) mView
+				TextView txvEmail = (TextView) mView
 						.findViewById(R.id.txvFollowerEmail);
 				txvName.setText(row.getString("name"));
 				txvEmail.setText(row.getString("email"));
@@ -323,11 +322,7 @@ public class NoteFollowers extends BaseFragment implements TokenListener,
 		protected Void doInBackground(Void... params) {
 			mPartnersList.clear();
 			if (mOpenERP != null) {
-				for (OEDataRow row : mOpenERP.search_read()) {
-					mPartnersList.add(new TagsItem(row.getInt("id"), row
-							.getString("name"), row.getString("email"), row
-							.getString("image_small")));
-				}
+				mPartnersList.addAll(mOpenERP.search_read());
 			}
 			return null;
 		}
@@ -358,8 +353,8 @@ public class NoteFollowers extends BaseFragment implements TokenListener,
 
 	@Override
 	public void onTokenAdded(Object token, View view) {
-		TagsItem tag = (TagsItem) token;
-		mSelectedPartners.put("_" + tag.getId(), tag);
+		OEDataRow tag = (OEDataRow) token;
+		mSelectedPartners.put("_" + tag.getInt("id"), tag);
 	}
 
 	@Override
@@ -369,8 +364,8 @@ public class NoteFollowers extends BaseFragment implements TokenListener,
 
 	@Override
 	public void onTokenRemoved(Object token) {
-		TagsItem tag = (TagsItem) token;
-		mSelectedPartners.remove("_" + tag.getId());
+		OEDataRow tag = (OEDataRow) token;
+		mSelectedPartners.remove("_" + tag.getInt("id"));
 	}
 
 	/**
@@ -382,9 +377,9 @@ public class NoteFollowers extends BaseFragment implements TokenListener,
 		List<Object> mIds = new ArrayList<Object>();
 		ResPartnerDB partner = new ResPartnerDB(getActivity());
 		for (String key : mSelectedPartners.keySet()) {
-			TagsItem item = mSelectedPartners.get(key);
-			ids.add(item.getId());
-			mIds.add(item.getId());
+			OEDataRow item = mSelectedPartners.get(key);
+			ids.add(item.getInt("id"));
+			mIds.add(item.getInt("id"));
 		}
 		OEHelper oe = partner.getOEInstance();
 		if (oe != null) {

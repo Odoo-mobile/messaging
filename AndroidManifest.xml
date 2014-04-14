@@ -56,14 +56,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.openerp.AppSettingsActivity" >
+        <activity
+            android:name="com.openerp.AppSettingsActivity"
+            android:icon="@drawable/ic_launcher_o" >
             <intent-filter>
                 <action android:name="com.openerp.ACTION_ACCOUNT_CONFIG" />
             </intent-filter>
         </activity>
-        <activity android:name="com.openerp.addons.note.NoteComposeActivity" />
-        <activity android:name="com.openerp.addons.message.MessageComposeActivity" 
-            android:label="@string/title_activity_message_compose">
+        <activity
+            android:name="com.openerp.addons.note.NoteComposeActivity"
+            android:icon="@drawable/ic_launcher_o" />
+        <activity
+            android:name="com.openerp.addons.message.MessageComposeActivity"
+            android:icon="@drawable/ic_launcher_o"
+            android:label="@string/title_activity_message_compose" >
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <action android:name="android.intent.action.VIEW" />
@@ -208,7 +214,9 @@
             android:permission="android.permission.BIND_REMOTEVIEWS" />
 
         <!-- Message widget configuration -->
-        <activity android:name="com.openerp.addons.message.widgets.MessageWidgetConfigure" >
+        <activity
+            android:name="com.openerp.addons.message.widgets.MessageWidgetConfigure"
+            android:icon="@drawable/ic_launcher_o" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
@@ -231,7 +239,9 @@
             android:name="com.openerp.addons.note.widgets.NoteRemoteViewService"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
         <!-- Note widget configuration -->
-        <activity android:name="com.openerp.addons.note.widgets.NoteWidgetConfigure" >
+        <activity
+            android:name="com.openerp.addons.note.widgets.NoteWidgetConfigure"
+            android:icon="@drawable/ic_launcher_o" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>

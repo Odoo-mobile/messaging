@@ -7,9 +7,10 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/container_drop_shadow"
+        android:background="#ebebeb"
         android:gravity="center_horizontal"
         android:orientation="vertical"
+        android:padding="1dp"
         android:weightSum="2" >
 
         <ImageView
@@ -22,14 +23,16 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="2"
+            android:background="#f5f5f5"
             android:gravity="center_horizontal"
             android:orientation="vertical"
             android:padding="5dp" >
 
-            <com.openerp.util.controls.OETextView
+            <TextView
                 android:id="@+id/txvGroupName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
                 android:gravity="center_horizontal"
                 android:singleLine="true"
                 android:text="Group Name"
@@ -37,12 +40,13 @@
                 android:textColor="#414141"
                 android:textStyle="bold" />
 
-            <com.openerp.util.controls.OETextView
+            <TextView
                 android:id="@+id/txvGroupDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="5dp"
                 android:ellipsize="end"
+                android:fontFamily="sans-serif-light"
                 android:gravity="center_horizontal"
                 android:lines="2"
                 android:text="Group Name"
@@ -55,6 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/button_bg_user_group_join"
+            android:fontFamily="sans-serif-condensed"
             android:text="Join"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="#ffffff"
@@ -66,6 +71,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/button_bg_user_group_unjoin"
+            android:fontFamily="sans-serif-condensed"
             android:text="Unfollow"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="#ffffff"

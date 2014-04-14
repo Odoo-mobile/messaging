@@ -5,10 +5,8 @@
 
     <include
         android:id="@+id/waitingForSyncToStart"
-        android:layout_marginTop="5dp"
         layout="@layout/fragment_message_listview_header"
         android:paddingBottom="5dp"
-        android:paddingTop="?android:attr/actionBarSize"
         android:visibility="gone" />
 
     <include
@@ -24,6 +22,7 @@
         android:layout_height="match_parent"
         android:layout_marginTop="20dp"
         android:drawableTop="@drawable/ic_message_empty_inbox"
+        android:fontFamily="sans-serif-condensed"
         android:gravity="top|center_horizontal"
         android:paddingBottom="15dp"
         android:paddingLeft="15dp"

@@ -131,14 +131,9 @@ public class Message extends BaseFragment implements
 			"#EBB035" };
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setHasOptionsMenu(true);
-	}
-
-	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
+		setHasOptionsMenu(true);
 		if (savedInstanceState != null) {
 			mSelectedItemPosition = savedInstanceState.getInt(
 					"mSelectedItemPosition", -1);
@@ -165,6 +160,7 @@ public class Message extends BaseFragment implements
 			}
 		};
 		mListView.setAdapter(mListViewAdapter);
+		initData();
 		mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
 		mListView.setOnItemLongClickListener(this);
 		mListView.setOnItemClickListener(this);
@@ -174,7 +170,6 @@ public class Message extends BaseFragment implements
 		mTouchAttacher.setSwipeableView(mListView, this);
 		mListView.setOnScrollListener(this);
 		mView.setOnTouchListener(this);
-		initData();
 	}
 
 	private void initData() {
@@ -184,10 +179,6 @@ public class Message extends BaseFragment implements
 		}
 		Bundle bundle = getArguments();
 		if (bundle != null) {
-			if (mMessageLoader != null) {
-				mMessageLoader.cancel(true);
-				mMessageLoader = null;
-			}
 			if (bundle.containsKey("type")) {
 				mCurrentType = bundle.getString("type");
 				String title = "Archive";
@@ -515,68 +506,77 @@ public class Message extends BaseFragment implements
 	public class MessagesLoader extends AsyncTask<Void, Void, Boolean> {
 
 		MType messageType = null;
+		MessageDB db = null;
 
 		public MessagesLoader(MType type) {
 			messageType = type;
 			mView.findViewById(R.id.loadingProgress)
 					.setVisibility(View.VISIBLE);
+			db = new MessageDB(getActivity());
 		}
 
 		@Override
 		protected Boolean doInBackground(Void... arg0) {
-			mMessageObjects.clear();
-			HashMap<String, Object> map = getWhere(messageType);
-			String where = (String) map.get("where");
-			String whereArgs[] = (String[]) map.get("whereArgs");
-			mType = messageType;
-			List<OEDataRow> result = db().select(where, whereArgs, null, null,
-					"date DESC");
-			HashMap<String, OEDataRow> parent_list_details = new HashMap<String, OEDataRow>();
-			if (result.size() > 0) {
-				int i = 0;
-				for (OEDataRow row : result) {
-					boolean isParent = true;
-					String key = row.getString("parent_id");
-					if (key.equals("false")) {
-						key = row.getString("id");
-					} else {
-						isParent = false;
-					}
-					int childs = db().count("parent_id = ? ",
-							new String[] { key });
-					if (!parent_list_details.containsKey(key)) {
-						// Fetching row parent message
-						OEDataRow newRow = null;
+			scope.main().runOnUiThread(new Runnable() {
 
-						if (isParent) {
-							newRow = row;
-						} else {
-							newRow = db().select(Integer.parseInt(key));
+				@Override
+				public void run() {
+
+					mMessageObjects.clear();
+					HashMap<String, Object> map = getWhere(messageType);
+					String where = (String) map.get("where");
+					String whereArgs[] = (String[]) map.get("whereArgs");
+					mType = messageType;
+					List<OEDataRow> result = db().select(where, whereArgs, null,
+							null, "date DESC");
+					HashMap<String, OEDataRow> parent_list_details = new HashMap<String, OEDataRow>();
+					if (result.size() > 0) {
+						int i = 0;
+						for (OEDataRow row : result) {
+							boolean isParent = true;
+							String key = row.getString("parent_id");
+							if (key.equals("false")) {
+								key = row.getString("id");
+							} else {
+								isParent = false;
+							}
+							db = new MessageDB(getActivity());
+							int childs = db.count("parent_id = ? ",
+									new String[] { key });
+							if (!parent_list_details.containsKey(key)) {
+								// Fetching row parent message
+								OEDataRow newRow = null;
+
+								if (isParent) {
+									newRow = row;
+								} else {
+									db = new MessageDB(getActivity());
+									newRow = db.select(Integer.parseInt(key));
+								}
+
+								newRow.put("childs", childs);
+								parent_list_details.put(key, null);
+								message_row_indexes.put(key, i);
+								i++;
+								mMessageObjects.add(newRow);
+
+							}
 						}
-
-						newRow.put("childs", childs);
-						parent_list_details.put(key, null);
-						message_row_indexes.put(key, i);
-						i++;
-						mMessageObjects.add(newRow);
-
 					}
+
 				}
-			}
+			});
 			return true;
 		}
 
 		@Override
-		protected void onPostExecute(final Boolean success) {
-
+		protected void onPostExecute(Boolean success) {
 			mView.findViewById(R.id.loadingProgress).setVisibility(View.GONE);
-			mListViewAdapter.notifiyDataChange(mMessageObjects);
 			if (mSearchView != null)
 				mSearchView
 						.setOnQueryTextListener(getQueryListener(mListViewAdapter));
 			mMessageLoader = null;
 			checkMessageStatus();
-
 		}
 
 	}
@@ -617,8 +617,8 @@ public class Message extends BaseFragment implements
 				if (string != 0)
 					txvMsg.setText(string);
 			}
-
 		}
+		mListViewAdapter.notifiyDataChange(mMessageObjects);
 	}
 
 	/**

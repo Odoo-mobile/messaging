@@ -15,11 +15,12 @@
         android:background="#e3e3e3"
         android:orientation="horizontal" >
 
-        <com.openerp.util.controls.OETextView
+        <TextView
             android:id="@+id/txvTagSubject"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="4"
+            android:fontFamily="sans-serif-condensed"
             android:gravity="center_vertical"
             android:paddingBottom="4dp"
             android:paddingLeft="5dp"

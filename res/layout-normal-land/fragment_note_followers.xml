@@ -25,6 +25,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#fff"
+            android:fontFamily="sans-serif-light"
             android:hint="Add Followers"
             android:inputType="text"
             android:paddingLeft="10dp"
@@ -41,13 +42,14 @@
             android:tint="#414141" />
     </LinearLayout>
 
-    <com.openerp.util.controls.OETextView
+    <TextView
         android:id="@+id/txvNoteFollowerStatus"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginTop="15dp"
+        android:fontFamily="sans-serif-condensed"
         android:gravity="top|center_horizontal"
         android:text="No Followers found for note"
         android:textAppearance="?android:attr/textAppearanceMedium"

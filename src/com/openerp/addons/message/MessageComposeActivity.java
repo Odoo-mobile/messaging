@@ -65,7 +65,6 @@ import com.openerp.support.listview.OEListAdapter.RowFilterTextListener;
 import com.openerp.util.Base64Helper;
 import com.openerp.util.HTMLHelper;
 import com.openerp.util.OEDate;
-import com.openerp.util.controls.OETextView;
 import com.openerp.util.tags.MultiTagsTextView.TokenListener;
 import com.openerp.util.tags.TagsView;
 import com.openerp.util.tags.TagsView.CustomTagViewListener;
@@ -145,7 +144,7 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 				OEDataRow row = (OEDataRow) object;
 				View mView = layoutInflater.inflate(
 						R.layout.fragment_message_receipient_tag_layout, null);
-				OETextView txvSubject = (OETextView) mView
+				TextView txvSubject = (TextView) mView
 						.findViewById(R.id.txvTagSubject);
 				txvSubject.setText(row.getString("name"));
 				ImageView imgPic = (ImageView) mView

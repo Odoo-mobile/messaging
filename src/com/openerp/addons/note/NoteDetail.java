@@ -34,6 +34,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.openerp.R;
@@ -45,7 +46,6 @@ import com.openerp.support.BaseFragment;
 import com.openerp.support.fragment.FragmentListener;
 import com.openerp.util.HTMLHelper;
 import com.openerp.util.TextViewTags;
-import com.openerp.util.controls.OETextView;
 import com.openerp.util.drawer.DrawerItem;
 
 public class NoteDetail extends BaseFragment {
@@ -53,7 +53,7 @@ public class NoteDetail extends BaseFragment {
 	public static final String TAG = "com.openerp.addons.note.NoteDetail";
 	View mView = null;
 	Bundle mArgument = null;
-	OETextView mNoteDetailTitle, mNoteDetailMemo, mNoteTags = null;
+	TextView mNoteDetailTitle, mNoteDetailMemo, mNoteTags = null;
 	int mStageColor = Color.parseColor("#414141");
 	String mPadURL = "";
 	String mNoteMemo = "";
@@ -84,11 +84,10 @@ public class NoteDetail extends BaseFragment {
 	}
 
 	private void showNoteDetails(int note_id) {
-		mNoteDetailTitle = (OETextView) mView
+		mNoteDetailTitle = (TextView) mView
 				.findViewById(R.id.txvNoteDetailTitle);
-		mNoteDetailMemo = (OETextView) mView
-				.findViewById(R.id.txvNoteDetailMemo);
-		mNoteTags = (OETextView) mView.findViewById(R.id.edtNoteTagsView);
+		mNoteDetailMemo = (TextView) mView.findViewById(R.id.txvNoteDetailMemo);
+		mNoteTags = (TextView) mView.findViewById(R.id.edtNoteTagsView);
 
 		mNoteDetailMemo.setMovementMethod(new ScrollingMovementMethod());
 		OEDataRow result = db().select(note_id);

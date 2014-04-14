@@ -26,12 +26,13 @@
         android:paddingBottom="1dp"
         android:weightSum="1" >
 
-        <com.openerp.util.controls.OEEditText
+        <EditText
             android:id="@+id/edtNoteQuickTitle"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#fff"
+            android:fontFamily="sans-serif-light"
             android:hint="Add quick note"
             android:inputType="text"
             android:padding="10dp"
@@ -54,13 +55,14 @@
         android:paddingTop="5dp"
         android:visibility="gone" />
 
-    <com.openerp.util.controls.OETextView
+    <TextView
         android:id="@+id/txvNoteAllArchive"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginTop="15dp"
+        android:fontFamily="sans-serif-condensed"
         android:gravity="top|center_horizontal"
         android:text="You don&apos;t have any notes right now. / You don&apos;t have any active notes right now."
         android:textAppearance="?android:attr/textAppearanceMedium"

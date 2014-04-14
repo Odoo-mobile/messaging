@@ -16,12 +16,13 @@
         android:orientation="vertical"
         android:padding="15dp" >
 
-        <com.openerp.util.controls.OEEditText
+        <EditText
             android:id="@+id/edtNoteTitleInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             android:background="#f5f5f5"
+            android:fontFamily="sans-serif-light"
             android:hint="Title"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="#414141"
@@ -34,15 +35,17 @@
             android:layout_marginBottom="20dp"
             android:layout_marginTop="2dp"
             android:background="#f5f5f5"
+            android:fontFamily="sans-serif-light"
             android:hint="Tags"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <com.openerp.util.controls.OEEditText
+        <EditText
             android:id="@+id/edtNoteComposeDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             android:background="#f5f5f5"
+            android:fontFamily="sans-serif-light"
             android:hint="@string/compose_note_description" />
 
         <WebView

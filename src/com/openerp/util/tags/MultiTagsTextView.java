@@ -670,7 +670,6 @@ public abstract class MultiTagsTextView extends MultiAutoCompleteTextView
 					}
 					editable.setSpan(tokenSpan, offset, offset + ssb.length()
 							- 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
 					// In some cases, particularly the 1 to nth objects when not
 					// focused and restoring
 					// onSpanAdded doesn't get called
@@ -835,7 +834,6 @@ public abstract class MultiTagsTextView extends MultiAutoCompleteTextView
 					MeasureSpec.AT_MOST);
 			int heightSpec = MeasureSpec.makeMeasureSpec(0,
 					MeasureSpec.UNSPECIFIED);
-
 			view.measure(widthSpec, heightSpec);
 			view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
 		}

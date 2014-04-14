@@ -37,9 +37,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -61,8 +63,8 @@ import com.openerp.support.OEUser;
 import com.openerp.support.listview.OEListAdapter;
 import com.openerp.util.HTMLHelper;
 import com.openerp.util.tags.MultiTagsTextView.TokenListener;
-import com.openerp.util.tags.TagsItem;
 import com.openerp.util.tags.TagsView;
+import com.openerp.util.tags.TagsView.CustomTagViewListener;
 import com.openerp.util.tags.TagsView.NewTokenCreateListener;
 
 public class NoteComposeActivity extends Activity implements
@@ -194,9 +196,7 @@ public class NoteComposeActivity extends Activity implements
 					.browseEach();
 			if (tags != null) {
 				for (OEDataRow row : tags) {
-					TagsItem item = new TagsItem(row.getInt("id"),
-							row.getString("name"), null);
-					mNoteTagsView.addObject(item);
+					mNoteTagsView.addObject(row);
 				}
 			}
 		}
@@ -240,11 +240,22 @@ public class NoteComposeActivity extends Activity implements
 
 	private void initNoteTags() {
 		mNoteTagsView = (TagsView) findViewById(R.id.edtComposeNoteTags);
-		for (OEDataRow tag : mTagsDb.select()) {
-			TagsItem tag_item = new TagsItem(tag.getInt("id"),
-					tag.getString("name"), null);
-			mNoteTags.add(tag_item);
-		}
+		mNoteTagsView.setCustomTagView(new CustomTagViewListener() {
+
+			@Override
+			public View getViewForTags(LayoutInflater layoutInflater,
+					Object object, ViewGroup tagsViewGroup) {
+				View mView = layoutInflater.inflate(
+						R.layout.custom_note_tags_adapter_view_item,
+						tagsViewGroup, false);
+				OEDataRow row = (OEDataRow) object;
+				TextView txvName = (TextView) mView
+						.findViewById(R.id.txvCustomNoteTagsAdapterViewItem);
+				txvName.setText(row.getString("name"));
+				return mView;
+			}
+		});
+		mNoteTags.addAll(mTagsDb.select());
 		mNoteTagsAdapter = new OEListAdapter(mContext,
 				R.layout.custom_note_tags_adapter_view_item, mNoteTags) {
 			@Override
@@ -254,10 +265,10 @@ public class NoteComposeActivity extends Activity implements
 					mView = getLayoutInflater().inflate(getResource(), parent,
 							false);
 				}
-				TagsItem row = (TagsItem) mNoteTags.get(position);
+				OEDataRow row = (OEDataRow) mNoteTags.get(position);
 				TextView txvName = (TextView) mView
 						.findViewById(R.id.txvCustomNoteTagsAdapterViewItem);
-				txvName.setText(row.getSubject());
+				txvName.setText(row.getString("name"));
 				return mView;
 			}
 		};
@@ -296,6 +307,7 @@ public class NoteComposeActivity extends Activity implements
 				}
 				TextView txvTitle = (TextView) mView
 						.findViewById(R.id.txvCustomSpinnerItemText);
+				txvTitle.setTextColor(Color.parseColor("#ffffff"));
 				SpinnerNavItem item = (SpinnerNavItem) mActionbarSpinnerItems
 						.get(position);
 				txvTitle.setText(item.get_title());
@@ -312,6 +324,7 @@ public class NoteComposeActivity extends Activity implements
 				}
 				TextView txvTitle = (TextView) mView
 						.findViewById(R.id.txvCustomSpinnerItemText);
+				txvTitle.setTextColor(Color.parseColor("#ffffff"));
 				SpinnerNavItem item = (SpinnerNavItem) mActionbarSpinnerItems
 						.get(position);
 				txvTitle.setText(item.get_title());
@@ -530,24 +543,23 @@ public class NoteComposeActivity extends Activity implements
 	}
 
 	@Override
-	public TagsItem newTokenAddListener(String token) {
-		TagsItem item = null;
+	public Object newTokenAddListener(String token) {
 		OEHelper oe = mTagsDb.getOEInstance();
 		if (oe != null) {
 			OEValues values = new OEValues();
 			values.put("name", token);
 			int id = oe.create(values);
-			item = new TagsItem(id, token, null);
-			mNoteTags.add(item);
+			OEDataRow row = mTagsDb.select(id);
+			mNoteTags.add(row);
 			mNoteTagsAdapter.notifiyDataChange(mNoteTags);
 		}
-		return item;
+		return null;
 	}
 
 	@Override
 	public void onTokenAdded(Object token, View view) {
-		TagsItem item = (TagsItem) token;
-		mSelectedTagsIds.put("key_" + item.getId(), item.getId());
+		OEDataRow item = (OEDataRow) token;
+		mSelectedTagsIds.put("key_" + item.getInt("id"), item.getInt("id"));
 	}
 
 	@Override
@@ -557,7 +569,7 @@ public class NoteComposeActivity extends Activity implements
 
 	@Override
 	public void onTokenRemoved(Object token) {
-		TagsItem item = (TagsItem) token;
-		mSelectedTagsIds.remove("key_" + item.getId());
+		OEDataRow item = (OEDataRow) token;
+		mSelectedTagsIds.remove("key_" + item.getInt("id"));
 	}
 }

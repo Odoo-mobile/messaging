@@ -23,24 +23,27 @@
                 android:id="@+id/receipients_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-light"
                 android:inputType="textFilter"
                 android:nextFocusDown="@+id/edtMessageSubject"
                 android:textColor="#828182" />
         </LinearLayout>
 
-        <com.openerp.util.controls.OEEditText
+        <EditText
             android:id="@+id/edtMessageSubject"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
+            android:fontFamily="sans-serif-light"
             android:hint="Subject"
             android:singleLine="true" />
 
-        <com.openerp.util.controls.OEEditText
+        <EditText
             android:id="@+id/edtMessageBody"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
+            android:fontFamily="sans-serif-light"
             android:hint="Body"
             android:inputType="textMultiLine" />
 

@@ -47,18 +47,19 @@
                     <TextView
                         android:id="@+id/txvMessageAuthor"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_height="0dp"
                         android:layout_weight="3"
+                        android:fontFamily="sans-serif-condensed"
                         android:singleLine="true"
                         android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:textColor="#414141"
-                        android:textStyle="bold" />
+                        android:textColor="#414141" />
 
                     <TextView
                         android:id="@+id/txvAuthorEmail"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="1dp"
+                        android:fontFamily="sans-serif-light"
                         android:singleLine="true"
                         android:textAppearance="?android:attr/textAppearanceSmall"
                         android:textColor="#414141" />
@@ -117,6 +118,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-condensed"
                         android:singleLine="true"
                         android:text="To: "
                         android:textAppearance="?android:attr/textAppearanceSmall"
@@ -126,6 +128,7 @@
                         android:id="@+id/txvTo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-light"
                         android:singleLine="true"
                         android:textAppearance="?android:attr/textAppearanceSmall"
                         android:textColor="#414141" />
@@ -136,11 +139,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
                     android:layout_weight="1"
+                    android:fontFamily="sans-serif-condensed"
                     android:gravity="right|center_horizontal"
                     android:singleLine="true"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#414141"
-                    android:typeface="sans" />
+                    android:textColor="#414141" />
             </LinearLayout>
 
             <LinearLayout
@@ -159,6 +162,7 @@
                     android:background="@drawable/vote_background_selector_gray"
                     android:clickable="true"
                     android:drawableLeft="@drawable/ic_thumbs_up_unselected_dark_tablet"
+                    android:fontFamily="sans-serif-condensed"
                     android:gravity="center"
                     android:paddingBottom="8dp"
                     android:paddingLeft="3dp"
@@ -198,6 +202,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
                 android:gravity="left"
                 android:text="ATTACHMENTS"
                 android:textAppearance="?android:attr/textAppearanceSmall"

@@ -86,6 +86,7 @@ public class SyncWizard extends BaseFragment {
 			getActivity().startActivity(getActivity().getIntent());
 		}
 		checkbox = new CheckBox[syncValuesList.size()];
+
 		rdoGroups = new RadioGroup[syncValuesList.size()];
 		TextView[] txvTitles = new TextView[syncValuesList.size()];
 		int i = 0;
@@ -178,7 +179,7 @@ public class SyncWizard extends BaseFragment {
 						SharedPreferences settings = PreferenceManager
 								.getDefaultSharedPreferences(scope.context());
 						Editor editor = settings.edit();
-						//TODO: store preference setting for your options.
+						// TODO: store preference setting for your options.
 						editor.commit();
 						String authority = authorities.get(rdoBtn.getId() + "");
 						scope.main().setAutoSync(authority, rdoBtn.isChecked());

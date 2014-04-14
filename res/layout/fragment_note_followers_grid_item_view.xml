@@ -28,19 +28,21 @@
             android:paddingLeft="8dp"
             android:paddingTop="5dp" >
 
-            <com.openerp.util.controls.OETextView
+            <TextView
                 android:id="@+id/txvFollowerName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
+                android:fontFamily="sans-serif-condensed"
                 android:text="Follower Name"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textStyle="bold" />
 
-            <com.openerp.util.controls.OETextView
+            <TextView
                 android:id="@+id/txvFollowerEmail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-light"
                 android:text="Follower Email"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
         </LinearLayout>

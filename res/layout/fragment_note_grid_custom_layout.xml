@@ -20,11 +20,12 @@
             android:orientation="vertical"
             android:padding="10dp" >
 
-            <com.openerp.util.controls.OETextView
+            <TextView
                 android:id="@+id/txvNoteTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
+                android:fontFamily="sans-serif-condensed"
                 android:paddingBottom="10dp"
                 android:singleLine="true"
                 android:text="Note Title"
@@ -32,28 +33,31 @@
                 android:textColor="#414141"
                 android:textStyle="bold" />
 
-            <com.openerp.util.controls.OETextView
+            <TextView
                 android:id="@+id/txvNoteDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
+                android:fontFamily="sans-serif-light"
                 android:lines="3"
                 android:text="Note Description text..."
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="#414141" />
 
-            <com.openerp.util.controls.OETextView
+            <TextView
                 android:id="@+id/txvNoteTags"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
                 android:text="Tags"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
-            <com.openerp.util.controls.OETextView
+            <TextView
                 android:id="@+id/txvNoteStage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
+                android:fontFamily="sans-serif-condensed"
                 android:singleLine="true"
                 android:text="This week"
                 android:textAppearance="?android:attr/textAppearanceSmall"

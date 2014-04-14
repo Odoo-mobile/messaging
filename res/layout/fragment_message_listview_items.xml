@@ -23,6 +23,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:fontFamily="sans-serif-condensed"
             android:paddingLeft="?android:listPreferredItemPaddingLeft"
             android:text="Archived"
             android:textColor="#fff" />
@@ -57,8 +58,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="3"
+                android:fontFamily="sans-serif-condensed"
                 android:singleLine="true"
-                android:text="Message Subject"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="#414141"
                 android:textStyle="bold" />
@@ -68,9 +69,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
+                android:fontFamily="sans-serif-condensed"
                 android:paddingRight="5dp"
                 android:singleLine="true"
-                android:text="Jun 3"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
         </LinearLayout>
 
@@ -86,8 +87,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="3"
                 android:ellipsize="end"
+                android:fontFamily="sans-serif-light"
                 android:lines="2"
-                android:text="Message Body"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="#414141" />
 
@@ -111,19 +112,18 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
                 android:ellipsize="end"
+                android:fontFamily="sans-serif-condensed"
                 android:lines="1"
-                android:text="Administrator"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="#414141"
-                android:textStyle="bold" />
+                android:textColor="#414141" />
 
             <TextView
                 android:id="@+id/txvChilds"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="5dp"
+                android:fontFamily="sans-serif-condensed"
                 android:lines="1"
-                android:text="5"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="#414141" />
 
@@ -133,12 +133,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:background="#414141"
+                android:fontFamily="sans-serif-condensed"
                 android:lines="1"
                 android:paddingBottom="3dp"
                 android:paddingLeft="5dp"
                 android:paddingRight="5dp"
                 android:paddingTop="3dp"
-                android:text="message"
                 android:textColor="#ffffff"
                 android:textSize="11sp" />
         </LinearLayout>

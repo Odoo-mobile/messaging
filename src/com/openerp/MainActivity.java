@@ -112,7 +112,9 @@ public class MainActivity extends FragmentActivity implements
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		getActionBar().setIcon(R.drawable.ic_launcher);
+
+		getActionBar().setIcon(R.drawable.ic_launcher_o);
+
 		if (savedInstanceState != null) {
 			mDrawerItemSelectedPosition = savedInstanceState
 					.getInt("current_drawer_item");
@@ -163,8 +165,10 @@ public class MainActivity extends FragmentActivity implements
 		Log.d(TAG, "MainActivity->initDrawerControls()");
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		mDrawerListView = (ListView) findViewById(R.id.left_drawer);
+
 		if (OEUser.current(mContext) != null)
 			setDrawerHeader();
+
 		mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
 				R.drawable.ic_navigation_drawer, R.string.drawer_open,
 				R.string.app_name) {
@@ -172,7 +176,7 @@ public class MainActivity extends FragmentActivity implements
 			@Override
 			public void onDrawerClosed(View drawerView) {
 				super.onDrawerClosed(drawerView);
-				getActionBar().setIcon(R.drawable.ic_launcher);
+				getActionBar().setIcon(R.drawable.ic_launcher_o);
 				setTitle(mAppTitle, null);
 			}
 

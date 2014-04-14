@@ -44,6 +44,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -65,8 +66,6 @@ import com.openerp.support.fragment.FragmentListener;
 import com.openerp.support.listview.OEListAdapter;
 import com.openerp.util.HTMLHelper;
 import com.openerp.util.TextViewTags;
-import com.openerp.util.controls.OEEditText;
-import com.openerp.util.controls.OETextView;
 import com.openerp.util.drawer.DrawerColorTagListener;
 import com.openerp.util.drawer.DrawerItem;
 import com.openerp.util.drawer.DrawerListener;
@@ -231,11 +230,11 @@ public class Note extends BaseFragment implements
 				scope.main().requestSync(NoteProvider.AUTHORITY);
 				mView.findViewById(R.id.waitingForSyncToStart).setVisibility(
 						View.VISIBLE);
-				OETextView txvSubMessage = (OETextView) mView
+				TextView txvSubMessage = (TextView) mView
 						.findViewById(R.id.txvMessageHeaderSubtitle);
 				txvSubMessage.setText("Your notes will appear shortly");
 			} else {
-				OETextView txvMsg = (OETextView) mView
+				TextView txvMsg = (TextView) mView
 						.findViewById(R.id.txvNoteAllArchive);
 				txvMsg.setVisibility(View.VISIBLE);
 			}
@@ -433,7 +432,7 @@ public class Note extends BaseFragment implements
 		Log.d(TAG, "[QuickNote create] Note->onClick()");
 		Intent composeNote = new Intent(scope.context(),
 				NoteComposeActivity.class);
-		OEEditText edtTitle = (OEEditText) mView
+		EditText edtTitle = (EditText) mView
 				.findViewById(R.id.edtNoteQuickTitle);
 		composeNote.putExtra("note_title", edtTitle.getText().toString());
 		composeNote.putExtra("stage_id", mStageId);

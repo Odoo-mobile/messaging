@@ -24,34 +24,36 @@
             android:orientation="vertical"
             android:padding="10dp" >
 
-            <com.openerp.util.controls.OETextView
+            <TextView
                 android:id="@+id/edtNoteTagsView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:layout_marginTop="2dp"
+                android:fontFamily="sans-serif-condensed"
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp"
                 android:paddingTop="5dp" />
 
-            <com.openerp.util.controls.OETextView
+            <TextView
                 android:id="@+id/txvNoteDetailTitle"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:padding="10dp"
+                android:fontFamily="sans-serif-condensed"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textStyle="bold" />
 
-            <com.openerp.util.controls.OETextView
+            <TextView
                 android:id="@+id/txvNoteDetailMemo"
+                android:fontFamily="sans-serif-light"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:autoLink="web"
                 android:background="@android:color/transparent"
                 android:padding="10dp"
-                android:scrollbars="vertical"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         </LinearLayout>
     </LinearLayout>
