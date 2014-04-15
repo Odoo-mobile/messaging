@@ -18,7 +18,6 @@
  */
 package com.openerp.addons.message;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +27,8 @@ import openerp.OEArguments;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import android.accounts.Account;
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -37,7 +36,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -46,13 +44,16 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.openerp.R;
-import com.openerp.base.ir.Ir_AttachmentDBHelper;
+import com.openerp.addons.message.providers.message.MessageProvider;
+import com.openerp.addons.note.NoteDB;
+import com.openerp.addons.note.NoteDetail;
+import com.openerp.auth.OpenERPAccountManager;
+import com.openerp.base.ir.Attachment;
 import com.openerp.base.res.ResPartnerDB;
 import com.openerp.orm.OEDataRow;
 import com.openerp.orm.OEHelper;
@@ -65,6 +66,7 @@ import com.openerp.support.listview.OEListAdapter.RowFilterTextListener;
 import com.openerp.util.Base64Helper;
 import com.openerp.util.HTMLHelper;
 import com.openerp.util.OEDate;
+import com.openerp.util.controls.ExpandableHeightGridView;
 import com.openerp.util.tags.MultiTagsTextView.TokenListener;
 import com.openerp.util.tags.TagsView;
 import com.openerp.util.tags.TagsView.CustomTagViewListener;
@@ -80,6 +82,8 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 	Integer mParentMessageId = 0;
 	OEDataRow mMessageRow = null;
 
+	OEDataRow mNoteObj = null;
+
 	HashMap<String, OEDataRow> mSelectedPartners = new HashMap<String, OEDataRow>();
 
 	/**
@@ -89,17 +93,17 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 	MessageDB mMessageDB = null;
 	PartnerLoader mPartnerLoader = null;
 
+	/**
+	 * Attachment
+	 */
+	Attachment mAttachment = null;
+	List<Object> mAttachments = new ArrayList<Object>();
+	ExpandableHeightGridView mAttachmentGridView = null;
+	OEListAdapter mAttachmentAdapter = null;
+
 	enum AttachmentType {
 		IMAGE, FILE
 	}
-
-	/**
-	 * Attachment URIs
-	 */
-	List<Uri> mAttachmentURIs = new ArrayList<Uri>();
-	List<Object> mAttachments = new ArrayList<Object>();
-	GridView mAttachmentGridView = null;
-	OEListAdapter mAttachmentAdapter = null;
 
 	/**
 	 * Controls & Adapters
@@ -202,7 +206,8 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 		mPartnerTagsView.setTokenListener(this);
 
 		// Attachment View
-		mAttachmentGridView = (GridView) findViewById(R.id.lstAttachments);
+		mAttachmentGridView = (ExpandableHeightGridView) findViewById(R.id.lstAttachments);
+		mAttachmentGridView.setExpanded(true);
 		mAttachmentAdapter = new OEListAdapter(this,
 				R.layout.activity_message_compose_attachment_file_view_item,
 				mAttachments) {
@@ -220,18 +225,18 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 
 				ImageView imgAttachmentImg = (ImageView) mView
 						.findViewById(R.id.imgAttachmentFile);
-				if (row.getString("type").equals("file")) {
+				if (!row.getString("file_type").contains("image")) {
 					imgAttachmentImg
 							.setImageResource(R.drawable.file_attachment);
 				} else {
-					imgAttachmentImg.setImageURI((Uri) row.get("uri"));
+					imgAttachmentImg.setImageURI(Uri.parse(row
+							.getString("file_uri")));
 				}
 				mView.findViewById(R.id.imgBtnRemoveAttachment)
 						.setOnClickListener(new OnClickListener() {
 
 							@Override
 							public void onClick(View v) {
-								mAttachmentURIs.remove(position);
 								mAttachments.remove(position);
 								mAttachmentAdapter
 										.notifiyDataChange(mAttachments);
@@ -250,6 +255,8 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 	private void initDBs() {
 		mPartnerDB = new ResPartnerDB(mContext);
 		mMessageDB = new MessageDB(mContext);
+		mAttachment = new Attachment(mContext);
+		mAttachments.clear();
 	}
 
 	private void checkForContact() {
@@ -258,7 +265,7 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 		if (intent.getData() != null) {
 			Cursor cursor = getContentResolver().query(intent.getData(), null,
 					null, null, null);
-			if (cursor.moveToFirst()) {
+			if (cursor != null && cursor.moveToFirst()) {
 				int partner_id = cursor.getInt(cursor.getColumnIndex("data2"));
 				OEDataRow row = mPartnerDB.select(partner_id);
 				mSelectedPartners.put("key_" + row.getString("id"), row);
@@ -312,10 +319,11 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 			finish();
 			return true;
 		case R.id.menu_message_compose_add_attachment_images:
-			requestForAttachmentIntent(AttachmentType.IMAGE);
+			mAttachment
+					.requestAttachment(Attachment.Types.IMAGE_OR_CAPTURE_IMAGE);
 			return true;
 		case R.id.menu_message_compose_add_attachment_files:
-			requestForAttachmentIntent(AttachmentType.FILE);
+			mAttachment.requestAttachment(Attachment.Types.FILE);
 			return true;
 		case R.id.menu_message_compose_send:
 			edtSubject.setError(null);
@@ -355,30 +363,23 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 		@Override
 		protected Void doInBackground(Void... params) {
 			if (isConnection) {
-				Ir_AttachmentDBHelper attachment = new Ir_AttachmentDBHelper(
-						mContext);
-				JSONArray attachmentIds = new JSONArray();
-				OEHelper oe = attachment.getOEInstance();
-				List<Integer> attachment_ids_list = new ArrayList<Integer>();
-				for (Uri uri : mAttachmentURIs) {
-					File fileData = new File(uri.getPath());
-					String filename = getFilenameFromUri(uri);
-					OEValues values = new OEValues();
-					values.put("datas_fname", filename);
-					values.put("res_model", "mail.compose.message");
-					values.put("company_id", OEUser.current(mContext)
-							.getCompany_id());
-					values.put("type", "binary");
-					values.put("res_id", 0);
-					values.put("file_size", fileData.length());
-					values.put("db_datas", Base64Helper.fileUriToBase64(uri,
-							getContentResolver()));
-					values.put("name", filename);
-					if (oe != null) {
-						long newId = oe.create(values);
-						attachmentIds.put(newId);
-						attachment_ids_list.add((int) newId);
+				Object record_name = false, res_model = false;
+				int res_id = 0;
+				List<Integer> attachmentIds = new ArrayList<Integer>();
+				if (mNoteObj == null) {
+					mAttachment.updateAttachments("mail.compose.message", 0,
+							mAttachments, false);
+					List<Long> lAttachmentIds = mAttachment.newAttachmentIds();
+					for (long id : lAttachmentIds)
+						attachmentIds.add(Integer.parseInt(id + ""));
+				} else {
+					for (Object obj : mAttachments) {
+						OEDataRow attachment = (OEDataRow) obj;
+						attachmentIds.add(attachment.getInt("id"));
 					}
+					record_name = edtSubject.getText().toString();
+					res_model = "note.note";
+					res_id = mNoteObj.getInt("id");
 				}
 				try {
 					OEDataRow user = new ResPartnerDB(mContext).select(OEUser
@@ -402,17 +403,17 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 
 					// attachment ids
 					JSONArray attachment_ids = new JSONArray();
-					if (attachmentIds.length() > 0) {
+					if (attachmentIds.size() > 0) {
 						attachment_ids.put(6);
 						attachment_ids.put(false);
-						attachment_ids.put(attachmentIds);
+						attachment_ids.put(new JSONArray(attachmentIds
+								.toString()));
 					}
-
 					if (!isReply) {
 						mToast = "Message sent.";
 						JSONObject arguments = new JSONObject();
 						arguments.put("composition_mode", "comment");
-						arguments.put("model", false);
+						arguments.put("model", res_model);
 						arguments.put("parent_id", false);
 						String email_from = user.getString("name") + " <"
 								+ user.getString("email") + ">";
@@ -425,7 +426,8 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 						arguments.put("same_thread", true);
 						arguments.put("use_active_domain", false);
 						arguments.put("reply_to", false);
-						arguments.put("res_id", 0);
+						arguments.put("res_id", res_id);
+						arguments.put("record_name", record_name);
 
 						if (partner_ids.length() > 0)
 							arguments.put("partner_ids", new JSONArray("["
@@ -458,7 +460,7 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 
 						// Sending mail
 						mOE.call_kw(model, "send_mail", args, null, null);
-						mOE.syncWithServer();
+						syncMessage();
 					} else {
 						mToast = "Message reply sent.";
 						String model = "mail.thread";
@@ -467,8 +469,8 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 						args.add(false);
 
 						JSONObject context = new JSONObject();
-						int res_id = mMessageRow.getInt("res_id");
-						String res_model = mMessageRow.getString("model");
+						res_id = mMessageRow.getInt("res_id");
+						res_model = mMessageRow.getString("model");
 						context.put("default_model",
 								(res_model.equals("false") ? false : res_model));
 						context.put("default_res_id", (res_id == 0) ? false
@@ -514,7 +516,7 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 						values.put("vote_nb", 0);
 						values.put("starred", false);
 						OEM2MIds attachment_Ids = new OEM2MIds(Operation.ADD,
-								attachment_ids_list);
+								attachmentIds);
 						values.put("attachment_ids", attachment_Ids);
 						newMessageId = (int) mMessageDB.create(values);
 					}
@@ -543,22 +545,19 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 
 	}
 
-	private void requestForAttachmentIntent(AttachmentType type) {
-		Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-		switch (type) {
-		case FILE:
-			intent.setType("application/file");
-			break;
-		case IMAGE:
-			intent.setType("image/*");
-			break;
+	private void syncMessage() {
+		Bundle bundle = new Bundle();
+		Account account = OpenERPAccountManager.getAccount(
+				getApplicationContext(), OEUser
+						.current(getApplicationContext()).getAndroidName());
+		Bundle settingsBundle = new Bundle();
+		settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+		settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+		if (bundle != null) {
+			settingsBundle.putAll(bundle);
 		}
-		try {
-			startActivityForResult(intent, PICKFILE_RESULT_CODE);
-		} catch (ActivityNotFoundException e) {
-			Toast.makeText(this, "No Activity found to handle intent.",
-					Toast.LENGTH_LONG).show();
-		}
+		ContentResolver.requestSync(account, MessageProvider.AUTHORITY,
+				settingsBundle);
 	}
 
 	class PartnerLoader extends AsyncTask<Void, Void, Void> {
@@ -603,11 +602,10 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == PICKFILE_RESULT_CODE && resultCode == RESULT_OK) {
-			String FilePath = data.getDataString();
-			Uri fileUri = Uri.parse(FilePath);
-			mAttachmentURIs.add(fileUri);
-			handleIntentFilter(data);
+		if (resultCode == RESULT_OK) {
+			OEDataRow attachment = mAttachment.handleResult(requestCode, data);
+			mAttachments.add(attachment);
+			mAttachmentAdapter.notifiyDataChange(mAttachments);
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
@@ -623,74 +621,41 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 
 		// Single attachment
 		if (Intent.ACTION_SEND.equals(action) && type != null) {
-			Uri fileUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
-			mAttachmentURIs.add(fileUri);
+			OEDataRow single = mAttachment.handleResult(intent);
+			single.put("file_type", type);
+			mAttachments.add(single);
+			mAttachmentAdapter.notifiyDataChange(mAttachments);
 		}
 
 		// Multiple Attachments
 		if (Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null) {
-			ArrayList<Uri> fileUris = intent
-					.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-			mAttachmentURIs.addAll(fileUris);
-
-		}
-		// note.note send as mail
-		if (intent.hasExtra("note_body")) {
-			EditText edtBody = (EditText) findViewById(R.id.edtMessageBody);
-			String body = intent.getExtras().getString("note_body");
-			edtBody.setText(HTMLHelper.stringToHtml(body));
-		}
-
-		if (intent.hasExtra("android.intent.extra.TEXT")) {
-			edtBody.setText(intent.getExtras().getString(
-					"android.intent.extra.TEXT"));
-		} else {
-			handleReceivedFile();
-		}
-
-	}
-
-	private void handleReceivedFile() {
-		mAttachments.clear();
-		for (Uri uri : mAttachmentURIs) {
-			ContentResolver cR = getContentResolver();
-			String type = cR.getType(uri);
-			OEDataRow data = new OEDataRow();
-			data.put("name", getFilenameFromUri(uri));
-			data.put("uri", uri);
-			data.put("type", "file");
-			if (type.contains("image/")) {
-				data.put("type", "image");
-			}
-			mAttachments.add(data);
+			List<OEDataRow> multiple = mAttachment.handleMultipleResult(intent);
+			mAttachments.addAll(multiple);
 			mAttachmentAdapter.notifiyDataChange(mAttachments);
 		}
-	}
+		// note.note send as mail
+		if (intent.getAction() != null
+				&& intent.getAction().equals(
+						NoteDetail.ACTION_FORWARD_NOTE_AS_MAIL)) {
+			edtSubject = (EditText) findViewById(R.id.edtMessageSubject);
+			edtBody = (EditText) findViewById(R.id.edtMessageBody);
 
-	/**
-	 * getting real path from attachment URI.
-	 * 
-	 * @param contentUri
-	 * @return
-	 */
-	private String getFilenameFromUri(Uri contentUri) {
-		String filename = "unknown";
-		if (contentUri.getScheme().toString().compareTo("content") == 0) {
-			Cursor cursor = getContentResolver().query(contentUri, null, null,
-					null, null);
-			if (cursor.moveToFirst()) {
-				int column_index = cursor
-						.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-				filename = cursor.getString(column_index);
-				File fl = new File(filename);
-				filename = fl.getName();
+			NoteDB note = new NoteDB(mContext);
+			int note_id = intent.getExtras().getInt("note_id");
+			List<OEDataRow> attachment = mAttachment.select(
+					note.getModelName(), note_id);
+			mNoteObj = note.select(note_id);
+			edtSubject.setText("I've shared note with you.");
+			edtBody.setText(HTMLHelper.stringToHtml(mNoteObj.getString("name")));
+			if (attachment.size() > 0) {
+				mAttachments.addAll(attachment);
+				mAttachmentAdapter.notifiyDataChange(mAttachments);
 			}
-		} else if (contentUri.getScheme().compareTo("file") == 0) {
-			filename = contentUri.getLastPathSegment().toString();
-		} else {
-			filename = filename + "_" + contentUri.getLastPathSegment();
 		}
-		return filename;
+
+		if (intent.hasExtra(Intent.EXTRA_TEXT)) {
+			edtBody.setText(intent.getExtras().getString(Intent.EXTRA_TEXT));
+		}
 	}
 
 	@Override

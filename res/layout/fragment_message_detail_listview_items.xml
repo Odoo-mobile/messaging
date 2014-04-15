@@ -7,7 +7,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/container_drop_shadow"
+        android:background="#fff"
         android:orientation="vertical"
         android:padding="5dp" >
 
@@ -76,7 +76,7 @@
                         android:id="@+id/imgBtnStar"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:background="@drawable/oe_background_selector"
+                        android:background="@drawable/oe_listview_background_selector"
                         android:padding="5dp"
                         android:src="@drawable/ic_action_unstarred" />
 
@@ -84,7 +84,7 @@
                         android:id="@+id/imgBtnReply"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:background="@drawable/oe_background_selector"
+                        android:background="@drawable/oe_listview_background_selector"
                         android:padding="5dp"
                         android:src="@drawable/ic_action_social_reply" />
                 </LinearLayout>
@@ -103,7 +103,6 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
-                android:background="#ffffff"
                 android:gravity="bottom"
                 android:orientation="vertical"
                 android:padding="6dp"
@@ -112,7 +111,6 @@
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="#ffffff"
                     android:orientation="horizontal" >
 
                     <TextView
@@ -188,7 +186,8 @@
             <WebView
                 android:id="@+id/webViewMessageBody"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent" />
         </LinearLayout>
 
         <LinearLayout
@@ -202,20 +201,21 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
                 android:fontFamily="sans-serif-condensed"
                 android:gravity="left"
                 android:text="ATTACHMENTS"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textStyle="bold" />
 
-            <LinearLayout
-                android:id="@+id/gridAttachments"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:orientation="vertical" >
-            </LinearLayout>
+            <include layout="@layout/activity_message_compose_attachment_grid" />
         </LinearLayout>
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1.5dp"
+        android:background="#d1d1d1" >
+    </View>
 
 </LinearLayout>

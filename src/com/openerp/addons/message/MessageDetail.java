@@ -32,6 +32,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -50,6 +51,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.openerp.R;
+import com.openerp.base.ir.Attachment;
 import com.openerp.orm.OEDataRow;
 import com.openerp.orm.OEHelper;
 import com.openerp.orm.OEValues;
@@ -59,8 +61,8 @@ import com.openerp.support.listview.OEListAdapter;
 import com.openerp.util.Base64Helper;
 import com.openerp.util.OEBinaryDownloadHelper;
 import com.openerp.util.OEDate;
-import com.openerp.util.OEFileSizeHelper;
 import com.openerp.util.contactview.OEContactView;
+import com.openerp.util.controls.ExpandableHeightGridView;
 import com.openerp.util.drawer.DrawerItem;
 import com.openerp.util.drawer.DrawerListener;
 
@@ -195,7 +197,10 @@ public class MessageDetail extends BaseFragment implements OnClickListener {
 		webView.loadData(row.getString("body"), "text/html", "UTF-8");
 
 		// Handling attachment for each message
-		showAttachments(row.getM2MRecord("attachment_ids").browseEach(), mView);
+		List<Object> mAttachmentsList = new ArrayList<Object>();
+		mAttachmentsList
+				.addAll(row.getM2MRecord("attachment_ids").browseEach());
+		showAttachments(mAttachmentsList, mView);
 
 		ImageView imgUserPicture, imgBtnStar;
 		imgUserPicture = (ImageView) mView.findViewById(R.id.imgUserPicture);
@@ -236,40 +241,84 @@ public class MessageDetail extends BaseFragment implements OnClickListener {
 		return mView;
 	}
 
-	private void showAttachments(List<OEDataRow> attachments, View mView) {
+	// TODO
+	private void showAttachments(final List<Object> attachments, View mView) {
 		if (attachments != null && attachments.size() > 0) {
-			ViewGroup attachmentViewGroup = (ViewGroup) mView
-					.findViewById(R.id.gridAttachments);
-			LayoutInflater inflater = getActivity().getLayoutInflater();
-			attachmentViewGroup.removeAllViews();
-			int index = 0;
-			for (OEDataRow attachment : attachments) {
-				View attachmentView = inflater.inflate(
-						R.layout.fragment_message_detail_attachment_grid_item,
-						null, false);
-				TextView txvAttachmentName = (TextView) attachmentView
-						.findViewById(R.id.txvFileName);
 
-				txvAttachmentName.setText(attachment.get("name").toString());
-				TextView txvAttachmentSize = (TextView) attachmentView
-						.findViewById(R.id.txvFileSize);
-				long fileSize = Long.parseLong(attachment
-						.getString("file_size"));
-				String file_size = OEFileSizeHelper.readableFileSize(fileSize);
-				txvAttachmentSize.setText((file_size.equals("0")) ? " "
-						: file_size);
+			ExpandableHeightGridView mAttachmentGrid = (ExpandableHeightGridView) mView
+					.findViewById(R.id.lstAttachments);
 
-				TextView txvAttachmentId = (TextView) attachmentView
-						.findViewById(R.id.txvAttachmentId);
-				txvAttachmentId.setText(attachment.getString("id"));
+			mAttachmentGrid.setExpanded(true);
+			OEListAdapter mAttachmentGridAdapter = new OEListAdapter(
+					getActivity(),
+					R.layout.activity_message_compose_attachment_file_view_item,
+					attachments) {
+				@Override
+				public View getView(final int position, View convertView,
+						ViewGroup parent) {
+					final OEDataRow row = (OEDataRow) attachments.get(position);
+					View mView = convertView;
+					if (mView == null)
+						mView = getActivity().getLayoutInflater().inflate(
+								getResource(), parent, false);
+					TextView txvFileName = (TextView) mView
+							.findViewById(R.id.txvFileName);
+					txvFileName.setText(row.getString("name"));
 
-				attachmentViewGroup.addView(attachmentView, index,
-						new ViewGroup.LayoutParams(
-								ViewGroup.LayoutParams.MATCH_PARENT,
-								ViewGroup.LayoutParams.MATCH_PARENT));
-				attachmentView.setOnClickListener(this);
-				index++;
-			}
+					ImageView imgAttachmentImg = (ImageView) mView
+							.findViewById(R.id.imgAttachmentFile);
+					if (!row.getString("file_type").contains("image") || row.getString("file_uri").equals("false")) {
+						imgAttachmentImg
+								.setImageResource(R.drawable.attachment);
+					} else {
+						imgAttachmentImg.setImageURI(Uri.parse(row
+								.getString("file_uri")));
+					}
+					imgAttachmentImg.setOnClickListener(new OnClickListener() {
+
+						@Override
+						public void onClick(View v) {
+							Attachment attachment = new Attachment(
+									getActivity());
+							attachment.downloadFile(row.getInt("id"));
+
+						}
+					});
+					mView.findViewById(R.id.imgBtnRemoveAttachment)
+							.setVisibility(View.INVISIBLE);
+					return mView;
+				}
+			};
+			mAttachmentGrid.setAdapter(mAttachmentGridAdapter);
+
+			/*
+			 * ViewGroup attachmentViewGroup = (ViewGroup) mView
+			 * .findViewById(R.id.gridAttachments); LayoutInflater inflater =
+			 * getActivity().getLayoutInflater();
+			 * attachmentViewGroup.removeAllViews(); int index = 0; for
+			 * (OEDataRow attachment : attachments) { View attachmentView =
+			 * inflater.inflate(
+			 * R.layout.fragment_message_detail_attachment_grid_item, null,
+			 * false); TextView txvAttachmentName = (TextView) attachmentView
+			 * .findViewById(R.id.txvFileName);
+			 * 
+			 * txvAttachmentName.setText(attachment.get("name").toString());
+			 * TextView txvAttachmentSize = (TextView) attachmentView
+			 * .findViewById(R.id.txvFileSize); long fileSize =
+			 * Long.parseLong(attachment .getString("file_size")); String
+			 * file_size = OEFileSizeHelper.readableFileSize(fileSize);
+			 * txvAttachmentSize.setText((file_size.equals("0")) ? " " :
+			 * file_size);
+			 * 
+			 * TextView txvAttachmentId = (TextView) attachmentView
+			 * .findViewById(R.id.txvAttachmentId);
+			 * txvAttachmentId.setText(attachment.getString("id"));
+			 * 
+			 * attachmentViewGroup.addView(attachmentView, index, new
+			 * ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT,
+			 * ViewGroup.LayoutParams.MATCH_PARENT));
+			 * attachmentView.setOnClickListener(this); index++; }
+			 */
 		} else {
 			mView.findViewById(R.id.layoutMessageAttachments).setVisibility(
 					View.GONE);

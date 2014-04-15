@@ -60,6 +60,7 @@ import com.openerp.util.drawer.DrawerItem;
 public class NoteDetail extends BaseFragment {
 
 	public static final String TAG = "com.openerp.addons.note.NoteDetail";
+	public static final String ACTION_FORWARD_NOTE_AS_MAIL = "com.openerp.addons.note.NoteDetail.ACTION_FORWARD_NOTE_AS_MAIL";
 
 	View mView = null;
 	Bundle mArgument = null;
@@ -226,7 +227,8 @@ public class NoteDetail extends BaseFragment {
 
 			Intent sendAsMail = new Intent(getActivity(),
 					MessageComposeActivity.class);
-			sendAsMail.putExtra("note_body", mMessageBody);
+			sendAsMail.setAction(ACTION_FORWARD_NOTE_AS_MAIL);
+			sendAsMail.putExtra("note_id", getArguments().getInt("note_id"));
 			getActivity().startActivity(sendAsMail);
 			return true;
 

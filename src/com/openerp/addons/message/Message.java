@@ -527,8 +527,8 @@ public class Message extends BaseFragment implements
 					String where = (String) map.get("where");
 					String whereArgs[] = (String[]) map.get("whereArgs");
 					mType = messageType;
-					List<OEDataRow> result = db().select(where, whereArgs, null,
-							null, "date DESC");
+					List<OEDataRow> result = db().select(where, whereArgs,
+							null, null, "date DESC");
 					HashMap<String, OEDataRow> parent_list_details = new HashMap<String, OEDataRow>();
 					if (result.size() > 0) {
 						int i = 0;
@@ -540,6 +540,7 @@ public class Message extends BaseFragment implements
 							} else {
 								isParent = false;
 							}
+
 							db = new MessageDB(getActivity());
 							int childs = db.count("parent_id = ? ",
 									new String[] { key });

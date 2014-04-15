@@ -1,51 +1,41 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:background="#ccc"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:paddingBottom="1dp"
-    android:weightSum="3" >
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="160dp"
+    android:layout_height="160dp"
+    android:background="#ebebeb" >
+
+    <ImageView
+        android:id="@+id/imgAttachmentFile"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/file_attachment" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#f3f3f3"
-        android:orientation="vertical" >
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#cc000000"
+        android:orientation="horizontal"
+        android:paddingLeft="5dp" >
+
+        <TextView
+            android:id="@+id/txvFileName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:padding="8dp"
+            android:singleLine="true"
+            android:text="Medium Text"
+            android:textColor="#ffffff" />
 
         <ImageView
-            android:id="@+id/imgAttachmentFile"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_gravity="center"
-            android:scaleType="centerCrop"
-            android:src="@drawable/file_attachment" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
+            android:id="@+id/imgBtnRemoveAttachment"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:background="#fff"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal" >
-
-            <TextView
-                android:id="@+id/txvFileName"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="3"
-                android:padding="8dp"
-                android:singleLine="true"
-                android:text="Medium Text" />
-
-            <ImageView
-                android:id="@+id/imgBtnRemoveAttachment"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/oe_listview_background_selector"
-                android:clickable="true"
-                android:src="@drawable/ic_action_content_remove" />
-        </LinearLayout>
+            android:background="@drawable/oe_listview_background_selector"
+            android:clickable="true"
+            android:src="@drawable/ic_action_content_remove"
+            android:tint="#fff" />
     </LinearLayout>
 
-</LinearLayout>
+</FrameLayout>

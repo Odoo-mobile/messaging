@@ -3,13 +3,13 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
-    <GridView
+    <com.openerp.util.controls.ExpandableHeightGridView
         android:id="@+id/lstAttachments"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:horizontalSpacing="5dp"
         android:numColumns="3"
         android:verticalSpacing="5dp" >
-    </GridView>
+    </com.openerp.util.controls.ExpandableHeightGridView>
 
 </LinearLayout>

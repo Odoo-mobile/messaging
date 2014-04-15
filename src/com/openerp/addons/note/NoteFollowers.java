@@ -373,7 +373,8 @@ public class NoteFollowers extends BaseFragment implements TokenListener,
 	@Override
 	public void onPause() {
 		super.onPause();
-		mPartnersLoader.cancel(true);
+		if (mPartnersLoader != null)
+			mPartnersLoader.cancel(true);
 		mPartnersLoader = null;
 	}
 
