@@ -267,7 +267,8 @@ public class MessageDetail extends BaseFragment implements OnClickListener {
 
 					ImageView imgAttachmentImg = (ImageView) mView
 							.findViewById(R.id.imgAttachmentFile);
-					if (!row.getString("file_type").contains("image") || row.getString("file_uri").equals("false")) {
+					if (!row.getString("file_type").contains("image")
+							|| row.getString("file_uri").equals("false")) {
 						imgAttachmentImg
 								.setImageResource(R.drawable.attachment);
 					} else {
@@ -291,34 +292,6 @@ public class MessageDetail extends BaseFragment implements OnClickListener {
 			};
 			mAttachmentGrid.setAdapter(mAttachmentGridAdapter);
 
-			/*
-			 * ViewGroup attachmentViewGroup = (ViewGroup) mView
-			 * .findViewById(R.id.gridAttachments); LayoutInflater inflater =
-			 * getActivity().getLayoutInflater();
-			 * attachmentViewGroup.removeAllViews(); int index = 0; for
-			 * (OEDataRow attachment : attachments) { View attachmentView =
-			 * inflater.inflate(
-			 * R.layout.fragment_message_detail_attachment_grid_item, null,
-			 * false); TextView txvAttachmentName = (TextView) attachmentView
-			 * .findViewById(R.id.txvFileName);
-			 * 
-			 * txvAttachmentName.setText(attachment.get("name").toString());
-			 * TextView txvAttachmentSize = (TextView) attachmentView
-			 * .findViewById(R.id.txvFileSize); long fileSize =
-			 * Long.parseLong(attachment .getString("file_size")); String
-			 * file_size = OEFileSizeHelper.readableFileSize(fileSize);
-			 * txvAttachmentSize.setText((file_size.equals("0")) ? " " :
-			 * file_size);
-			 * 
-			 * TextView txvAttachmentId = (TextView) attachmentView
-			 * .findViewById(R.id.txvAttachmentId);
-			 * txvAttachmentId.setText(attachment.getString("id"));
-			 * 
-			 * attachmentViewGroup.addView(attachmentView, index, new
-			 * ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT,
-			 * ViewGroup.LayoutParams.MATCH_PARENT));
-			 * attachmentView.setOnClickListener(this); index++; }
-			 */
 		} else {
 			mView.findViewById(R.id.layoutMessageAttachments).setVisibility(
 					View.GONE);
