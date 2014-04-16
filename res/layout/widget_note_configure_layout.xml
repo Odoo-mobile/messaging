@@ -7,7 +7,9 @@
     <ListView
         android:id="@+id/widgetNoteConfigure"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingTop="?android:attr/actionBarSize" >
     </ListView>
 
 </LinearLayout>

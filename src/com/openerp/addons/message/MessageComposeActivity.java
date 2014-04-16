@@ -485,7 +485,8 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 						kwargs.put("subject", edtSubject.getText().toString());
 						kwargs.put("body", edtBody.getText().toString());
 						kwargs.put("parent_id", mParentMessageId);
-						kwargs.put("attachment_ids", attachmentIds);
+						kwargs.put("attachment_ids", new JSONArray(
+								attachmentIds));
 						if (partner_ids.length() > 0)
 							kwargs.put("partner_ids", new JSONArray("["
 									+ partner_ids.toString() + "]"));
@@ -493,7 +494,6 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 							kwargs.put("partner_ids", new JSONArray());
 						newMessageId = (Integer) mOE.call_kw(model, method,
 								args, null, kwargs);
-
 						// Creating local entry
 						OEValues values = new OEValues();
 

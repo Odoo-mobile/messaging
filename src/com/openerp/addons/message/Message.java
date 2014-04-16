@@ -506,13 +506,11 @@ public class Message extends BaseFragment implements
 	public class MessagesLoader extends AsyncTask<Void, Void, Boolean> {
 
 		MType messageType = null;
-		MessageDB db = null;
 
 		public MessagesLoader(MType type) {
 			messageType = type;
 			mView.findViewById(R.id.loadingProgress)
 					.setVisibility(View.VISIBLE);
-			db = new MessageDB(getActivity());
 		}
 
 		@Override
@@ -541,8 +539,7 @@ public class Message extends BaseFragment implements
 								isParent = false;
 							}
 
-							db = new MessageDB(getActivity());
-							int childs = db.count("parent_id = ? ",
+							int childs = db().count("parent_id = ? ",
 									new String[] { key });
 							if (!parent_list_details.containsKey(key)) {
 								// Fetching row parent message
@@ -551,8 +548,7 @@ public class Message extends BaseFragment implements
 								if (isParent) {
 									newRow = row;
 								} else {
-									db = new MessageDB(getActivity());
-									newRow = db.select(Integer.parseInt(key));
+									newRow = db().select(Integer.parseInt(key));
 								}
 
 								newRow.put("childs", childs);
@@ -564,7 +560,6 @@ public class Message extends BaseFragment implements
 							}
 						}
 					}
-
 				}
 			});
 			return true;

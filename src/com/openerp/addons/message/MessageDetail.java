@@ -134,7 +134,6 @@ public class MessageDetail extends BaseFragment implements OnClickListener {
 		txvTime = (TextView) mView.findViewById(R.id.txvTime);
 		txvTo = (TextView) mView.findViewById(R.id.txvTo);
 		txvVoteNumber = (TextView) mView.findViewById(R.id.txvmessageVotenb);
-
 		String author = row.getString("email_from");
 		String email = author;
 		OEDataRow author_id = null;
@@ -192,9 +191,11 @@ public class MessageDetail extends BaseFragment implements OnClickListener {
 				handleVoteToggle(position, txvVoteNumber, row);
 			}
 		});
-
 		WebView webView = (WebView) mView.findViewById(R.id.webViewMessageBody);
-		webView.loadData(row.getString("body"), "text/html", "UTF-8");
+		webView.loadData(row.getString("body"), "text/html; charset=UTF-8",
+				"UTF-8");
+		webView.getSettings().setBuiltInZoomControls(true);
+		webView.getSettings().setTextZoom(80);
 
 		// Handling attachment for each message
 		List<Object> mAttachmentsList = new ArrayList<Object>();
@@ -241,7 +242,6 @@ public class MessageDetail extends BaseFragment implements OnClickListener {
 		return mView;
 	}
 
-	// TODO
 	private void showAttachments(final List<Object> attachments, View mView) {
 		if (attachments != null && attachments.size() > 0) {
 

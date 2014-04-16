@@ -57,7 +57,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:padding="8dp"
-                android:src="@drawable/ic_action_mail_add" />
+                android:src="@drawable/ic_action_mail_add"
+                android:tint="#414141" />
         </LinearLayout>
 
         <TextView
