@@ -1023,7 +1023,7 @@ public class Message extends BaseFragment implements
 				mRecentSwiped = -1;
 			}
 			mRecentSwiped = current_pos;
-			toggleSwipeView(mListView.getChildAt(current_pos), true);
+			toggleSwipeView(getViewFromListView(current_pos), true);
 		}
 	}
 
@@ -1031,11 +1031,24 @@ public class Message extends BaseFragment implements
 		OEDataRow row = (OEDataRow) mMessageObjects.get(position);
 		mMessageObjects.remove(position);
 		mListViewAdapter.notifiyDataChange(mMessageObjects);
-		toggleSwipeView(mListView.getChildAt(position), false);
+		toggleSwipeView(getViewFromListView(position), false);
 		mRecentSwiped = -1;
 		checkMessageStatus();
 		MarkAsArchive archive = new MarkAsArchive(row);
 		archive.execute();
+	}
+
+	private View getViewFromListView(int position) {
+		final int firstListItemPosition = mListView.getFirstVisiblePosition();
+		final int lastListItemPosition = firstListItemPosition
+				+ mListView.getChildCount() - 1;
+
+		if (position < firstListItemPosition || position > lastListItemPosition) {
+			return mListView.getAdapter().getView(position, null, mListView);
+		} else {
+			final int childIndex = position - firstListItemPosition;
+			return mListView.getChildAt(childIndex);
+		}
 	}
 
 	private void toggleSwipeView(final View child_view, boolean visible) {

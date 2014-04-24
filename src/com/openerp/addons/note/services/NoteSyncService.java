@@ -97,7 +97,7 @@ public class NoteSyncService extends Service {
 					}
 
 					domain.add("res_id", "in", note_ids);
-					attachment.getOEInstance().syncWithServer(domain, true);
+					attachment.getOEInstance().syncWithServer(domain);
 				}
 			}
 			if (OpenERPAccountManager.currentUser(context).getAndroidName()

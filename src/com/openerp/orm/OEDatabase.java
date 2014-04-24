@@ -506,6 +506,8 @@ public abstract class OEDatabase extends OESQLiteHelper implements OEDBHelper {
 		if (mOEHelper == null) {
 			try {
 				mOEHelper = new OEHelper(mContext, this);
+				if (mOEHelper.openERP() == null)
+					mOEHelper = null;
 			} catch (Exception e) {
 				Log.d(TAG, "OEDatabase->getOEInstance()");
 				Log.e(TAG, e.getMessage()

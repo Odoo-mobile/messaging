@@ -41,7 +41,7 @@ public class OESQLiteHelper extends SQLiteOpenHelper {
 	public static final String TAG = OESQLiteHelper.class.getSimpleName();
 
 	public static final String DATABASE_NAME = "OpenERPSQLite.db";
-	public static final int DATABASE_VERSION = 1;
+	public static final int DATABASE_VERSION = 2;
 	Context mContext = null;
 	ModulesConfig mModuleConfig = null;
 	List<String> mDBTables = new ArrayList<String>();
