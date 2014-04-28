@@ -4,10 +4,10 @@
         android:id="@+id/menu_note_speech_to_text"
         android:icon="@drawable/ic_action_speech_to_text"
         android:showAsAction="always"
-        android:title="Speech to text"/>
+        android:title="@string/note_menu_title_speech_to_text"/>
     <item
         android:id="@+id/menu_note_attach"
-        android:icon="@drawable/ic_action_content_new_attachment"
+        android:icon="@drawable/ic_menu_action_content_new_attachment"
         android:showAsAction="always"
         android:title="Attachement">
         <menu>
@@ -27,7 +27,8 @@
     </item>
     <item
         android:id="@+id/menu_note_cancel"
-        android:showAsAction="never"
+        android:icon="@drawable/ic_action_cancel"
+        android:showAsAction="always"
         android:title="Cancel">
     </item>
 

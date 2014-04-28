@@ -38,7 +38,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,6 +54,7 @@ import com.openerp.support.fragment.FragmentListener;
 import com.openerp.support.listview.OEListAdapter;
 import com.openerp.util.HTMLHelper;
 import com.openerp.util.TextViewTags;
+import com.openerp.util.controls.ExpandableHeightGridView;
 import com.openerp.util.drawer.DrawerItem;
 
 public class NoteDetail extends BaseFragment {
@@ -69,7 +69,7 @@ public class NoteDetail extends BaseFragment {
 	String mPadURL = "";
 	String mNoteMemo = "";
 	String mMessageBody = "";
-	GridView mNoteGridViewAttach = null;
+	ExpandableHeightGridView mNoteGridViewAttach = null;
 	List<Object> mNotesListAttach = new ArrayList<Object>();
 	OEListAdapter mNoteListAdapterAttach = null;
 	Ir_AttachmentDBHelper mAttachmentDB = null;
@@ -103,8 +103,9 @@ public class NoteDetail extends BaseFragment {
 	private void showNoteDetails(int note_id) {
 		mNoteDetailTitle = (TextView) mView
 				.findViewById(R.id.txvNoteDetailTitle);
-		mNoteGridViewAttach = (GridView) mView
+		mNoteGridViewAttach = (ExpandableHeightGridView) mView
 				.findViewById(R.id.noteGridViewAttach);
+		mNoteGridViewAttach.setExpanded(true);
 		mNoteDetailMemo = (TextView) mView.findViewById(R.id.txvNoteDetailMemo);
 		mNoteTags = (TextView) mView.findViewById(R.id.edtNoteTagsView);
 
@@ -251,7 +252,7 @@ public class NoteDetail extends BaseFragment {
 					NoteComposeActivity.class);
 			Bundle noteArgs = new Bundle();
 			noteArgs.putInt("note_id", mArgument.getInt("note_id"));
-			noteArgs.putString("Attachment", "New");
+			// noteArgs.putString("Attachment", "New");
 			manageNote.putExtras(noteArgs);
 			startActivity(manageNote);
 			return true;

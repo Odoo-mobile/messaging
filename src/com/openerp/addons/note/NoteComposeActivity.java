@@ -52,7 +52,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.EditText;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -70,6 +69,7 @@ import com.openerp.orm.OEValues;
 import com.openerp.support.OEUser;
 import com.openerp.support.listview.OEListAdapter;
 import com.openerp.util.HTMLHelper;
+import com.openerp.util.controls.ExpandableHeightGridView;
 import com.openerp.util.tags.MultiTagsTextView.TokenListener;
 import com.openerp.util.tags.TagsView;
 import com.openerp.util.tags.TagsView.CustomTagViewListener;
@@ -121,12 +121,12 @@ public class NoteComposeActivity extends Activity implements
 	EditText edtNoteTitle = null;
 	EditText edtNoteDescription = null;
 	TagsView mNoteTagsView = null;
-	GridView mNoteAttachmentGrid = null;
+	ExpandableHeightGridView mNoteAttachmentGrid = null;
 	List<Object> mNoteAttachmentList = new ArrayList<Object>();
 	OEListAdapter mNoteListAdapterAttach = null;
 	Attachment mAttachment = null;
-
 	PackageManager mPackageManager = null;
+	String oldName = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -153,7 +153,6 @@ public class NoteComposeActivity extends Activity implements
 	private void handleIntent() {
 		Log.d(TAG, "NoteComposeActivity->handleIntent()");
 		Intent intent = getIntent();
-
 		if (intent.hasExtra("request_code")) {
 			Attachment.Types type = (Types) intent.getExtras().get(
 					"request_code");
@@ -175,7 +174,8 @@ public class NoteComposeActivity extends Activity implements
 	@SuppressLint("SetJavaScriptEnabled")
 	private void initNote() {
 		Intent intent = getIntent();
-		mNoteAttachmentGrid = (GridView) findViewById(R.id.noteAttachmentGrid);
+		mNoteAttachmentGrid = (ExpandableHeightGridView) findViewById(R.id.noteAttachmentGrid);
+		mNoteAttachmentGrid.setExpanded(true);
 		edtNoteTitle = (EditText) findViewById(R.id.edtNoteTitleInput);
 		edtNoteDescription = (EditText) findViewById(R.id.edtNoteComposeDescription);
 		mWebViewPad = (WebView) findViewById(R.id.webNoteComposeWebViewPad);
@@ -200,6 +200,7 @@ public class NoteComposeActivity extends Activity implements
 							.get("key_" + mStageId));
 		if (intent.hasExtra("note_title")) {
 			edtNoteTitle.setText(intent.getStringExtra("note_title"));
+			oldName = intent.getStringExtra("note_title");
 		}
 
 		if (mPadInstalled) {
@@ -230,6 +231,7 @@ public class NoteComposeActivity extends Activity implements
 		}
 		if (mEditMode) {
 			edtNoteTitle.setText(mNoteRow.getString("name"));
+			oldName = mNoteRow.getString("name");
 			List<OEDataRow> tags = mNoteRow.getM2MRecord("tag_ids")
 					.browseEach();
 			if (tags != null) {
@@ -515,7 +517,9 @@ public class NoteComposeActivity extends Activity implements
 	}
 
 	public void saveNote(Integer mNoteId) {
-		if (mOpenERP != null) {
+		if (mOpenERP == null) {
+			Toast.makeText(mContext, "No Connection", Toast.LENGTH_LONG).show();
+		} else {
 			OEValues values = new OEValues();
 			String name = edtNoteTitle.getText().toString();
 			String memo = "";
@@ -536,7 +540,9 @@ public class NoteComposeActivity extends Activity implements
 				} catch (Exception e) {
 				}
 			} else {
-				memo = name + "<br/>" + edtNoteDescription.getText().toString();
+				memo = edtNoteDescription.getText().toString();
+				if (oldName != name)
+					memo = name + "<br/>" + memo.replace(oldName, "");
 			}
 			name = noteName(name + "\n" + memo);
 			List<Integer> tag_ids = new ArrayList<Integer>();
@@ -569,10 +575,8 @@ public class NoteComposeActivity extends Activity implements
 			data.putExtra("result", id);
 			data.putExtra("is_new", is_new);
 			setResult(RESULT_OK, data);
-			finish();
-		} else {
-			Toast.makeText(mContext, "No Connection", Toast.LENGTH_LONG).show();
 		}
+		finish();
 	}
 
 	private String noteName(String memo) {
@@ -637,7 +641,6 @@ public class NoteComposeActivity extends Activity implements
 
 		builder.setPositiveButton("Create", new OnClickListener() {
 			public void onClick(DialogInterface di, int i) {
-				// do something with onClick
 				String mToast = "No Connection ";
 				if ((stage.getText().toString()).equalsIgnoreCase("Add New")
 						|| (stage.getText().toString())
