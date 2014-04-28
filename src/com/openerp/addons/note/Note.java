@@ -250,8 +250,9 @@ public class Note extends BaseFragment implements
 				whereArgs = new String[] { "true", mStageId + "" };
 				break;
 			}
-			mNotesList.addAll(db().select(where, whereArgs, null, null,
-					"id DESC"));
+			List<OEDataRow> result = db().select(where, whereArgs, null, null,
+					"id DESC");
+			mNotesList.addAll(result);
 			return null;
 		}
 

@@ -82,8 +82,10 @@ public class NoteDB extends OEDatabase {
 		public List<OEColumn> getModelColumns() {
 			List<OEColumn> cols = new ArrayList<OEColumn>();
 			cols.add(new OEColumn("name", "Name", OEFields.text()));
+			cols.add(new OEColumn("sequence", "Sequence", OEFields.integer()));
 			cols.add(new OEColumn("stage_color", "Stage Color", OEFields
 					.varchar(10), false));
+			
 			return cols;
 		}
 

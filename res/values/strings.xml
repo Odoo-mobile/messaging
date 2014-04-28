@@ -27,5 +27,7 @@ When you process messages in your inbox, you can mark some as todo. From this me
     <!-- Detail Note Fragment Strings -->
     <string name="detail_note_name">Note Name</string>
     <string name="detail_note_memo">Note Memo</string>
+    
+    <string name="note_menu_title_speech_to_text">Speech to text</string> 
 
 </resources>
