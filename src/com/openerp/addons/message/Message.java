@@ -270,7 +270,8 @@ public class Message extends BaseFragment implements
 
 		txvBody.setText(HTMLHelper.htmlToString(row.getString("body")));
 		String date = row.getString("date");
-		txvDate.setText(OEDate.getDate(date, TimeZone.getDefault().getID()));
+		txvDate.setText(OEDate.getDate(getActivity(), date, TimeZone
+				.getDefault().getID(), "MMM dd,  hh:mm a"));
 
 		String from = row.getString("email_from");
 		if (from.equals("false")) {

@@ -147,8 +147,8 @@ public class MessageDetail extends BaseFragment implements OnClickListener {
 		txvAuthor.setText(author);
 		txvEmail.setText(email);
 
-		txvTime.setText(OEDate.getDate(row.getString("date"), TimeZone
-				.getDefault().getID(), "MMM dd, yyyy,  hh:mm a"));
+		txvTime.setText(OEDate.getDate(getActivity(), row.getString("date"),
+				TimeZone.getDefault().getID(), "MMM dd, yyyy,  hh:mm a"));
 
 		List<String> partners = new ArrayList<String>();
 		String partnersName = "none";

@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
 
+import android.annotation.SuppressLint;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
@@ -53,6 +54,7 @@ public class MessageRemoteViewFactory implements RemoteViewsFactory {
 	List<Object> mMessageListItems = new ArrayList<Object>();
 	String mFilter = "inbox";
 
+	@SuppressLint("InlinedApi")
 	public MessageRemoteViewFactory(Context context, Intent intent) {
 		Log.d(TAG, "MessageRemoteViewFactory->constructor()");
 		mContext = context;
@@ -119,7 +121,7 @@ public class MessageRemoteViewFactory implements RemoteViewsFactory {
 				HTMLHelper.htmlToString(row.getString("body")));
 		String date = row.getString("date");
 		mView.setTextViewText(R.id.txvMessageDate,
-				OEDate.getDate(date, TimeZone.getDefault().getID()));
+				OEDate.getDate(mContext, date, TimeZone.getDefault().getID()));
 		mView.setTextColor(R.id.txvMessageDate, Color.parseColor("#414141"));
 
 		String from = row.getString("email_from");

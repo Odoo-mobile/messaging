@@ -124,6 +124,12 @@ public class IdeaDBHelper extends OEDatabase {
 				.manyToMany(new IdeaUsers(mContext))));
 		columns.add(new OEColumn("idea_files", "idea_files", OEFields
 				.oneToMany(new IdeaFiles(mContext))));
+		columns.add(new OEColumn("create_date_time", "Current Date time",
+				OEFields.timestamp("MM/dd/yyyy hh:mm a")));
+		columns.add(new OEColumn("flag", "boolean flag", OEFields.booleantype()));
+		columns.add(new OEColumn("date", "date", OEFields
+				.datetime("MM/dd/yyyy hh:mm a")));
+		columns.add(new OEColumn("real_value", "Real Value", OEFields.real(20)));
 		return columns;
 	}
 
