@@ -214,21 +214,22 @@ public class MailGroup extends BaseFragment implements OnPullListener {
 				if (mTagColors.length - 1 < index)
 					index = 0;
 				OEDataRow grp = db.select(row.getInt("res_id"));
+				if (grp != null) {
+					Message message = new Message();
+					bundle = new Bundle();
+					bundle.putInt("group_id", grp.getInt("id"));
+					message.setArguments(bundle);
 
-				Message message = new Message();
-				bundle = new Bundle();
-				bundle.putInt("group_id", grp.getInt("id"));
-				message.setArguments(bundle);
-
-				int count = messageDB.count(
-						"to_read = ? AND model = ? AND res_id = ?",
-						new String[] { "true", db().getModelName(),
-								row.getString("id") });
-				menu.add(new DrawerItem(TAG, grp.getString("name"), count,
-						mTagColors[index], message));
-				grp.put("tag_color", Color.parseColor(mTagColors[index]));
-				mMenuGroups.put("group_" + grp.getInt("id"), grp);
-				index++;
+					int count = messageDB.count(
+							"to_read = ? AND model = ? AND res_id = ?",
+							new String[] { "true", db().getModelName(),
+									row.getString("id") });
+					menu.add(new DrawerItem(TAG, grp.getString("name"), count,
+							mTagColors[index], message));
+					grp.put("tag_color", Color.parseColor(mTagColors[index]));
+					mMenuGroups.put("group_" + grp.getInt("id"), grp);
+					index++;
+				}
 			}
 		}
 		return menu;

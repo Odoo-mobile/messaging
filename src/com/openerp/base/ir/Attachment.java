@@ -35,6 +35,7 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -123,21 +124,6 @@ public class Attachment implements OnClickListener {
 
 	}
 
-//	private void createDialog(Types type) {
-//		mDialogType = type;
-//		AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-//		switch (type) {
-//		case IMAGE_OR_CAPTURE_IMAGE:
-//			builder.setTitle("Image");
-//			mOptions = new String[] { "Select Image", "Capture Image" };
-//			break;
-//		default:
-//			break;
-//		}
-//		builder.setSingleChoiceItems(mOptions, -1, this);
-//		builder.create().show();
-//	}
-
 	@Override
 	public void onClick(DialogInterface dialog, int which) {
 		switch (mDialogType) {
@@ -150,7 +136,12 @@ public class Attachment implements OnClickListener {
 	}
 
 	private void requestIntent(Intent intent, int requestCode) {
-		((Activity) mContext).startActivityForResult(intent, requestCode);
+		try {
+			((Activity) mContext).startActivityForResult(intent, requestCode);
+		} catch (ActivityNotFoundException e) {
+			Toast.makeText(mContext, "No Activity found to handle request",
+					Toast.LENGTH_LONG).show();
+		}
 	}
 
 	public OEDataRow handleResult(Intent data) {

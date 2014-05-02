@@ -120,8 +120,8 @@ public class MessageRemoteViewFactory implements RemoteViewsFactory {
 		mView.setTextViewText(R.id.txvMessageBody,
 				HTMLHelper.htmlToString(row.getString("body")));
 		String date = row.getString("date");
-		mView.setTextViewText(R.id.txvMessageDate,
-				OEDate.getDate(mContext, date, TimeZone.getDefault().getID()));
+		mView.setTextViewText(R.id.txvMessageDate, OEDate.getDate(mContext,
+				date, TimeZone.getDefault().getID(), "MMM dd,  hh:mm a"));
 		mView.setTextColor(R.id.txvMessageDate, Color.parseColor("#414141"));
 
 		String from = row.getString("email_from");
