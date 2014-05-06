@@ -96,6 +96,7 @@ public class MainActivity extends FragmentActivity implements
 	String mDrawerSubtitle = "";
 	int mDrawerItemSelectedPosition = -1;
 	ListView mDrawerListView = null;
+	boolean mNewFragment = false;
 
 	FragmentManager mFragment = null;
 
@@ -106,7 +107,7 @@ public class MainActivity extends FragmentActivity implements
 	private CharSequence mTitle;
 	private OETouchListener mTouchAttacher;
 	private OnBackButtonPressedListener backPressed = null;
-	private boolean mLandscape = false;
+	private boolean mTwoPane;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -121,10 +122,10 @@ public class MainActivity extends FragmentActivity implements
 		}
 		mContext = this;
 		mFragment = getSupportFragmentManager();
-		if (findViewById(R.id.fragment_container) != null) {
-			mLandscape = false;
-		} else {
-			mLandscape = true;
+		if (findViewById(R.id.fragment_detail_container) != null) {
+			findViewById(R.id.fragment_detail_container).setVisibility(
+					View.GONE);
+			mTwoPane = true;
 		}
 		init();
 	}
@@ -747,8 +748,19 @@ public class MainActivity extends FragmentActivity implements
 	@Override
 	public void startMainFragment(Fragment fragment, boolean addToBackState) {
 		Log.d(TAG, "MainActivity->FragmentListener->startMainFragment()");
+		int container_id = R.id.fragment_container;
+
+		if (isTwoPane()) {
+			findViewById(R.id.fragment_detail_container).setVisibility(
+					View.GONE);
+			Fragment detail = mFragment.findFragmentByTag("detail_fragment");
+			if (detail != null && !mNewFragment && !detail.isInLayout()) {
+				startDetailFragment(recreateFragment(detail));
+			}
+
+		}
 		FragmentTransaction tran = mFragment.beginTransaction().replace(
-				R.id.fragment_container, fragment);
+				container_id, fragment, "main_fragment");
 		if (addToBackState) {
 			tran.addToBackStack(null);
 		}
@@ -758,12 +770,33 @@ public class MainActivity extends FragmentActivity implements
 	@Override
 	public void startDetailFragment(Fragment fragment) {
 		Log.d(TAG, "MainActivity->FragmentListener->startDetailFragment()");
+		int container_id = (isTwoPane()) ? R.id.fragment_detail_container
+				: R.id.fragment_container;
 		FragmentTransaction tran = mFragment.beginTransaction().replace(
-				R.id.fragment_container, fragment);
-		if (!mLandscape) {
+				container_id, fragment, "detail_fragment");
+		if (!isTwoPane()) {
 			tran.addToBackStack(null);
+			tran.commit();
+		} else {
+			findViewById(R.id.fragment_detail_container).setVisibility(
+					View.VISIBLE);
+			tran.commitAllowingStateLoss();
 		}
-		tran.commit();
+	}
+
+	private Fragment recreateFragment(Fragment fragment) {
+		Log.d(TAG, "recreateFragment()");
+		Fragment newInstance = null;
+		try {
+			Fragment.SavedState savedState = mFragment
+					.saveFragmentInstanceState(fragment);
+
+			newInstance = fragment.getClass().newInstance();
+			newInstance.setInitialSavedState(savedState);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return newInstance;
 	}
 
 	@Override
@@ -771,5 +804,10 @@ public class MainActivity extends FragmentActivity implements
 		Log.d(TAG, "MainActivity->FragmentListener->restart()");
 		getIntent().putExtra("create_new_account", false);
 		init();
+	}
+
+	@Override
+	public boolean isTwoPane() {
+		return mTwoPane;
 	}
 }
