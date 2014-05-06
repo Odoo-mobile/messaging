@@ -182,6 +182,7 @@ public class Login extends BaseFragment {
 	 */
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		menu.clear();
 		inflater.inflate(R.menu.menu_fragment_login, menu);
 	}
 

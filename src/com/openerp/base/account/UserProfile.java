@@ -98,6 +98,7 @@ public class UserProfile extends BaseFragment {
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		menu.clear();
 		inflater.inflate(R.menu.menu_fragment_account_user_profile, menu);
 	}
 

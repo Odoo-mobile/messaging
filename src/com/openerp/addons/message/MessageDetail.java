@@ -300,6 +300,7 @@ public class MessageDetail extends BaseFragment implements OnClickListener {
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		menu.clear();
 		inflater.inflate(R.menu.menu_fragment_message_detail, menu);
 	}
 

@@ -5,8 +5,8 @@
         <shape>
             <gradient
                 android:angle="270"
-                android:endColor="#8bd7f0"
-                android:startColor="#8bd7f0" />
+                android:endColor="#dad9e7"
+                android:startColor="#dad9e7" />
         </shape>
     </item>
     <item android:drawable="@drawable/caret_grey"/>

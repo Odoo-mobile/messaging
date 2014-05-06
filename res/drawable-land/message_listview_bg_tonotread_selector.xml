@@ -3,6 +3,7 @@
 
     <item android:drawable="@drawable/listitem_pressed" android:state_activated="false" android:state_pressed="true"/>
     <item android:drawable="@drawable/listitem_focused" android:state_activated="true"/>
-    <item android:drawable="@drawable/message_item_read"/>
+    <item android:drawable="@drawable/listitem_pressed" android:state_selected="true"/>
+    <item android:drawable="@drawable/message_item_unread"/>
 
 </selector>

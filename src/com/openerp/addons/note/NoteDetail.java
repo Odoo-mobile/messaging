@@ -189,7 +189,7 @@ public class NoteDetail extends BaseFragment {
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-
+		menu.clear();
 		inflater.inflate(R.menu.menu_fragment_note_detail, menu);
 		// disabling the Compose Note option cause you are already in that menu
 		if (getArguments() != null) {
@@ -296,7 +296,8 @@ public class NoteDetail extends BaseFragment {
 	@Override
 	public void onResume() {
 		super.onResume();
-		showNoteDetails(getArguments().getInt("note_id"));
+		if (getArguments() != null)
+			showNoteDetails(getArguments().getInt("note_id"));
 	}
 
 	@Override

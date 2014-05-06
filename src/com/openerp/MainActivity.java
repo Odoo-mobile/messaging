@@ -662,6 +662,7 @@ public class MainActivity extends FragmentActivity implements
 				mDrawerItemSelectedPosition = item_position + 1;
 			}
 			mAppTitle = item.getTitle();
+			mNewFragment = true;
 			loadFragment(item);
 			mDrawerLayout.closeDrawers();
 		}

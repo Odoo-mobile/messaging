@@ -35,6 +35,7 @@ public class ModulesConfig extends ModulesConfigHelper {
 	 */
 	public ModulesConfig() {
 		/* application modules */
+
 		// add(new Module("module_idea", "Idea", new Idea(), 0), true);
 		add(new Module("module_message", "Message", new Message()), true);
 		add(new Module("module_mail_groups", "Mail Groups", new MailGroup()));

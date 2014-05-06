@@ -103,6 +103,7 @@ public class Idea extends BaseFragment implements OnItemClickListener {
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		menu.clear();
 		inflater.inflate(R.menu.menu_fragment_account, menu);
 	}
 

@@ -430,7 +430,7 @@ public class NoteComposeActivity extends Activity implements
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-
+		menu.clear();
 		getMenuInflater().inflate(R.menu.menu_fragment_note_new_edit, menu);
 		return true;
 	}

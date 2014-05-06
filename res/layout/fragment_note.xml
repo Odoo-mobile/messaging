@@ -130,18 +130,6 @@
         android:textColor="#bdbdbd"
         android:visibility="gone" />
 
-    <GridView
-        android:id="@+id/noteGridView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:drawSelectorOnTop="true"
-        android:gravity="center"
-        android:horizontalSpacing="10dp"
-        android:numColumns="auto_fit"
-        android:stretchMode="columnWidth"
-        android:verticalSpacing="10dp" >
-
-        <requestFocus />
-    </GridView>
+    <include layout="@layout/fragment_note_grid_layout" />
 
 </LinearLayout>

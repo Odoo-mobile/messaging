@@ -298,6 +298,7 @@ public class Note extends BaseFragment implements
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		menu.clear();
 		inflater.inflate(R.menu.menu_fragment_note, menu);
 		mSearchView = (SearchView) menu.findItem(R.id.menu_note_search)
 				.getActionView();
@@ -549,7 +550,7 @@ public class Note extends BaseFragment implements
 		NoteDetail note = new NoteDetail();
 		note.setArguments(bundle);
 		FragmentListener mFragment = (FragmentListener) getActivity();
-		mFragment.startDetailFragment(note);
+		mFragment.startMainFragment(note, true);
 	}
 
 	@Override

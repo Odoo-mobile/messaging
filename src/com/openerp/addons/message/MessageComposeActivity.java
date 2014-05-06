@@ -308,6 +308,7 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.clear();
 		getMenuInflater().inflate(R.menu.menu_message_compose_activty, menu);
 		return true;
 	}

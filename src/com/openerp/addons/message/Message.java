@@ -140,7 +140,7 @@ public class Message extends BaseFragment implements
 		}
 		mView = inflater.inflate(R.layout.fragment_message, container, false);
 		scope = new AppScope(getActivity());
-		init();
+		/*init();*/
 		return mView;
 	}
 
@@ -403,6 +403,7 @@ public class Message extends BaseFragment implements
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		menu.clear();
 		inflater.inflate(R.menu.menu_fragment_message, menu);
 		mSearchView = (SearchView) menu.findItem(R.id.menu_message_search)
 				.getActionView();
@@ -625,6 +626,7 @@ public class Message extends BaseFragment implements
 	public void onItemClick(AdapterView<?> adapter, View view, int position,
 			long id) {
 		mSelectedItemPosition = position;
+		view.setSelected(true);
 		OEDataRow row = (OEDataRow) mMessageObjects.get(position);
 		MessageDetail detail = new MessageDetail();
 		Bundle bundle = new Bundle();
@@ -655,6 +657,7 @@ public class Message extends BaseFragment implements
 	@Override
 	public void onResume() {
 		super.onResume();
+		init();
 		scope.context().registerReceiver(messageSyncFinish,
 				new IntentFilter(SyncFinishReceiver.SYNC_FINISH));
 		scope.context().registerReceiver(datasetChangeReceiver,
