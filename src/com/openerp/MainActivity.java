@@ -115,7 +115,7 @@ public class MainActivity extends FragmentActivity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		getActionBar().setIcon(R.drawable.ic_launcher_o);
+		getActionBar().setIcon(R.drawable.ic_odoo_o);
 
 		if (savedInstanceState != null) {
 			mDrawerItemSelectedPosition = savedInstanceState
@@ -193,7 +193,7 @@ public class MainActivity extends FragmentActivity implements
 			@Override
 			public void onDrawerClosed(View drawerView) {
 				super.onDrawerClosed(drawerView);
-				getActionBar().setIcon(R.drawable.ic_launcher_o);
+				getActionBar().setIcon(R.drawable.ic_odoo_o);
 				setTitle(mAppTitle, null);
 			}
 

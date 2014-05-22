@@ -236,7 +236,7 @@ public class AccountFragment extends BaseFragment {
 						.testConnection(getActivity(), openERPServerURL);
 				if (!flag) {
 					errorMsg = getResources().getString(
-							R.string.toast_unable_to_reach_openerp_server);
+							R.string.toast_unable_to_reach_odoo_server);
 				}
 			} catch (SSLPeerUnverifiedException ssl) {
 				flag = false;

@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import openerp.OEArguments;
+import openerp.OEDomain;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -36,7 +37,9 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -56,6 +59,7 @@ import com.openerp.auth.OpenERPAccountManager;
 import com.openerp.base.ir.Attachment;
 import com.openerp.base.res.ResPartnerDB;
 import com.openerp.orm.OEDataRow;
+import com.openerp.orm.OEFieldsHelper;
 import com.openerp.orm.OEHelper;
 import com.openerp.orm.OEM2MIds;
 import com.openerp.orm.OEM2MIds.Operation;
@@ -71,7 +75,8 @@ import com.openerp.util.tags.MultiTagsTextView.TokenListener;
 import com.openerp.util.tags.TagsView;
 import com.openerp.util.tags.TagsView.CustomTagViewListener;
 
-public class MessageComposeActivity extends Activity implements TokenListener {
+public class MessageComposeActivity extends Activity implements TokenListener,
+		TextWatcher {
 
 	public static final String TAG = "com.openerp.addons.message.MessageComposeActivity";
 	public static final Integer PICKFILE_RESULT_CODE = 1;
@@ -83,6 +88,7 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 	OEDataRow mMessageRow = null;
 
 	OEDataRow mNoteObj = null;
+	OEHelper mOE = null;
 
 	HashMap<String, OEDataRow> mSelectedPartners = new HashMap<String, OEDataRow>();
 
@@ -111,6 +117,7 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 	TagsView mPartnerTagsView = null;
 	OEListAdapter mPartnerTagsAdapter = null;
 	List<Object> mTagsPartners = new ArrayList<Object>();
+	List<Object> mTagsLocalPartners = new ArrayList<Object>();
 	EditText edtSubject = null, edtBody = null;
 
 	@Override
@@ -118,7 +125,7 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_message_compose);
 		mContext = this;
-
+		getActionBar().setIcon(R.drawable.ic_odoo_o);
 		if (OEUser.current(mContext) == null) {
 			// No Account
 			Toast.makeText(mContext, "No Account Found", Toast.LENGTH_LONG)
@@ -136,10 +143,10 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 	private void initControls() {
 		if (!isReply) {
 			mPartnerLoader = new PartnerLoader();
-			mPartnerLoader.execute();
 		}
 
 		mPartnerTagsView = (TagsView) findViewById(R.id.receipients_view);
+		mPartnerTagsView.addTextChangedListener(this);
 		mPartnerTagsView.setCustomTagView(new CustomTagViewListener() {
 
 			@Override
@@ -186,6 +193,8 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 				if (!row.getString("image_small").equals("false")) {
 					imgPic.setImageBitmap(Base64Helper.getBitmapImage(mContext,
 							row.getString("image_small")));
+				} else {
+					imgPic.setImageResource(R.drawable.ic_action_user);
 				}
 				return mView;
 			}
@@ -196,7 +205,7 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 					@Override
 					public String filterCompareWith(Object object) {
 						OEDataRow row = (OEDataRow) object;
-						return row.getString("name") + " "
+						return row.getString("name") + ";"
 								+ row.getString("email");
 					}
 				});
@@ -255,6 +264,7 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 	private void initDBs() {
 		mPartnerDB = new ResPartnerDB(mContext);
 		mMessageDB = new MessageDB(mContext);
+		mOE = mPartnerDB.getOEInstance();
 		mAttachment = new Attachment(mContext);
 		mAttachments.clear();
 	}
@@ -561,16 +571,63 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 				settingsBundle);
 	}
 
-	class PartnerLoader extends AsyncTask<Void, Void, Void> {
+	// TODO : load local partners ???
+	class LocalPartnerLoader extends AsyncTask<Void, Void, Void> {
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			mTagsPartners.clear();
-			// Loading records from server
-			OEHelper oe = mPartnerDB.getOEInstance();
-			if (oe != null) {
-				mTagsPartners.addAll(oe.search_read());
-			}
+			mTagsLocalPartners.clear();
+			ResPartnerDB partners = new ResPartnerDB(mContext);
+			if (!partners.isEmptyTable())
+				mTagsLocalPartners.addAll(partners.select());
+			return null;
+		}
+	}
+
+	class PartnerLoader extends AsyncTask<String, Void, Void> {
+
+		@Override
+		protected Void doInBackground(final String... searchFor) {
+			runOnUiThread(new Runnable() {
+
+				@Override
+				public void run() {
+
+					String filter = searchFor[0];
+					mTagsPartners.clear();
+					// Loading records from server
+					if (mOE != null) {
+						try {
+							OEFieldsHelper fields = new OEFieldsHelper(
+									mPartnerDB.getDatabaseServerColumns());
+							OEDomain domain = new OEDomain();
+							domain.add("|");
+							domain.add("name", "=ilike", filter + "%");
+							domain.add("email", "=ilike", filter + "%");
+							JSONObject result = mOE.openERP().search_read(
+									mPartnerDB.getModelName(), fields.get(),
+									domain.get());
+							for (int i = 0; i < result.getJSONArray("records")
+									.length(); i++) {
+								JSONObject rec = result.getJSONArray("records")
+										.getJSONObject(i);
+
+								OEDataRow row = new OEDataRow();
+								row.put("id", rec.getInt("id"));
+								row.put("name", rec.getString("name"));
+								row.put("email", rec.getString("email"));
+								row.put("image_small",
+										rec.getString("image_small"));
+
+								mTagsPartners.add(row);
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+
+				}
+			});
 			return null;
 		}
 
@@ -664,5 +721,30 @@ public class MessageComposeActivity extends Activity implements TokenListener {
 		super.onPause();
 		if (mPartnerLoader != null)
 			mPartnerLoader.cancel(true);
+	}
+
+	@Override
+	public void beforeTextChanged(CharSequence s, int start, int count,
+			int after) {
+
+	}
+
+	@Override
+	public void onTextChanged(CharSequence s, int start, int before, int count) {
+		if (s.toString().length() >= 7 && s.toString().length() <= 9
+				&& before == 0) {
+			String filter = s.toString().replace("To: ", "");
+			if (mPartnerLoader != null)
+				mPartnerLoader.cancel(true);
+			mPartnerLoader = new PartnerLoader();
+			mPartnerLoader.execute(new String[] { filter });
+		} else {
+			if (mPartnerLoader != null)
+				mPartnerLoader.cancel(true);
+		}
+	}
+
+	@Override
+	public void afterTextChanged(Editable s) {
 	}
 }

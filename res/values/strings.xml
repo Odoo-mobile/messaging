@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="title_activity_main">OpenERP</string>
+    <string name="title_activity_main">Odoo</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <!-- Message Fragment -->
-    <string name="title_activity_message_compose">OpenERP Message</string>
+    <string name="title_activity_message_compose">Odoo Message</string>
     <string name="message_inbox_all_read"><b>Good Job!</b> Your inbox is empty.\n \n
 
 Your inbox contains private messages or emails sent to you as well as information related to documents or people you follow.</string>
@@ -18,7 +18,7 @@ When you process messages in your inbox, you can mark some as todo. From this me
     <string name="message_your_message_will_appear_shortly">Your messages will appear shortly</string>
 
     <!-- Compose Note Fragment Strings -->
-    <string name="title_activity_note_compose">OpenERP Notes</string>
+    <string name="title_activity_note_compose">Odoo Notes</string>
     <string name="compose_note_tags">Tags</string>
     <string name="compose_note_stages">Stages</string>
     <string name="compose_note_description">Note</string>

@@ -32,7 +32,7 @@ public class OEAppRater {
 	private static String app_title = "APP-NAME";
 	private static String app_pname = "PACKAGE-NAME";
 
-	private final static int DAYS_UNTIL_PROMPT = 3;
+	private final static int DAYS_UNTIL_PROMPT = 0;
 	private final static int LAUNCHES_UNTIL_PROMPT = 7;
 
 	public static void app_launched(Context mContext) {

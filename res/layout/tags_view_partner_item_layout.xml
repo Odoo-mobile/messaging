@@ -1,14 +1,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="3dp"
-    android:weightSum="4" >
+    android:padding="3dp" >
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="4"
+        android:layout_weight="1"
         android:orientation="vertical"
         android:padding="2dp" >
 
@@ -16,7 +16,9 @@
             android:id="@+id/txvSubject"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
             android:fontFamily="sans-serif-condensed"
+            android:singleLine="true"
             android:text="Subject"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 

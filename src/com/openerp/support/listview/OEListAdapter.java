@@ -66,10 +66,10 @@ public class OEListAdapter extends ArrayAdapter<Object> {
 
 	public void notifiyDataChange(List<Object> objects) {
 		Log.d(TAG, "OEListAdapter->notifiyDataChange()");
-		mAllObjects.clear();
 		mObjects.clear();
-		mAllObjects.addAll(objects);
 		mObjects.addAll(objects);
+		mAllObjects.clear();
+		mAllObjects.addAll(objects);
 		notifyDataSetChanged();
 	}
 
@@ -86,11 +86,18 @@ public class OEListAdapter extends ArrayAdapter<Object> {
 					if (mRowFilterTextListener != null) {
 						filterText = mRowFilterTextListener
 								.filterCompareWith(item);
+						String[] parts = filterText.split("\\;");
+						for (String part : parts) {
+							if (part.toLowerCase().startsWith(searchingStr)) {
+								filteredItems.add(item);
+								break;
+							}
+						}
 					} else {
 						filterText = item.toString().toLowerCase();
-					}
-					if (filterText.contains(searchingStr)) {
-						filteredItems.add(item);
+						if (filterText.contains(searchingStr)) {
+							filteredItems.add(item);
+						}
 					}
 				}
 				result.count = filteredItems.size();

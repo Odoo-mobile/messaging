@@ -542,7 +542,9 @@ public class NoteComposeActivity extends Activity implements
 			} else {
 				memo = edtNoteDescription.getText().toString();
 				if (oldName != name)
-					memo = name + "<br/>" + memo.replace(oldName, "");
+					memo = name
+							+ "<br/>"
+							+ memo.replace((oldName != null) ? oldName : "", "");
 			}
 			name = noteName(name + "\n" + memo);
 			List<Integer> tag_ids = new ArrayList<Integer>();
