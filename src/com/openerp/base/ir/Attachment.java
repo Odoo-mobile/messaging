@@ -353,7 +353,7 @@ public class Attachment implements OnClickListener {
 		mNotificationBuilder = new NotificationCompat.Builder(mContext);
 		mNotificationBuilder.setContentTitle("Downloading attachment");
 		mNotificationBuilder.setContentText("Download in progress");
-		mNotificationBuilder.setSmallIcon(R.drawable.ic_oe_notification);
+		mNotificationBuilder.setSmallIcon(R.drawable.ic_odoo_o);
 		mNotificationBuilder.setVibrate(new long[] { 1000, 1000 });
 		mNotificationBuilder.setAutoCancel(true);
 		mNotificationBuilder.setOngoing(true);
@@ -368,7 +368,7 @@ public class Attachment implements OnClickListener {
 		intent.setDataAndType(uri, mimeType);
 		mNotificationResultIntent = PendingIntent.getActivity(mContext, 0,
 				intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		mNotificationBuilder.addAction(R.drawable.ic_oe_notification,
+		mNotificationBuilder.addAction(R.drawable.ic_odoo_o,
 				"Download attachment", mNotificationResultIntent);
 		mNotificationBuilder.setOngoing(false);
 		mNotificationBuilder.setAutoCancel(true);
