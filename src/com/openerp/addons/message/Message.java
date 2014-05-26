@@ -140,7 +140,7 @@ public class Message extends BaseFragment implements
 		}
 		mView = inflater.inflate(R.layout.fragment_message, container, false);
 		scope = new AppScope(getActivity());
-		/*init();*/
+		init();
 		return mView;
 	}
 
@@ -657,7 +657,6 @@ public class Message extends BaseFragment implements
 	@Override
 	public void onResume() {
 		super.onResume();
-		init();
 		scope.context().registerReceiver(messageSyncFinish,
 				new IntentFilter(SyncFinishReceiver.SYNC_FINISH));
 		scope.context().registerReceiver(datasetChangeReceiver,
