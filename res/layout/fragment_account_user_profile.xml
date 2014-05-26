@@ -16,7 +16,7 @@
             android:background="#ebebeb"
             android:contentDescription="@string/account_user_dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_action_user" />
+            android:src="@drawable/avatar" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -99,7 +99,7 @@
                 android:layout_height="1dp"
                 android:layout_marginBottom="5dp"
                 android:layout_marginTop="5dp"
-                android:background="#0099CC" />
+                android:background="@color/odoo_puple" />
 
             <TextView
                 android:id="@+id/txvServerUrl"
