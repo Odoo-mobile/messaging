@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import openerp.OEArguments;
+import openerp.OpenERP;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -557,8 +558,6 @@ public class NoteComposeActivity extends Activity implements
 			values.put("date_done", false);
 			values.put("stage_id", mStageId);
 			values.put("tag_ids", m2mIds);
-			values.put("current_partner_id", OEUser.current(mContext)
-					.getPartner_id());
 			String mToast = "Note Created";
 			int id = (mNoteId == null) ? 0 : mNoteId;
 			boolean is_new = true;

@@ -53,8 +53,6 @@ public class NoteDB extends OEDatabase {
 				.manyToOne(new NoteStages(mContext))));
 		cols.add(new OEColumn("tag_ids", "NoteTags", OEFields
 				.manyToMany(new NoteTags(mContext))));
-		cols.add(new OEColumn("current_partner_id", "Res_Partner", OEFields
-				.manyToOne(new ResPartnerDB(mContext))));
 		cols.add(new OEColumn("note_pad_url", "URL", OEFields.text()));
 		cols.add(new OEColumn("message_follower_ids", "Followers", OEFields
 				.manyToMany(new ResPartnerDB(mContext))));
@@ -85,7 +83,7 @@ public class NoteDB extends OEDatabase {
 			cols.add(new OEColumn("sequence", "Sequence", OEFields.integer()));
 			cols.add(new OEColumn("stage_color", "Stage Color", OEFields
 					.varchar(10), false));
-			
+
 			return cols;
 		}
 
