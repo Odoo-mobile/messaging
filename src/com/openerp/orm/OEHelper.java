@@ -21,8 +21,8 @@ package com.openerp.orm;
 import java.util.ArrayList;
 import java.util.List;
 
-import openerp.OEArguments;
-import openerp.OEDomain;
+import odoo.OEArguments;
+import odoo.OEDomain;
 import openerp.OpenERP;
 
 import org.json.JSONArray;

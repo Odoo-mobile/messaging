@@ -27,7 +27,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-import openerp.OEDomain;
+import odoo.OEDomain;
 
 import org.json.JSONObject;
 

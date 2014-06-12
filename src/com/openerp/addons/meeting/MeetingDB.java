@@ -21,7 +21,7 @@ package com.openerp.addons.meeting;
 import java.util.ArrayList;
 import java.util.List;
 
-import openerp.OpenERP.OEVersion;
+import odoo.Odoo.OEVersion;
 import android.content.Context;
 
 import com.openerp.base.res.ResPartnerDB;

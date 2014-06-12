@@ -18,7 +18,7 @@
  */
 package com.openerp.addons.note.services;
 
-import openerp.OEDomain;
+import odoo.OEDomain;
 
 import org.json.JSONArray;
 
