@@ -20,7 +20,7 @@ package com.openerp.support;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 
-import openerp.OEVersionException;
+import odoo.OEVersionException;
 import openerp.OpenERP;
 
 import org.json.JSONArray;

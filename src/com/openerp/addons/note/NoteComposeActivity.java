@@ -22,8 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import openerp.OEArguments;
-import openerp.OpenERP;
+import odoo.OEArguments;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

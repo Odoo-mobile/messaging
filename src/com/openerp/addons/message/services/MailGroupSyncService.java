@@ -18,7 +18,7 @@
  */
 package com.openerp.addons.message.services;
 
-import openerp.OEDomain;
+import odoo.OEDomain;
 
 import org.json.JSONArray;
 

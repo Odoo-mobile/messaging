@@ -18,7 +18,7 @@
  */
 package com.openerp.addons.meeting.services;
 
-import openerp.OEDomain;
+import odoo.OEDomain;
 import android.accounts.Account;
 import android.app.Service;
 import android.content.AbstractThreadedSyncAdapter;

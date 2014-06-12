@@ -21,8 +21,8 @@ package com.openerp.addons.message.services;
 import java.util.ArrayList;
 import java.util.List;
 
-import openerp.OEArguments;
-import openerp.OEDomain;
+import odoo.OEArguments;
+import odoo.OEDomain;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
