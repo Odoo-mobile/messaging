@@ -40,7 +40,7 @@ public class OESQLiteHelper extends SQLiteOpenHelper {
 
 	public static final String TAG = OESQLiteHelper.class.getSimpleName();
 
-	public static final String DATABASE_NAME = "OpenERPSQLite.db";
+	public static final String DATABASE_NAME = "OdooSQLite.db";
 	public static final int DATABASE_VERSION = 3;
 	Context mContext = null;
 	ModulesConfig mModuleConfig = null;
