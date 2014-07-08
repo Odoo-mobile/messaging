@@ -1,33 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="title_activity_main">Odoo</string>
+    <string name="title_activity_main">Messaging</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
-    <!-- Message Fragment -->
-    <string name="title_activity_message_compose">Odoo Message</string>
-    <string name="message_inbox_all_read"><b>Good Job!</b> Your inbox is empty.\n \n
-
-Your inbox contains private messages or emails sent to you as well as information related to documents or people you follow.</string>
-    <string name="message_tome_all_read"><b>No private message.</b>\n\nThis list contains messages sent to you.</string>
-    <string name="message_todo_all_read"><b>No todo.</b>\n\n
-
-When you process messages in your inbox, you can mark some as todo. From this menu, you can process all your todo.</string>
-    <string name="message_no_group_message">No message in this group.</string>
-    <string name="message_waiting_for_sync_to_start">Waiting for Sync to Start</string>
-    <string name="message_your_message_will_appear_shortly">Your messages will appear shortly</string>
-
-    <!-- Compose Note Fragment Strings -->
-    <string name="title_activity_note_compose">Odoo Notes</string>
-    <string name="compose_note_tags">Tags</string>
-    <string name="compose_note_stages">Stages</string>
-    <string name="compose_note_description">Note</string>
-    <string name="imgview_note_add_tags">This will open the dailogbox to select tags</string>
-
-    <!-- Detail Note Fragment Strings -->
-    <string name="detail_note_name">Note Name</string>
-    <string name="detail_note_memo">Note Memo</string>
-    
-    <string name="note_menu_title_speech_to_text">Speech to text</string> 
 
 </resources>
