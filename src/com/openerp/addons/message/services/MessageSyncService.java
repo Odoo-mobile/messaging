@@ -205,7 +205,8 @@ public class MessageSyncService extends Service {
 			List<Integer> ids = msgDb.ids();
 			if (oe.syncWithMethod("message_read", arguments)) {
 				int affected_rows = oe.getAffectedRows();
-				List<Integer> affected_ids = oe.getAffectedIds();
+				int affected_rows = msgDb.select("to_read = ?",
+						new String[] { "true" }).size();
 				boolean notification = true;
 				ActivityManager am = (ActivityManager) context
 						.getSystemService(ACTIVITY_SERVICE);
