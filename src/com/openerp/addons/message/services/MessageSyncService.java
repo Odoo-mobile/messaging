@@ -204,7 +204,7 @@ public class MessageSyncService extends Service {
 			arguments.add(50);
 			List<Integer> ids = msgDb.ids();
 			if (oe.syncWithMethod("message_read", arguments)) {
-				int affected_rows = oe.getAffectedRows();
+				List<Integer> affected_ids = oe.getAffectedIds();
 				int affected_rows = msgDb.select("to_read = ?",
 						new String[] { "true" }).size();
 				boolean notification = true;
