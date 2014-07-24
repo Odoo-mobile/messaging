@@ -695,7 +695,7 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 			if (!hasRecord(values.getInt("id")))
 				ids.add(create(values));
 			else {
-				ids.add(values.getInt("id"));
+				ids.add(selectRowId(values.getInt("id")));
 				update(values, "id = ?", new Object[] { values.getInt("id") });
 			}
 		}
