@@ -374,15 +374,18 @@ public class OSyncHelper {
 								List<Integer> rel_ids = rel.getRelIds(base_key);
 								List<Integer> mM2mIds = new ArrayList<Integer>();
 								for (Integer r_id : rel_ids) {
-									if (rel.getRelationType() != RelationType.ManyToMany) {
-										OValues vals = new OValues();
-										vals.put(rel.getRefColumn(),
-												rel_model.selectRowId(r_id));
-										vals.put("is_dirty", false);
-										base_model.update(vals,
-												row.getInt(OColumn.ROW_ID));
-									} else {
-										mM2mIds.add(rel_model.selectRowId(r_id));
+									Integer rel_id = rel_model
+											.selectRowId(r_id);
+									if (rel_id != null) {
+										if (rel.getRelationType() != RelationType.ManyToMany) {
+											OValues vals = new OValues();
+											vals.put(rel.getRefColumn(), rel_id);
+											vals.put("is_dirty", false);
+											base_model.update(vals,
+													row.getInt(OColumn.ROW_ID));
+										} else {
+											mM2mIds.add(rel_id);
+										}
 									}
 								}
 								if (rel.getRelationType() == RelationType.ManyToMany) {

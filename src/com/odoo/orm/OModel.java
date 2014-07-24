@@ -1111,6 +1111,10 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 		return true;
 	}
 
+	public OUser user() {
+		return mUser;
+	}
+
 	/**
 	 * The Class AutoUpdateOnServer.
 	 */

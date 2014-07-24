@@ -23,6 +23,7 @@ import android.text.TextUtils;
 import android.widget.ArrayAdapter;
 import android.widget.SearchView.OnQueryTextListener;
 
+import com.odoo.App;
 import com.odoo.orm.OModel;
 import com.odoo.support.fragment.FragmentListener;
 import com.odoo.support.fragment.OModuleHelper;
@@ -86,5 +87,10 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 	public OModel db() {
 		mDb = (OModel) databaseHelper(getActivity());
 		return mDb;
+	}
+
+	public Boolean inNetwork() {
+		App app = (App) scope.context().getApplicationContext();
+		return app.inNetwork();
 	}
 }

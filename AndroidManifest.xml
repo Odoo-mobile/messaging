@@ -78,6 +78,28 @@
                 android:name="android.provider.CONTACTS_STRUCTURE"
                 android:resource="@xml/contacts" />
         </service>
+
+        <!-- Mail Provider -->
+        <provider
+            android:name="com.odoo.addons.mail.providers.mail.MailProvider"
+            android:authorities="com.odoo.addons.mail.providers.mail"
+            android:enabled="true"
+            android:exported="true"
+            android:label="Messages"
+            android:syncable="true" />
+
+        <!-- Message provider service -->
+        <service
+            android:name="com.odoo.addons.mail.services.MailSyncService"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/sync_mail" />
+        </service>
     </application>
 
 </manifest>
