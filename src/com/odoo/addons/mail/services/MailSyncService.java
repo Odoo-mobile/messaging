@@ -1,5 +1,8 @@
 package com.odoo.addons.mail.services;
 
+import java.util.List;
+
+import odoo.ODomain;
 import android.accounts.Account;
 import android.app.Service;
 import android.content.ContentProviderClient;
@@ -10,7 +13,10 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.odoo.addons.mail.models.MailMessage;
+import com.odoo.addons.mail.models.MailNotification;
 import com.odoo.auth.OdooAccountManager;
+import com.odoo.orm.ODataRow;
+import com.odoo.orm.OValues;
 import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.OUser;
 import com.odoo.support.service.OService;
@@ -35,8 +41,10 @@ public class MailSyncService extends OService {
 			MailMessage mdb = new MailMessage(context);
 			mdb.setUser(user);
 			if (mdb.getSyncHelper().syncWithServer()) {
-				if (user.getAndroidName().equals(account.name)) {
-					context.sendBroadcast(intent);
+				if (updateOldMessages(context, user, mdb.ids())) {
+					if (user.getAndroidName().equals(account.name)) {
+						context.sendBroadcast(intent);
+					}
 				}
 			}
 
@@ -45,4 +53,36 @@ public class MailSyncService extends OService {
 		}
 	}
 
+	private Boolean updateOldMessages(Context context, OUser user,
+			List<Integer> ids) {
+		try {
+			ODomain domain = new ODomain();
+			domain.add("message_id", "in", ids);
+			domain.add("partner_id", "=", user.getPartner_id());
+			MailNotification mailNotification = new MailNotification(context);
+			MailMessage message = new MailMessage(context);
+			if (mailNotification.getSyncHelper().syncWithServer(domain, false)) {
+				for (Integer id : ids) {
+					int row_id = message.selectRowId(id);
+					List<ODataRow> notifications = mailNotification.select(
+							"message_id = ?", new Object[] { row_id });
+					if (notifications.size() > 0) {
+						OValues vals = new OValues();
+						ODataRow noti = notifications.get(0);
+						vals.put(
+								"to_read",
+								(noti.contains("read")) ? !noti
+										.getBoolean("read") : !noti
+										.getBoolean("is_read"));
+						vals.put("starred", noti.get("starred"));
+						message.update(vals, row_id);
+					}
+				}
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 }

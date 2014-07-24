@@ -26,7 +26,6 @@ import odoo.controls.OField.OFieldType;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -208,7 +207,8 @@ public class OForm extends LinearLayout implements View.OnClickListener {
 						widget = OFieldType.MANY_TO_ONE;
 					}
 					if (column.getRelationType() != null
-							&& column.getRelationType() == RelationType.ManyToMany) {
+							&& (column.getRelationType() == RelationType.ManyToMany || column
+									.getRelationType() == RelationType.OneToMany)) {
 						widget = OFieldType.MANY_TO_MANY_TAGS;
 					}
 					if (column.isFunctionalColumn()) {
@@ -297,7 +297,7 @@ public class OForm extends LinearLayout implements View.OnClickListener {
 			values = new OValues();
 			for (String key : mFields) {
 				OField field = (OField) findViewWithTag(key);
-				if (field.getValue()!= null) {
+				if (field.getValue() != null) {
 					values.put(field.getFieldName(), field.getValue());
 				}
 			}

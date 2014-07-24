@@ -102,8 +102,8 @@ public class Mail extends BaseFragment implements OnPullListener,
 			whereArgs = new String[] { "true", "false" };
 			break;
 		case ToMe:
-			where = "to_read = ?";
-			whereArgs = new String[] { "true" };
+			where = "to_read = ? AND starred = ? ";
+			whereArgs = new String[] { "true", "false" };
 			break;
 		case ToDo:
 			where = "to_read = ? AND starred = ?";
@@ -124,11 +124,16 @@ public class Mail extends BaseFragment implements OnPullListener,
 	public class MessagesLoader extends AsyncTask<Void, Void, Boolean> {
 
 		Type messageType = null;
+		Boolean mSyncing = false;
 
 		public MessagesLoader(Type type) {
 			messageType = type;
 			mView.findViewById(R.id.loadingProgress)
 					.setVisibility(View.VISIBLE);
+			if (db().isEmptyTable() && !mSynced) {
+				scope.main().requestSync(MailProvider.AUTHORITY);
+				mSyncing = true;
+			}
 		}
 
 		@Override
@@ -137,9 +142,6 @@ public class Mail extends BaseFragment implements OnPullListener,
 
 				@Override
 				public void run() {
-					if (db().isEmptyTable() && !mSynced) {
-						scope.main().requestSync(MailProvider.AUTHORITY);
-					}
 					mListRecords.clear();
 					LinkedHashMap<String, ODataRow> mParentList = new LinkedHashMap<String, ODataRow>();
 					HashMap<String, Object> map = getWhere(messageType);
@@ -149,7 +151,6 @@ public class Mail extends BaseFragment implements OnPullListener,
 							null, "date DESC")) {
 						ODataRow parent = row.getM2ORecord("parent_id")
 								.browse();
-
 						if (parent != null) {
 							// Child
 							if (!mParentList.containsKey("key_"
@@ -172,7 +173,6 @@ public class Mail extends BaseFragment implements OnPullListener,
 					for (String k : mParentList.keySet()) {
 						mListRecords.add(mParentList.get(k));
 					}
-
 				}
 			});
 			return true;
@@ -181,7 +181,9 @@ public class Mail extends BaseFragment implements OnPullListener,
 
 		@Override
 		protected void onPostExecute(Boolean success) {
-			mView.findViewById(R.id.loadingProgress).setVisibility(View.GONE);
+			if (!mSyncing)
+				mView.findViewById(R.id.loadingProgress).setVisibility(
+						View.GONE);
 			mMessageLoader = null;
 			mListControl.initListControl(mListRecords);
 		}

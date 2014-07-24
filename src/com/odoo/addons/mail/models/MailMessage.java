@@ -1,5 +1,8 @@
 package com.odoo.addons.mail.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import odoo.ODomain;
 
 import org.json.JSONArray;
@@ -35,25 +38,28 @@ public class MailMessage extends OModel {
 	OColumn attachment_ids = new OColumn("Attachments", IrAttachment.class,
 			RelationType.ManyToMany);
 	OColumn parent_id = new OColumn("Parent", MailMessage.class,
-			RelationType.ManyToOne);
+			RelationType.ManyToOne).setDefault(0);
 	OColumn child_ids = new OColumn("Childs", MailMessage.class,
-			RelationType.OneToMany);
+			RelationType.OneToMany).setRelatedColumn("parent_id")
+			.setLocalColumn();
 	OColumn model = new OColumn("Model", OVarchar.class, 64)
 			.setDefault("false");
 	OColumn res_id = new OColumn("Resource ID", OInteger.class).setDefault(0);
 	OColumn record_name = new OColumn("Record name", OText.class)
 			.setDefault("false");
 	OColumn notification_ids = new OColumn("Notifications",
-			MailNotification.class, RelationType.OneToMany);
+			MailNotification.class, RelationType.OneToMany)
+			.setRelatedColumn("message_id");
 	OColumn subject = new OColumn("Subject", OVarchar.class, 100)
 			.setDefault("false");
 	OColumn date = new OColumn("Date", ODateTime.class)
 			.setParsePatter(ODate.DEFAULT_FORMAT);
 	OColumn body = new OColumn("Body", OHtml.class);
 	OColumn to_read = new OColumn("To Read", OBoolean.class);
-	OColumn starred = new OColumn("Starred", OBoolean.class);
 	OColumn vote_user_ids = new OColumn("Voters", ResUsers.class,
 			RelationType.ManyToMany);
+
+	OColumn starred = new OColumn("Starred", OBoolean.class);
 
 	// Functional Fields
 	@Odoo.Functional(method = "getMessageTitle")
@@ -62,9 +68,30 @@ public class MailMessage extends OModel {
 	OColumn childs_count = new OColumn("Childs");
 	@Odoo.Functional(method = "getAuthorName")
 	OColumn author_name = new OColumn("Author", OVarchar.class);
+	@Odoo.Functional(method = "hasVoted")
+	OColumn has_voted = new OColumn("Has voted", OVarchar.class);
 
 	public MailMessage(Context context) {
 		super(context, "mail.message");
+	}
+
+	@Override
+	public Boolean checkForCreateDate() {
+		return false;
+	}
+
+	@Override
+	public Boolean checkForWriteDate() {
+		return true;
+	}
+
+	public Boolean hasVoted(ODataRow row) {
+		for (ODataRow r : row.getM2MRecord("vote_user_ids").browseEach()) {
+			if (r.getInt("id") == user().getUser_id()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public String getMessageTitle(ODataRow row) {
@@ -79,12 +106,8 @@ public class MailMessage extends OModel {
 	}
 
 	public String getChildCount(ODataRow row) {
-		String total = "";
-		int count = count("parent_id = ?", new Object[] { row.getInt("id") });
-		if (count > 0) {
-			total = count + " replies";
-		}
-		return total;
+		List<ODataRow> childs = row.getO2MRecord("child_ids").browseEach();
+		return (childs.size() > 0) ? childs.size() + " replies" : "";
 	}
 
 	public String getAuthorName(ODataRow row) {
@@ -102,13 +125,26 @@ public class MailMessage extends OModel {
 	@Override
 	public ODomain defaultDomain() {
 		Integer user_id = user().getUser_id();
+		List<Integer> parent_ids = new ArrayList<Integer>();
+		for (ODataRow row : select("parent_id = ?", new Object[] { "0" })) {
+			parent_ids.add(row.getInt("id"));
+		}
 		ODomain domain = new ODomain();
+
+		if (parent_ids.size() > 0) {
+			domain.add("|");
+			domain.add("id", "child_of", parent_ids);
+		}
 		domain.add("|");
 		domain.add("partner_ids.user_ids", "in", new JSONArray().put(user_id));
 		domain.add("|");
 		domain.add("notification_ids.partner_id.user_ids", "in",
 				new JSONArray().put(user_id));
 		domain.add("author_id.user_ids", "in", new JSONArray().put(user_id));
+		if (!isEmptyTable()) {
+			domain.add("|");
+			domain.add("date", ">", getSyncHelper().getLastSyncDate(this));
+		}
 		return domain;
 	}
 
