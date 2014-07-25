@@ -1,0 +1,41 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="160dp"
+    android:layout_height="160dp"
+    android:background="#ebebeb" >
+
+    <ImageView
+        android:id="@+id/imgAttachmentFile"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/file_attachment" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#cc000000"
+        android:orientation="horizontal"
+        android:paddingLeft="5dp" >
+
+        <TextView
+            android:id="@+id/txvFileName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:padding="8dp"
+            android:singleLine="true"
+            android:text="Medium Text"
+            android:textColor="#ffffff" />
+
+        <ImageView
+            android:id="@+id/imgBtnRemoveAttachment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/oe_listview_background_selector"
+            android:clickable="true"
+            android:src="@drawable/ic_action_content_remove"
+            android:tint="#fff" />
+    </LinearLayout>
+
+</FrameLayout>

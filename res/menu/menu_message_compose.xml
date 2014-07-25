@@ -1,0 +1,28 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_message_compose_add_attachment"
+        android:icon="@drawable/ic_action_content_new_attachment"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/add_attachment">
+        <menu>
+            <item
+                android:id="@+id/menu_message_compose_add_attachment_images"
+                android:showAsAction="always"
+                android:title="@string/add_image">
+            </item>
+            <item
+                android:id="@+id/menu_message_compose_add_attachment_files"
+                android:showAsAction="always"
+                android:title="@string/add_file">
+            </item>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/menu_message_compose"
+        android:icon="@drawable/ic_action_send_now"
+        android:orderInCategory="100"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/send_now"/>
+
+</menu>

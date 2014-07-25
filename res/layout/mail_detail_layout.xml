@@ -1,0 +1,43 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:odoo="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ebebeb"
+    android:orientation="vertical"
+    android:paddingTop="?android:attr/actionBarSize" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ebebeb"
+        android:orientation="vertical"
+        android:paddingBottom="5dp" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#ebebeb"
+            android:orientation="vertical"
+            android:paddingBottom="5dp" >
+
+            <TextView
+                android:id="@+id/subject"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#ffffff"
+                android:paddingBottom="5dp"
+                android:paddingLeft="5dp"
+                android:text="subject"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <odoo.controls.OList
+            android:id="@+id/lstMessageDetail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            odoo:custom_layout="@layout/message_detail_listview_items" >
+        </odoo.controls.OList>
+    </LinearLayout>
+
+</LinearLayout>
