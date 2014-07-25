@@ -61,6 +61,10 @@
                 <action android:name="com.odoo.ACTION_ACCOUNT_CONFIG" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.odoo.addons.mail.MailComposeActivity"
+            android:label="@string/title_activity_mailcompose" >
+        </activity>
 
         <!-- Contact service -->
         <service

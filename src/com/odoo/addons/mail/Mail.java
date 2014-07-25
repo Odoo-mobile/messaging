@@ -19,6 +19,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -32,7 +33,6 @@ import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.AppScope;
 import com.odoo.support.BaseFragment;
 import com.odoo.util.drawer.DrawerItem;
-import com.odoo.util.logger.OLog;
 import com.openerp.OETouchListener;
 import com.openerp.OETouchListener.OnPullListener;
 import com.openerp.R;
@@ -202,17 +202,45 @@ public class Mail extends BaseFragment implements OnPullListener,
 	public List<DrawerItem> drawerMenus(Context context) {
 		List<DrawerItem> menu = new ArrayList<DrawerItem>();
 		menu.add(new DrawerItem(TAG, "Messaging", true));
-		menu.add(new DrawerItem(TAG, "Inbox", 0, R.drawable.ic_action_inbox,
-				object(Type.Inbox)));
-		menu.add(new DrawerItem(TAG, "To: me", 0, R.drawable.ic_action_user,
-				object(Type.ToMe)));
-		menu.add(new DrawerItem(TAG, "To-do", 0,
+		menu.add(new DrawerItem(TAG, "Inbox", count(context, Type.Inbox),
+				R.drawable.ic_action_inbox, object(Type.Inbox)));
+		menu.add(new DrawerItem(TAG, "To: me", count(context, Type.ToMe),
+				R.drawable.ic_action_user, object(Type.ToMe)));
+		menu.add(new DrawerItem(TAG, "To-do", count(context, Type.ToDo),
 				R.drawable.ic_action_clipboard, object(Type.ToDo)));
-		menu.add(new DrawerItem(TAG, "Archives", 0,
+		menu.add(new DrawerItem(TAG, "Archives", count(context, Type.Archives),
 				R.drawable.ic_action_briefcase, object(Type.Archives)));
-		menu.add(new DrawerItem(TAG, "Outbox", 0,
+		menu.add(new DrawerItem(TAG, "Outbox", count(context, Type.Outbox),
 				R.drawable.ic_action_unsent_mail, object(Type.Outbox)));
 		return menu;
+	}
+
+	private int count(Context context, Type key) {
+		int count = 0;
+		switch (key) {
+		case Inbox:
+			count = new MailMessage(context).count(
+					"to_read = ? AND starred = ?", new Object[] { "true",
+							"false" });
+			break;
+		case ToMe:
+			count = new MailMessage(context).count("to_read = ?",
+					new Object[] { "true" });
+			break;
+		case ToDo:
+			count = new MailMessage(context).count(
+					"to_read = ? AND starred = ?", new Object[] { "true",
+							"true" });
+			break;
+		case Outbox:
+			count = new MailMessage(context).count("id = ?",
+					new Object[] { "false" });
+			break;
+
+		default:
+			break;
+		}
+		return count;
 	}
 
 	private Fragment object(Type type) {
@@ -292,12 +320,39 @@ public class Mail extends BaseFragment implements OnPullListener,
 
 	@Override
 	public void onRowItemClick(int position, View view, ODataRow row) {
-		OLog.log(row.toString());
+		String title = "false";
+		MailDetail mDetail = new MailDetail();
+		Bundle bundle = new Bundle();
+		bundle.putString("key", mType.toString());
+		bundle.putAll(row.getPrimaryBundleData());
+		if (!row.getString("record_name").equals("false"))
+			title = row.getString("record_name");
+		if (title.equals("false") && !row.getString("subject").equals("false"))
+			title = row.getString("subject");
+		if (title.equals("false"))
+			title = "comment";
+		bundle.putString("subject", title);
+		mDetail.setArguments(bundle);
+		startFragment(mDetail, true);
 	}
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		menu.clear();
 		inflater.inflate(R.menu.menu_mail, menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_message_create:
+			Intent i = new Intent(getActivity(), MailComposeActivity.class);
+			startActivity(i);
+			break;
+
+		default:
+			break;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 }
