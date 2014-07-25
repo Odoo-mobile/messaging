@@ -18,15 +18,20 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
         <item name="android:windowActionBarOverlay">true</item>
         <item name="android:actionBarStyle">@style/CustomActionbar</item>
+        <item name="android:actionBarSize">50dp</item>
     </style>
 
     <style name="CustomActionbar" parent="android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
         <item name="android:background">@color/odoo_purple_tran</item>
         <item name="android:titleTextStyle">@style/ActionBar.TitleTextStyle</item>
+        <item name="android:subtitleTextStyle">@style/ActionBar.SubTitleTextStyle</item>
     </style>
 
-    <style name="ActionBar.TitleTextStyle" parent="android:style/TextAppearance.Holo.Widget.ActionBar.Title">
+    <style name="ActionBar.TitleTextStyle" parent="android:style/TextAppearance.Holo.Widget.ActionBar.Title.Inverse">
         <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="ActionBar.SubTitleTextStyle" parent="android:style/TextAppearance.Holo.Widget.ActionBar.Subtitle.Inverse">
         <item name="android:textColor">#ffffff</item>
     </style>
 

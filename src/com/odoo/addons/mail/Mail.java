@@ -17,6 +17,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -63,6 +65,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 		scope = new AppScope(this);
 		mTouchListener = scope.main().getTouchAttacher();
 		initType();
+		setHasOptionsMenu(true);
 		return inflater.inflate(R.layout.mail, container, false);
 	}
 
@@ -199,11 +202,16 @@ public class Mail extends BaseFragment implements OnPullListener,
 	public List<DrawerItem> drawerMenus(Context context) {
 		List<DrawerItem> menu = new ArrayList<DrawerItem>();
 		menu.add(new DrawerItem(TAG, "Messaging", true));
-		menu.add(new DrawerItem(TAG, "Inbox", 0, 0, object(Type.Inbox)));
-		menu.add(new DrawerItem(TAG, "To: me", 0, 0, object(Type.ToMe)));
-		menu.add(new DrawerItem(TAG, "To-do", 0, 0, object(Type.ToDo)));
-		menu.add(new DrawerItem(TAG, "Archives", 0, 0, object(Type.Archives)));
-		menu.add(new DrawerItem(TAG, "Outbox", 0, 0, object(Type.Outbox)));
+		menu.add(new DrawerItem(TAG, "Inbox", 0, R.drawable.ic_action_inbox,
+				object(Type.Inbox)));
+		menu.add(new DrawerItem(TAG, "To: me", 0, R.drawable.ic_action_user,
+				object(Type.ToMe)));
+		menu.add(new DrawerItem(TAG, "To-do", 0,
+				R.drawable.ic_action_clipboard, object(Type.ToDo)));
+		menu.add(new DrawerItem(TAG, "Archives", 0,
+				R.drawable.ic_action_briefcase, object(Type.Archives)));
+		menu.add(new DrawerItem(TAG, "Outbox", 0,
+				R.drawable.ic_action_unsent_mail, object(Type.Outbox)));
 		return menu;
 	}
 
@@ -285,5 +293,11 @@ public class Mail extends BaseFragment implements OnPullListener,
 	@Override
 	public void onRowItemClick(int position, View view, ODataRow row) {
 		OLog.log(row.toString());
+	}
+
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		menu.clear();
+		inflater.inflate(R.menu.menu_mail, menu);
 	}
 }

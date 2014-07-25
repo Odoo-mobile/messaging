@@ -67,7 +67,7 @@
             <odoo.controls.OField
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                odoo:displayPattern="MMM dd,  hh:mm a"
+                odoo:displayPattern="MMM dd"
                 odoo:fieldTextStyle="bold"
                 odoo:field_name="date"
                 odoo:field_textAppearance="?android:attr/textAppearanceSmall"
