@@ -22,8 +22,8 @@
             odoo:binaryType="round_image"
             odoo:defaultImage="@drawable/avatar"
             odoo:field_name="author_id"
+            odoo:imageWidthHeight="48"
             odoo:ref_column="image_small"
-            odoo:roundImageWidthHeight="48"
             odoo:with_label="false" >
         </odoo.controls.OField>
 

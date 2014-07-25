@@ -64,9 +64,7 @@ public class MailSyncService extends OService {
 			domain.add("partner_id", "=", user.getPartner_id());
 			MailNotification mailNotification = new MailNotification(context);
 			MailMessage message = new MailMessage(context);
-			Odoo.DEBUG = true;
 			if (mailNotification.getSyncHelper().syncWithServer(domain, false)) {
-				Odoo.DEBUG = false;
 				for (Integer id : ids) {
 					int row_id = message.selectRowId(id);
 					List<ODataRow> notifications = mailNotification.select(
