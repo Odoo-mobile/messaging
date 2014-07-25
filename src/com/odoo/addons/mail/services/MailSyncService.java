@@ -3,6 +3,7 @@ package com.odoo.addons.mail.services;
 import java.util.List;
 
 import odoo.ODomain;
+import odoo.Odoo;
 import android.accounts.Account;
 import android.app.Service;
 import android.content.ContentProviderClient;
@@ -20,6 +21,7 @@ import com.odoo.orm.OValues;
 import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.OUser;
 import com.odoo.support.service.OService;
+import com.odoo.util.logger.OLog;
 
 public class MailSyncService extends OService {
 	public static final String TAG = MailSyncService.class.getSimpleName();
@@ -56,12 +58,15 @@ public class MailSyncService extends OService {
 	private Boolean updateOldMessages(Context context, OUser user,
 			List<Integer> ids) {
 		try {
+			OLog.log("Message Update Old Message");
 			ODomain domain = new ODomain();
 			domain.add("message_id", "in", ids);
 			domain.add("partner_id", "=", user.getPartner_id());
 			MailNotification mailNotification = new MailNotification(context);
 			MailMessage message = new MailMessage(context);
+			Odoo.DEBUG = true;
 			if (mailNotification.getSyncHelper().syncWithServer(domain, false)) {
+				Odoo.DEBUG = false;
 				for (Integer id : ids) {
 					int row_id = message.selectRowId(id);
 					List<ODataRow> notifications = mailNotification.select(

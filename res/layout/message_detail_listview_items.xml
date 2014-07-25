@@ -16,14 +16,14 @@
         android:orientation="horizontal" >
 
         <odoo.controls.OField
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@drawable/oe_listview_background_selector"
-            android:paddingLeft="3dp"
-            odoo:binaryType="image"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="5dp"
+            odoo:binaryType="round_image"
+            odoo:defaultImage="@drawable/avatar"
             odoo:field_name="author_id"
             odoo:ref_column="image_small"
+            odoo:roundImageWidthHeight="48"
             odoo:with_label="false" >
         </odoo.controls.OField>
 
