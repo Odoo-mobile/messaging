@@ -41,7 +41,7 @@ public class MailSyncService extends OService {
 		try {
 			MailMessage mdb = new MailMessage(context);
 			mdb.setUser(user);
-			if (mdb.getSyncHelper().syncWithServer()) {
+			if (mdb.getSyncHelper().syncDataLimit(10).syncWithServer()) {
 				if (updateOldMessages(context, user, mdb.ids())) {
 					if (user.getAndroidName().equals(account.name)) {
 						context.sendBroadcast(intent);

@@ -76,11 +76,6 @@ public class MailMessage extends OModel {
 	}
 
 	@Override
-	public Boolean checkForCreateDate() {
-		return false;
-	}
-
-	@Override
 	public Boolean checkForWriteDate() {
 		return true;
 	}
@@ -130,7 +125,6 @@ public class MailMessage extends OModel {
 			parent_ids.add(row.getInt("id"));
 		}
 		ODomain domain = new ODomain();
-
 		if (parent_ids.size() > 0) {
 			domain.add("|");
 			domain.add("id", "child_of", parent_ids);

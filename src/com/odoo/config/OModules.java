@@ -18,8 +18,8 @@
  */
 package com.odoo.config;
 
-import com.odoo.addons.mail.Mail;
 import com.odoo.addons.mail.Group;
+import com.odoo.addons.mail.Mail;
 import com.odoo.support.OModule;
 import com.odoo.support.OModulesHelper;
 
