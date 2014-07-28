@@ -18,30 +18,26 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.odoo.addons.mail.Mail.Type;
 import com.odoo.addons.mail.models.MailMessage;
+import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OValues;
 import com.odoo.support.BaseFragment;
+import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
 import com.openerp.R;
 
 public class MailDetail extends BaseFragment implements OnViewClickListener,
 		OnListRowViewClickListener, BeforeListRowCreateListener {
 	private View mView = null;
-	private Type mType = null;
-	private Integer mId = null;
+	private Integer mMailId = null;
 	private OList mListMessages = null;
-	private List<ODataRow> mRecord = null;
+	private List<ODataRow> mRecords = new ArrayList<ODataRow>();
 	Integer mMessageId = null;
 	ODataRow mMessageData = null;
 	List<Object> mMessageObjects = new ArrayList<Object>();
-	ImageView btnStar;
-	boolean isFavorite = false;
-	TextView subject;
 	Integer[] mStarredDrawables = new Integer[] { R.drawable.ic_action_starred,
 			R.drawable.ic_action_starred };
 
@@ -61,12 +57,9 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 
 	private void initArgs() {
 		Bundle args = getArguments();
-		mType = Mail.Type.valueOf(args.getString("key"));
-		if (args.containsKey("id")) {
-			mId = args.getInt("id");
-		} else {
+		if (args.containsKey(OColumn.ROW_ID)) {
+			mMailId = args.getInt(OColumn.ROW_ID);
 		}
-
 	}
 
 	@Override
@@ -81,55 +74,15 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 
 	private void init() {
 		mListMessages = (OList) mView.findViewById(R.id.lstMessageDetail);
-		subject = (TextView) mView.findViewById(R.id.subject);
-		subject.setText(getArguments().getString("subject"));
 		mListMessages.setOnListRowViewClickListener(R.id.imgBtnStar, this);
 		mListMessages.setOnListRowViewClickListener(R.id.imgBtnReply, this);
-
 		mListMessages.setBeforeListRowCreateListener(this);
-		switch (mType) {
-		case Inbox:
-			if (mId != null) {
-				mRecord = db().select("id = ? OR parent_id = ?",
-						new Object[] { mId, mId });
-
-				mListMessages.initListControl(mRecord);
-			} else {
-			}
-			break;
-		case ToMe:
-			if (mId != null) {
-				mRecord = db().select(
-						"res_id = ? AND to_read = ? OR parent_id = ?",
-						new Object[] { 0, true, mId });
-				mListMessages.initListControl(mRecord);
-			}
-
-			break;
-		case ToDo:
-			if (mId != null) {
-				mRecord = db().select(
-						"to_read = ? AND starred = ? OR parent_id = ?",
-						new Object[] { true, true, mId });
-				mListMessages.initListControl(mRecord);
-			}
-
-			break;
-		case Archives:
-			if (mId != null) {
-				mRecord = db().select("id = ? AND parent_id = ?",
-						new Object[] { mId, mId });
-				mListMessages.initListControl(mRecord);
-			} else {
-				// oList.setModel(mModel);
-			}
-			break;
-		case Outbox:
-
-			break;
-
-		default:
-			break;
+		if (mMailId != null) {
+			ODataRow parent = db().select(mMailId);
+			OControls.setText(mView, R.id.txvDetailSubject, parent.getString("record_name"));
+			mRecords.add(0, parent);
+			mRecords.addAll(parent.getO2MRecord("child_ids").browseEach());
+			mListMessages.initListControl(mRecords);
 		}
 	}
 
@@ -163,10 +116,10 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 					: Color.parseColor("#aaaaaa"));
 			OValues values = new OValues();
 			values.put("starred", !is_fav);
-			db().update(values, row.getInt("id"));
+			db().update(values, row.getInt(OColumn.ROW_ID));
 			row.put("starred", !is_fav);
-			mRecord.remove(position);
-			mRecord.add(position, row);
+			mRecords.remove(position);
+			mRecords.add(position, row);
 		} else if (view.getId() == R.id.imgBtnReply) {
 			Intent i = new Intent(getActivity(), MailComposeActivity.class);
 			i.putExtra("name", "nilesh");

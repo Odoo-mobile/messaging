@@ -49,6 +49,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 	private MessagesLoader mMessageLoader = null;
 	private Boolean mSynced = false;
 	private OETouchListener mTouchListener = null;
+	private Integer mLastSelectPosition = -1;
 
 	public enum Type {
 		Inbox, ToMe, ToDo, Archives, Outbox
@@ -90,9 +91,20 @@ public class Mail extends BaseFragment implements OnPullListener,
 				.setOnListRowViewClickListener(R.id.img_starred_mlist, this);
 		mListControl.setBeforeListRowCreateListener(this);
 		mListControl.setOnRowClickListener(this);
-		mMessageLoader = new MessagesLoader(mType);
-		mMessageLoader.execute();
+		if (mLastSelectPosition == -1) {
+			mMessageLoader = new MessagesLoader(mType);
+			mMessageLoader.execute();
+		} else {
+			showData(false);
+		}
 
+	}
+
+	private void showData(Boolean mSyncing) {
+		if (!mSyncing)
+			mView.findViewById(R.id.loadingProgress).setVisibility(View.GONE);
+		mMessageLoader = null;
+		mListControl.initListControl(mListRecords);
 	}
 
 	private HashMap<String, Object> getWhere(Type type) {
@@ -161,6 +173,8 @@ public class Mail extends BaseFragment implements OnPullListener,
 								parent.put("body", row.getString("body"));
 								parent.put("date", row.getString("date"));
 								parent.put("to_read", row.getBoolean("to_read"));
+								parent.put("child_author_id",
+										row.getM2ORecord("author_id"));
 								mParentList.put(
 										"key_" + parent.getString("id"), parent);
 
@@ -184,11 +198,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 
 		@Override
 		protected void onPostExecute(Boolean success) {
-			if (!mSyncing)
-				mView.findViewById(R.id.loadingProgress).setVisibility(
-						View.GONE);
-			mMessageLoader = null;
-			mListControl.initListControl(mListRecords);
+			showData(mSyncing);
 		}
 
 	}
@@ -320,18 +330,10 @@ public class Mail extends BaseFragment implements OnPullListener,
 
 	@Override
 	public void onRowItemClick(int position, View view, ODataRow row) {
-		String title = "false";
+		mLastSelectPosition = position;
 		MailDetail mDetail = new MailDetail();
 		Bundle bundle = new Bundle();
-		bundle.putString("key", mType.toString());
 		bundle.putAll(row.getPrimaryBundleData());
-		if (!row.getString("record_name").equals("false"))
-			title = row.getString("record_name");
-		if (title.equals("false") && !row.getString("subject").equals("false"))
-			title = row.getString("subject");
-		if (title.equals("false"))
-			title = "comment";
-		bundle.putString("subject", title);
 		mDetail.setArguments(bundle);
 		startFragment(mDetail, true);
 	}

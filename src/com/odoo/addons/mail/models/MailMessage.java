@@ -8,6 +8,7 @@ import odoo.ODomain;
 import org.json.JSONArray;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.odoo.base.ir.IrAttachment;
 import com.odoo.base.res.ResPartner;
@@ -16,6 +17,7 @@ import com.odoo.orm.OColumn.RelationType;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OModel;
 import com.odoo.orm.annotations.Odoo;
+import com.odoo.orm.types.OBlob;
 import com.odoo.orm.types.OBoolean;
 import com.odoo.orm.types.ODateTime;
 import com.odoo.orm.types.OHtml;
@@ -66,10 +68,16 @@ public class MailMessage extends OModel {
 	OColumn message_title = new OColumn("Title");
 	@Odoo.Functional(method = "getChildCount")
 	OColumn childs_count = new OColumn("Childs");
+	@Odoo.Functional(method = "getAuthorNames")
+	OColumn author_names = new OColumn("Author", OVarchar.class);
 	@Odoo.Functional(method = "getAuthorName")
 	OColumn author_name = new OColumn("Author", OVarchar.class);
 	@Odoo.Functional(method = "hasVoted")
 	OColumn has_voted = new OColumn("Has voted", OVarchar.class);
+	@Odoo.Functional(method = "getAuthorImage")
+	OColumn author_image = new OColumn("Has voted", OBlob.class);
+	@Odoo.Functional(method = "getPartnersName")
+	OColumn partners_name = new OColumn("Partners", OVarchar.class);
 
 	public MailMessage(Context context) {
 		super(context, "mail.message");
@@ -78,6 +86,26 @@ public class MailMessage extends OModel {
 	@Override
 	public Boolean checkForWriteDate() {
 		return true;
+	}
+
+	public String getPartnersName(ODataRow row) {
+		String partners = "to ";
+		List<String> partners_name = new ArrayList<String>();
+		for (ODataRow p : row.getM2MRecord("partner_ids").browseEach()) {
+			partners_name.add(p.getString("name"));
+		}
+		return partners + TextUtils.join(", ", partners_name);
+	}
+
+	public String getAuthorImage(ODataRow row) {
+		String key = "child_author_id";
+		if (!row.contains(key))
+			key = "author_id";
+		ODataRow author = row.getM2ORecord(key).browse();
+		if (author != null) {
+			return author.getString("image_small");
+		}
+		return "false";
 	}
 
 	public Boolean hasVoted(ODataRow row) {
@@ -102,17 +130,36 @@ public class MailMessage extends OModel {
 
 	public String getChildCount(ODataRow row) {
 		List<ODataRow> childs = row.getO2MRecord("child_ids").browseEach();
-		return (childs.size() > 0) ? childs.size() + " replies" : "";
+		return (childs.size() > 0) ? childs.size() + " replies" : " ";
 	}
 
 	public String getAuthorName(ODataRow row) {
-		String author_name = "";
+		String author_name = null;
 		ODataRow author = row.getM2ORecord("author_id").browse();
-		if (author != null)
-			author_name = row.getM2ORecord("author_id").browse()
-					.getString("name");
-		else {
+		if (author != null) {
+			author_name = author.getString("name");
+		} else {
 			author_name = row.getString("email_from");
+		}
+		return author_name;
+	}
+
+	public String getAuthorNames(ODataRow row) {
+		String author_name = null;
+		ODataRow author = row.getM2ORecord("author_id").browse();
+		if (author != null) {
+			author_name = author.getString("name");
+		} else {
+			author_name = row.getString("email_from");
+		}
+		if (row.contains("child_author_id")) {
+			ODataRow child_author = row.getM2ORecord("child_author_id")
+					.browse();
+			if (child_author != null
+					&& author != null
+					&& child_author.getInt(OColumn.ROW_ID) != author
+							.getInt(OColumn.ROW_ID))
+				author_name += ", " + child_author.getString("name");
 		}
 		return author_name;
 	}
