@@ -1,0 +1,32 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:odoo="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:orientation="vertical" >
+
+    <!--
+         <include
+        android:id="@+id/groupSyncWaiter"
+        layout="@layout/fragment_message_listview_header"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        android:visibility="gone" />
+    -->
+
+
+    <include
+        android:id="@+id/loadingProgress"
+        layout="@layout/listview_data_loading_progress"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        android:visibility="gone" />
+
+    <odoo.controls.OList
+        android:id="@+id/listGroups"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        odoo:custom_layout="@layout/mailgroup_list" >
+    </odoo.controls.OList>
+
+</LinearLayout>

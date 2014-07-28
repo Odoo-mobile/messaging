@@ -104,6 +104,27 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/sync_mail" />
         </service>
+        <!-- Mail Group provider -->
+        <provider
+            android:name="com.odoo.addons.mail.providers.group.MailGroupProvider"
+            android:authorities="com.odoo.addons.mail.providers.group"
+            android:enabled="true"
+            android:exported="true"
+            android:label="Groups"
+            android:syncable="true" />
+
+        <!-- Mail Group provider service -->
+        <service
+            android:name="com.odoo.addons.mail.services.MailGroupSyncService"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/sync_mailgroup" />
+        </service>
     </application>
 
 </manifest>

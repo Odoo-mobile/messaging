@@ -3,7 +3,6 @@ package com.odoo.addons.mail.services;
 import java.util.List;
 
 import odoo.ODomain;
-import odoo.Odoo;
 import android.accounts.Account;
 import android.app.Service;
 import android.content.ContentProviderClient;
