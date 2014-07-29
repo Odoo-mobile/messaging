@@ -1,7 +1,6 @@
 package com.odoo.addons.mail.services;
 
 import odoo.ODomain;
-import odoo.Odoo;
 
 import org.json.JSONArray;
 
@@ -19,14 +18,13 @@ import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.auth.OdooAccountManager;
 import com.odoo.base.mail.MailFollowers;
 import com.odoo.orm.ODataRow;
-import com.odoo.orm.OSyncHelper;
 import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.OUser;
 import com.odoo.support.service.OService;
-import com.odoo.util.logger.OLog;
 
 public class MailGroupSyncService extends OService {
 	public static final String TAG = MailGroupSyncService.class.getSimpleName();
+	public static final String KEY_GROUP_IDS = "group_ids";
 
 	@Override
 	public Service getService() {
@@ -37,32 +35,27 @@ public class MailGroupSyncService extends OService {
 	public void performSync(Context context, Account account, Bundle extras,
 			String authority, ContentProviderClient provider,
 			SyncResult syncResult) {
-		OLog.log(TAG + " MailGroupSyncService Start");
-		OUser user = OUser.current(context);
+		OUser user = OdooAccountManager.getAccountDetail(context, account.name);
 		Intent intent = new Intent();
 		intent.setAction(SyncFinishReceiver.SYNC_FINISH);
-		MailGroup mdb = new MailGroup(context);
-		mdb.setUser(OdooAccountManager.getAccountDetail(context, account.name));
-		OSyncHelper oe = mdb.getSyncHelper();
+		MailGroup mailGroup = new MailGroup(context);
+		mailGroup.setUser(user);
+		if (mailGroup.getSyncHelper().syncWithServer()) {
 
-		if (oe != null && oe.syncWithServer() == true) {
 			MailFollowers follower = new MailFollowers(context);
 			ODomain domain = new ODomain();
-
 			domain.add("partner_id", "=", user.getPartner_id());
-			domain.add("res_model", "=", mdb.getModelName());
-			Odoo.DEBUG = true;
-			if (follower.getSyncHelper().syncWithServer(domain, true)) {
-				Odoo.DEBUG = false;
+			domain.add("res_model", "=", mailGroup.getModelName());
+			if (follower.getSyncHelper().syncWithServer(domain, false)) {
 				JSONArray group_ids = new JSONArray();
 				for (ODataRow grp : follower.select(
-						"res_model = ? AND partner_id = ?",
-						new Object[] { mdb.getModelName(),
+						"res_model = ? AND partner_id = ?", new Object[] {
+								mailGroup.getModelName(),
 								user.getPartner_id() + "" })) {
 					group_ids.put(grp.getInt("id"));
 				}
 				Bundle messageBundle = new Bundle();
-				messageBundle.putString("group_ids", group_ids.toString());
+				messageBundle.putString(KEY_GROUP_IDS, group_ids.toString());
 				messageBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL,
 						true);
 				messageBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED,
@@ -70,7 +63,6 @@ public class MailGroupSyncService extends OService {
 				ContentResolver.requestSync(account, MailProvider.AUTHORITY,
 						messageBundle);
 			}
-
 		}
 		if (OdooAccountManager.current_user.getAndroidName().equals(
 				account.name)) {

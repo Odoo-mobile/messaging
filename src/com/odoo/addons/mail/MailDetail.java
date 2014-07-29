@@ -79,16 +79,18 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 		mListMessages.setBeforeListRowCreateListener(this);
 		if (mMailId != null) {
 			ODataRow parent = db().select(mMailId);
-			OControls.setText(mView, R.id.txvDetailSubject, parent.getString("record_name"));
+			OControls.setText(mView, R.id.txvDetailSubject,
+					parent.getString("message_title"));
 			mRecords.add(0, parent);
-			mRecords.addAll(parent.getO2MRecord("child_ids").browseEach());
+			mRecords.addAll(parent.getO2MRecord("child_ids")
+					.setOrder("date DESc").browseEach());
 			mListMessages.initListControl(mRecords);
 		}
 	}
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.menu_message_detail, menu);
+		inflater.inflate(R.menu.menu_mail_detail, menu);
 	}
 
 	@Override
@@ -121,9 +123,8 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 			mRecords.remove(position);
 			mRecords.add(position, row);
 		} else if (view.getId() == R.id.imgBtnReply) {
-			Intent i = new Intent(getActivity(), MailComposeActivity.class);
-			i.putExtra("name", "nilesh");
-			startActivity(i);
+			// FIXME: replace with startActivityForResult
+			startActivity(new Intent(getActivity(), ComposeMail.class));
 		} else if (view.getId() == R.id.imgVotenb) {
 			Toast.makeText(getActivity(), "Voted", Toast.LENGTH_SHORT).show();
 		}
@@ -131,6 +132,11 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 
 	@Override
 	public void beforeListRowCreate(int position, ODataRow row, View view) {
+		if (position == 0) {
+			view.setBackgroundColor(Color.parseColor("#ebebeb"));
+		} else {
+			view.setBackgroundColor(Color.WHITE);
+		}
 		ImageView imgstar = (ImageView) view.findViewById(R.id.imgBtnStar);
 		boolean is_favorite = row.getBoolean("starred");
 		imgstar.setColorFilter((is_favorite) ? Color.parseColor("#FF8800")

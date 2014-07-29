@@ -3,17 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipToPadding="false"
-    android:orientation="vertical" >
-
-    <!--
-         <include
-        android:id="@+id/groupSyncWaiter"
-        layout="@layout/fragment_message_listview_header"
-        android:paddingBottom="5dp"
-        android:paddingTop="5dp"
-        android:visibility="gone" />
-    -->
-
+    android:orientation="vertical"
+    android:paddingTop="?android:attr/actionBarSize" >
 
     <include
         android:id="@+id/loadingProgress"
@@ -26,7 +17,7 @@
         android:id="@+id/listGroups"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        odoo:custom_layout="@layout/mailgroup_list" >
+        odoo:custom_layout="@layout/groups_list_item" >
     </odoo.controls.OList>
 
 </LinearLayout>

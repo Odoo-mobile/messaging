@@ -65,17 +65,13 @@ public class MailMessage extends OModel {
 
 	// Functional Fields
 	@Odoo.Functional(method = "getMessageTitle")
-	OColumn message_title = new OColumn("Title");
+	OColumn message_title = new OColumn("Title"); // OK
 	@Odoo.Functional(method = "getChildCount")
-	OColumn childs_count = new OColumn("Childs");
-	@Odoo.Functional(method = "getAuthorNames")
-	OColumn author_names = new OColumn("Author", OVarchar.class);
+	OColumn childs_count = new OColumn("Childs"); // OK
 	@Odoo.Functional(method = "getAuthorName")
 	OColumn author_name = new OColumn("Author", OVarchar.class);
 	@Odoo.Functional(method = "hasVoted")
 	OColumn has_voted = new OColumn("Has voted", OVarchar.class);
-	@Odoo.Functional(method = "getAuthorImage")
-	OColumn author_image = new OColumn("Has voted", OBlob.class);
 	@Odoo.Functional(method = "getPartnersName")
 	OColumn partners_name = new OColumn("Partners", OVarchar.class);
 
@@ -97,17 +93,7 @@ public class MailMessage extends OModel {
 		return partners + TextUtils.join(", ", partners_name);
 	}
 
-	public String getAuthorImage(ODataRow row) {
-		String key = "child_author_id";
-		if (!row.contains(key))
-			key = "author_id";
-		ODataRow author = row.getM2ORecord(key).browse();
-		if (author != null) {
-			return author.getString("image_small");
-		}
-		return "false";
-	}
-
+	// OK
 	public Boolean hasVoted(ODataRow row) {
 		for (ODataRow r : row.getM2MRecord("vote_user_ids").browseEach()) {
 			if (r.getInt("id") == user().getUser_id()) {
@@ -117,10 +103,13 @@ public class MailMessage extends OModel {
 		return false;
 	}
 
+	// OK
 	public String getMessageTitle(ODataRow row) {
 		String title = "false";
 		if (!row.getString("record_name").equals("false"))
 			title = row.getString("record_name");
+		if (!title.equals("false") && !row.getString("subject").equals("false"))
+			title += ": " + row.getString("subject");
 		if (title.equals("false") && !row.getString("subject").equals("false"))
 			title = row.getString("subject");
 		if (title.equals("false"))
@@ -140,26 +129,6 @@ public class MailMessage extends OModel {
 			author_name = author.getString("name");
 		} else {
 			author_name = row.getString("email_from");
-		}
-		return author_name;
-	}
-
-	public String getAuthorNames(ODataRow row) {
-		String author_name = null;
-		ODataRow author = row.getM2ORecord("author_id").browse();
-		if (author != null) {
-			author_name = author.getString("name");
-		} else {
-			author_name = row.getString("email_from");
-		}
-		if (row.contains("child_author_id")) {
-			ODataRow child_author = row.getM2ORecord("child_author_id")
-					.browse();
-			if (child_author != null
-					&& author != null
-					&& child_author.getInt(OColumn.ROW_ID) != author
-							.getInt(OColumn.ROW_ID))
-				author_name += ", " + child_author.getString("name");
 		}
 		return author_name;
 	}

@@ -11,10 +11,5 @@
         android:icon="@drawable/ic_action_mark_unread"
         android:showAsAction="always"
         android:title="UnRead"/>
-    <item
-        android:id="@+id/menu_message_detail_save"
-        android:icon="@drawable/ic_action_done"
-        android:showAsAction="ifRoom|withText"
-        android:title="Done"/>
 
 </menu>

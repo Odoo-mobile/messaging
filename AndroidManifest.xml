@@ -62,7 +62,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.odoo.addons.mail.MailComposeActivity"
+            android:name="com.odoo.addons.mail.ComposeMail"
             android:label="@string/title_activity_mailcompose" >
         </activity>
 

@@ -36,6 +36,7 @@ import android.provider.ContactsContract.RawContacts;
 import android.util.Log;
 
 import com.odoo.auth.OdooAccountManager;
+import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OValues;
 import com.odoo.support.OUser;
@@ -43,7 +44,7 @@ import com.odoo.util.Base64Helper;
 
 public class OContact {
 
-	public static final String TAG = "com.odoo.support.contact.OEContact";
+	public static final String TAG = "com.odoo.support.contact.OContact";
 
 	ContentResolver mContentResolver = null;
 	Uri rawContactUri = null;
@@ -100,7 +101,7 @@ public class OContact {
 	}
 
 	public boolean contactExists(int partner_id) {
-		Log.d(TAG, "OEContact->contactExists()");
+		Log.d(TAG, "OContact->contactExists()");
 		boolean flag = false;
 		if (contactUri(partner_id) != null)
 			flag = true;
@@ -108,7 +109,7 @@ public class OContact {
 	}
 
 	public boolean createContacts(List<ODataRow> partners) {
-		Log.d(TAG, "OEContact->createContacts()");
+		Log.d(TAG, "OContact->createContacts()");
 		boolean flag = false;
 		for (ODataRow partner : partners)
 			flag = createContact(partner);
@@ -126,12 +127,12 @@ public class OContact {
 	}
 
 	public boolean createContact(ODataRow partner) {
-		Log.d(TAG, "OEContact->createContact()");
+		Log.d(TAG, "OContact->createContact()");
 		boolean flag = false;
 
-		boolean isContact = contactExists(partner.getInt("id"));
+		boolean isContact = contactExists(partner.getInt(OColumn.ROW_ID));
 		if (isContact)
-			removeContact(partner.getInt("id"));
+			removeContact(partner.getInt(OColumn.ROW_ID));
 		ContentProviderOperation.Builder builder = null;
 		ArrayList<ContentProviderOperation> oList = new ArrayList<ContentProviderOperation>();
 		int rawContactInsertIndex = oList.size();
@@ -140,7 +141,7 @@ public class OContact {
 		builder = ContentProviderOperation.newInsert(mRawContacts);
 		builder.withValue(RawContacts.ACCOUNT_NAME, mAccount.name);
 		builder.withValue(RawContacts.ACCOUNT_TYPE, mAccount.type);
-		builder.withValue(RawContacts.SYNC1, partner.getInt("id"));
+		builder.withValue(RawContacts.SYNC1, partner.getInt(OColumn.ROW_ID));
 		oList.add(builder.build());
 
 		// Display Name
@@ -161,7 +162,8 @@ public class OContact {
 				"vnd.android.cursor.item/vnd.com.odoo.auth.profile");
 		builder.withValue(ContactsContract.Data.DATA1,
 				partner.getString("name"));
-		builder.withValue(ContactsContract.Data.DATA2, partner.getInt("id"));
+		builder.withValue(ContactsContract.Data.DATA2,
+				partner.getInt(OColumn.ROW_ID));
 		builder.withValue(ContactsContract.Data.DATA3, "Send Message");
 		oList.add(builder.build());
 
@@ -274,18 +276,21 @@ public class OContact {
 
 			Bitmap bitmapOrg = Base64Helper.getBitmapImage(mContext,
 					partner.getString("image_small"));
-			ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			bitmapOrg.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-			oList.add(ContentProviderOperation
-					.newInsert(mContactContract)
-					.withValueBackReference(
-							ContactsContract.Data.RAW_CONTACT_ID,
-							rawContactInsertIndex)
-					.withValue(
-							ContactsContract.Data.MIMETYPE,
-							ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
-					.withValue(ContactsContract.CommonDataKinds.Photo.PHOTO,
-							stream.toByteArray()).build());
+			if (bitmapOrg != null) {
+				ByteArrayOutputStream stream = new ByteArrayOutputStream();
+				bitmapOrg.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+				oList.add(ContentProviderOperation
+						.newInsert(mContactContract)
+						.withValueBackReference(
+								ContactsContract.Data.RAW_CONTACT_ID,
+								rawContactInsertIndex)
+						.withValue(
+								ContactsContract.Data.MIMETYPE,
+								ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
+						.withValue(
+								ContactsContract.CommonDataKinds.Photo.PHOTO,
+								stream.toByteArray()).build());
+			}
 		}
 
 		// Organization
@@ -322,7 +327,6 @@ public class OContact {
 		Cursor cr = mContentResolver.query(rawContactUri, mProjections,
 				mProjections[1] + " = ?", new String[] { partner_id + "" },
 				null);
-
 		if (cr.moveToFirst()) {
 			String raw_id = cr.getString(0);
 			uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI,

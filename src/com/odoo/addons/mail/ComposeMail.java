@@ -7,7 +7,7 @@ import android.view.MenuItem;
 
 import com.openerp.R;
 
-public class MailComposeActivity extends Activity {
+public class ComposeMail extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +24,7 @@ public class MailComposeActivity extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.menu_message_compose, menu);
+		getMenuInflater().inflate(R.menu.menu_mail_compose, menu);
 		return true;
 	}
 

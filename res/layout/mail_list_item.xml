@@ -47,8 +47,9 @@
         odoo:defaultImage="@drawable/avatar"
         odoo:fieldTextStyle="bold"
         odoo:field_color="#414141"
-        odoo:field_name="author_image"
+        odoo:field_name="author_id"
         odoo:imageWidthHeight="50"
+        odoo:ref_column="image_small"
         odoo:singleLine="true"
         odoo:with_label="false" >
     </odoo.controls.OField>
@@ -81,7 +82,7 @@
                     android:layout_height="wrap_content"
                     odoo:fieldTextStyle="bold"
                     odoo:field_color="#414141"
-                    odoo:field_name="author_names"
+                    odoo:field_name="author_name"
                     odoo:field_textAppearance="?android:attr/textAppearanceSmall"
                     odoo:with_label="false" >
                 </odoo.controls.OField>

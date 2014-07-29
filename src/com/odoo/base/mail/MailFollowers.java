@@ -36,6 +36,7 @@ public class MailFollowers extends OModel {
 
 	public MailFollowers(Context context) {
 		super(context, "mail.followers");
+		setCreateWriteLocal(true);
 	}
 
 	@Override

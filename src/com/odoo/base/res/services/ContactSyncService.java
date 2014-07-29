@@ -21,14 +21,11 @@ package com.odoo.base.res.services;
 import odoo.ODomain;
 import android.accounts.Account;
 import android.app.Service;
-import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -37,49 +34,26 @@ import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OSyncHelper;
 import com.odoo.support.OUser;
 import com.odoo.support.contact.OContact;
+import com.odoo.support.service.OService;
 
-public class ContactSyncService extends Service {
+public class ContactSyncService extends OService {
 
 	public static final String TAG = "com.odoo.base.res.services.ContactSyncService";
 
-	private static SyncAdapterImpl sSyncAdapter = null;
-	Context mContext = null;
-
-	public ContactSyncService() {
-		this.mContext = this;
-	}
-
 	@Override
-	public IBinder onBind(Intent intent) {
-		IBinder ret = null;
-		ret = getSyncAdapter().getSyncAdapterBinder();
-		return ret;
-	}
-
-	public SyncAdapterImpl getSyncAdapter() {
-		if (sSyncAdapter == null) {
-			sSyncAdapter = new SyncAdapterImpl(this);
-		}
-		return sSyncAdapter;
-	}
-
 	public void performSync(Context context, Account account, Bundle extras,
 			String authority, ContentProviderClient provider,
 			SyncResult syncResult) {
 		try {
 			OUser user = OdooAccountManager.getAccountDetail(context,
 					account.name);
-
 			ResPartner db = new ResPartner(context);
 			OSyncHelper odoo = db.getSyncHelper();
-
 			OContact contact = new OContact(context, user);
-
 			SharedPreferences settings = PreferenceManager
 					.getDefaultSharedPreferences(context);
 			boolean syncServerContacts = settings.getBoolean(
 					"server_contact_sync", false);
-
 			if (syncServerContacts && odoo != null) {
 				Log.v(TAG, "Contact sync with server");
 				int company_id = Integer.parseInt(user.getCompany_id());
@@ -93,21 +67,8 @@ public class ContactSyncService extends Service {
 		}
 	}
 
-	public class SyncAdapterImpl extends AbstractThreadedSyncAdapter {
-		private Context mContext;
-
-		public SyncAdapterImpl(Context context) {
-			super(context, true);
-			mContext = context;
-		}
-
-		@Override
-		public void onPerformSync(Account account, Bundle bundle, String str,
-				ContentProviderClient providerClient, SyncResult syncResult) {
-
-			new ContactSyncService().performSync(mContext, account, bundle,
-					str, providerClient, syncResult);
-
-		}
+	@Override
+	public Service getService() {
+		return this;
 	}
 }

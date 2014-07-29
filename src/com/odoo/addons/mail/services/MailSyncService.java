@@ -3,6 +3,9 @@ package com.odoo.addons.mail.services;
 import java.util.List;
 
 import odoo.ODomain;
+
+import org.json.JSONArray;
+
 import android.accounts.Account;
 import android.app.Service;
 import android.content.ContentProviderClient;
@@ -20,7 +23,6 @@ import com.odoo.orm.OValues;
 import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.OUser;
 import com.odoo.support.service.OService;
-import com.odoo.util.logger.OLog;
 
 public class MailSyncService extends OService {
 	public static final String TAG = MailSyncService.class.getSimpleName();
@@ -41,7 +43,14 @@ public class MailSyncService extends OService {
 		try {
 			MailMessage mdb = new MailMessage(context);
 			mdb.setUser(user);
-			if (mdb.getSyncHelper().syncDataLimit(10).syncWithServer()) {
+			ODomain domain = new ODomain();
+			if (extras.containsKey(MailGroupSyncService.KEY_GROUP_IDS)) {
+				JSONArray group_ids = new JSONArray(
+						extras.getString(MailGroupSyncService.KEY_GROUP_IDS));
+				domain.add("res_id", "in", group_ids);
+				domain.add("model", "=", "mail.group");
+			}
+			if (mdb.getSyncHelper().syncDataLimit(10).syncWithServer(domain)) {
 				if (updateOldMessages(context, user, mdb.ids())) {
 					if (user.getAndroidName().equals(account.name)) {
 						context.sendBroadcast(intent);
@@ -57,7 +66,6 @@ public class MailSyncService extends OService {
 	private Boolean updateOldMessages(Context context, OUser user,
 			List<Integer> ids) {
 		try {
-			OLog.log("Message Update Old Message");
 			ODomain domain = new ODomain();
 			domain.add("message_id", "in", ids);
 			domain.add("partner_id", "=", user.getPartner_id());

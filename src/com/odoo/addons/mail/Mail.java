@@ -33,6 +33,7 @@ import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.AppScope;
 import com.odoo.support.BaseFragment;
 import com.odoo.util.drawer.DrawerItem;
+import com.odoo.util.logger.OLog;
 import com.openerp.OETouchListener;
 import com.openerp.OETouchListener.OnPullListener;
 import com.openerp.R;
@@ -52,7 +53,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 	private Integer mLastSelectPosition = -1;
 
 	public enum Type {
-		Inbox, ToMe, ToDo, Archives, Outbox
+		Inbox, ToMe, ToDo, Archives, Outbox, Group
 	}
 
 	private Type mType = Type.Inbox;
@@ -128,6 +129,11 @@ public class Mail extends BaseFragment implements OnPullListener,
 			where = "id = ?";
 			whereArgs = new String[] { "0" };
 			break;
+		case Group:
+			Integer group_id = getArguments().getInt(Groups.KEY);
+			where = "res_id = ? and model = ?";
+			whereArgs = new String[] { group_id + "", "mail.group" };
+			break;
 		default:
 			break;
 		}
@@ -170,11 +176,10 @@ public class Mail extends BaseFragment implements OnPullListener,
 							// Child
 							if (!mParentList.containsKey("key_"
 									+ parent.getString("id"))) {
-								parent.put("body", row.getString("body"));
+								parent.put("body", row.getString("author_name")
+										+ " - " + row.getString("body"));
 								parent.put("date", row.getString("date"));
 								parent.put("to_read", row.getBoolean("to_read"));
-								parent.put("child_author_id",
-										row.getM2ORecord("author_id"));
 								mParentList.put(
 										"key_" + parent.getString("id"), parent);
 
@@ -348,7 +353,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_message_create:
-			Intent i = new Intent(getActivity(), MailComposeActivity.class);
+			Intent i = new Intent(getActivity(), ComposeMail.class);
 			startActivity(i);
 			break;
 
