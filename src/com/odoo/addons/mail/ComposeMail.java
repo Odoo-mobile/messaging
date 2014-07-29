@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.openerp.R;
 
@@ -23,7 +24,6 @@ public class ComposeMail extends Activity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.menu_mail_compose, menu);
 		return true;
 	}
@@ -34,11 +34,20 @@ public class ComposeMail extends Activity {
 		case android.R.id.home:
 			finish();
 			break;
-
+		case R.id.menu_mail_compose:
+			Toast.makeText(this, "Compose Mail", Toast.LENGTH_SHORT).show();
+			if (findViewById(R.id.name).equals("null"))
+				Toast.makeText(this, "plz select the at least one Recipient",
+						Toast.LENGTH_SHORT).show();
+		case R.id.menu_add_files:
+			Toast.makeText(this, "Attach Files", Toast.LENGTH_SHORT).show();
+			break;
+		case R.id.menu_add_images:
+			Toast.makeText(this, "Attach Images", Toast.LENGTH_SHORT).show();
+			break;
 		default:
 			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
-
 }

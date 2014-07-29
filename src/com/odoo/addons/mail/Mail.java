@@ -33,7 +33,6 @@ import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.AppScope;
 import com.odoo.support.BaseFragment;
 import com.odoo.util.drawer.DrawerItem;
-import com.odoo.util.logger.OLog;
 import com.openerp.OETouchListener;
 import com.openerp.OETouchListener.OnPullListener;
 import com.openerp.R;
