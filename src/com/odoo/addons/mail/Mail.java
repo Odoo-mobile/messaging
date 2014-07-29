@@ -7,6 +7,7 @@ import java.util.List;
 
 import odoo.controls.OList;
 import odoo.controls.OList.BeforeListRowCreateListener;
+import odoo.controls.OList.OnListBottomReachedListener;
 import odoo.controls.OList.OnListRowViewClickListener;
 import odoo.controls.OList.OnRowClickListener;
 import android.content.Context;
@@ -28,6 +29,7 @@ import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
+import com.odoo.orm.OModel;
 import com.odoo.orm.OValues;
 import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.AppScope;
@@ -39,7 +41,7 @@ import com.openerp.R;
 
 public class Mail extends BaseFragment implements OnPullListener,
 		BeforeListRowCreateListener, OnListRowViewClickListener,
-		OnRowClickListener {
+		OnRowClickListener, OnListBottomReachedListener {
 
 	public static final String TAG = Mail.class.getSimpleName();
 	public static final String KEY = "fragment_mail";
@@ -50,6 +52,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 	private Boolean mSynced = false;
 	private OETouchListener mTouchListener = null;
 	private Integer mLastSelectPosition = -1;
+	private Integer mLimit = 10;
 
 	public enum Type {
 		Inbox, ToMe, ToDo, Archives, Outbox, Group
@@ -89,10 +92,11 @@ public class Mail extends BaseFragment implements OnPullListener,
 		mTouchListener.setPullableView(mListControl, this);
 		mListControl
 				.setOnListRowViewClickListener(R.id.img_starred_mlist, this);
+		mListControl.setOnListBottomReachedListener(this);
 		mListControl.setBeforeListRowCreateListener(this);
 		mListControl.setOnRowClickListener(this);
 		if (mLastSelectPosition == -1) {
-			mMessageLoader = new MessagesLoader(mType);
+			mMessageLoader = new MessagesLoader(mType, 0);
 			mMessageLoader.execute();
 		} else {
 			showData(false);
@@ -115,23 +119,43 @@ public class Mail extends BaseFragment implements OnPullListener,
 		case Inbox:
 			where = "to_read = ? AND starred = ?";
 			whereArgs = new String[] { "true", "false" };
+			if (mListControl != null) {
+				mListControl.setEmptyListMessage(getActivity().getResources()
+						.getString(R.string.message_inbox_all_read));
+			}
 			break;
 		case ToMe:
 			where = "to_read = ? AND starred = ? ";
 			whereArgs = new String[] { "true", "false" };
+			if (mListControl != null) {
+				mListControl.setEmptyListMessage(getActivity().getResources()
+						.getString(R.string.message_tome_all_read));
+			}
 			break;
 		case ToDo:
 			where = "to_read = ? AND starred = ?";
 			whereArgs = new String[] { "true", "true" };
+			if (mListControl != null) {
+				mListControl.setEmptyListMessage(getActivity().getResources()
+						.getString(R.string.message_todo_all_read));
+			}
 			break;
 		case Outbox:
 			where = "id = ?";
 			whereArgs = new String[] { "0" };
+			if (mListControl != null) {
+				mListControl.setEmptyListMessage(getActivity().getResources()
+						.getString(R.string.message_no_outbox_message));
+			}
 			break;
 		case Group:
 			Integer group_id = getArguments().getInt(Groups.KEY);
 			where = "res_id = ? and model = ?";
 			whereArgs = new String[] { group_id + "", "mail.group" };
+			if (mListControl != null) {
+				mListControl.setEmptyListMessage(getActivity().getResources()
+						.getString(R.string.message_no_group_message));
+			}
 			break;
 		default:
 			break;
@@ -145,11 +169,17 @@ public class Mail extends BaseFragment implements OnPullListener,
 
 		Type messageType = null;
 		Boolean mSyncing = false;
+		Integer mOffset = 0;
 
-		public MessagesLoader(Type type) {
+		public MessagesLoader(Type type, Integer offset) {
 			messageType = type;
-			mView.findViewById(R.id.loadingProgress)
-					.setVisibility(View.VISIBLE);
+			mOffset = offset;
+			if (mOffset == 0)
+				mView.findViewById(R.id.loadingProgress).setVisibility(
+						View.VISIBLE);
+			else
+				mView.findViewById(R.id.loadingProgress).setVisibility(
+						View.GONE);
 			if (db().isEmptyTable() && !mSynced) {
 				scope.main().requestSync(MailProvider.AUTHORITY);
 				mSyncing = true;
@@ -158,16 +188,24 @@ public class Mail extends BaseFragment implements OnPullListener,
 
 		@Override
 		protected Boolean doInBackground(Void... params) {
+			try {
+				Thread.sleep(1000);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			scope.main().runOnUiThread(new Runnable() {
 
 				@Override
 				public void run() {
-					mListRecords.clear();
+					if (mOffset == 0)
+						mListRecords.clear();
 					LinkedHashMap<String, ODataRow> mParentList = new LinkedHashMap<String, ODataRow>();
 					HashMap<String, Object> map = getWhere(messageType);
 					String where = (String) map.get("where");
 					String whereArgs[] = (String[]) map.get("whereArgs");
-					for (ODataRow row : db().select(where, whereArgs, null,
+					OModel model = db();
+					model.setLimit(mLimit).setOffset(mOffset);
+					for (ODataRow row : model.select(where, whereArgs, null,
 							null, "date DESC")) {
 						ODataRow parent = row.getM2ORecord("parent_id")
 								.browse();
@@ -194,6 +232,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 					for (String k : mParentList.keySet()) {
 						mListRecords.add(mParentList.get(k));
 					}
+					mListControl.setRecordOffset(model.getNextOffset());
 				}
 			});
 			return true;
@@ -287,7 +326,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 			mListRecords.clear();
 			if (mMessageLoader != null)
 				mMessageLoader.cancel(true);
-			mMessageLoader = new MessagesLoader(mType);
+			mMessageLoader = new MessagesLoader(mType, 0);
 			mMessageLoader.execute();
 		}
 	};
@@ -360,5 +399,18 @@ public class Mail extends BaseFragment implements OnPullListener,
 			break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	public void onBottomReached(Integer record_limit, Integer record_offset) {
+		if (mMessageLoader != null)
+			mMessageLoader.cancel(true);
+		mMessageLoader = new MessagesLoader(mType, record_offset);
+		mMessageLoader.execute();
+	}
+
+	@Override
+	public Boolean showLoader() {
+		return true;
 	}
 }
