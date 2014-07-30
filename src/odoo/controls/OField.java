@@ -565,7 +565,8 @@ public class OField extends LinearLayout implements ManyToOneItemChangeListener 
 							(default_image < 0) ? R.drawable.attachment
 									: default_image);
 			if (record != null
-					&& !record.getString(column_name).equals("false")) {
+					&& !record.getString(column_name).equals("false")
+					&& !record.getString(column_name).equals("null")) {
 				binary_image = Base64Helper.getBitmapImage(mContext,
 						record.getString(column_name));
 				if (!roundedImage)

@@ -120,6 +120,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 			where = "to_read = ? AND starred = ?";
 			whereArgs = new String[] { "true", "false" };
 			if (mListControl != null) {
+				mListControl.setEmptyListIcon(R.drawable.ic_action_inbox);
 				mListControl.setEmptyListMessage(getActivity().getResources()
 						.getString(R.string.message_inbox_all_read));
 			}
@@ -128,6 +129,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 			where = "to_read = ? AND starred = ? ";
 			whereArgs = new String[] { "true", "false" };
 			if (mListControl != null) {
+				mListControl.setEmptyListIcon(R.drawable.ic_action_user);
 				mListControl.setEmptyListMessage(getActivity().getResources()
 						.getString(R.string.message_tome_all_read));
 			}
@@ -136,6 +138,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 			where = "to_read = ? AND starred = ?";
 			whereArgs = new String[] { "true", "true" };
 			if (mListControl != null) {
+				mListControl.setEmptyListIcon(R.drawable.ic_action_clipboard);
 				mListControl.setEmptyListMessage(getActivity().getResources()
 						.getString(R.string.message_todo_all_read));
 			}
@@ -144,6 +147,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 			where = "id = ?";
 			whereArgs = new String[] { "0" };
 			if (mListControl != null) {
+				mListControl.setEmptyListIcon(R.drawable.ic_action_unsent_mail);
 				mListControl.setEmptyListMessage(getActivity().getResources()
 						.getString(R.string.message_no_outbox_message));
 			}
@@ -153,6 +157,8 @@ public class Mail extends BaseFragment implements OnPullListener,
 			where = "res_id = ? and model = ?";
 			whereArgs = new String[] { group_id + "", "mail.group" };
 			if (mListControl != null) {
+				mListControl
+						.setEmptyListIcon(R.drawable.ic_action_social_group);
 				mListControl.setEmptyListMessage(getActivity().getResources()
 						.getString(R.string.message_no_group_message));
 			}
@@ -188,11 +194,6 @@ public class Mail extends BaseFragment implements OnPullListener,
 
 		@Override
 		protected Boolean doInBackground(Void... params) {
-			try {
-				Thread.sleep(1000);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
 			scope.main().runOnUiThread(new Runnable() {
 
 				@Override

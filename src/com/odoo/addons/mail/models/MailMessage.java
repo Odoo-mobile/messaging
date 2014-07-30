@@ -17,7 +17,6 @@ import com.odoo.orm.OColumn.RelationType;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OModel;
 import com.odoo.orm.annotations.Odoo;
-import com.odoo.orm.types.OBlob;
 import com.odoo.orm.types.OBoolean;
 import com.odoo.orm.types.ODateTime;
 import com.odoo.orm.types.OHtml;
@@ -65,9 +64,9 @@ public class MailMessage extends OModel {
 
 	// Functional Fields
 	@Odoo.Functional(method = "getMessageTitle")
-	OColumn message_title = new OColumn("Title"); // OK
+	OColumn message_title = new OColumn("Title");
 	@Odoo.Functional(method = "getChildCount")
-	OColumn childs_count = new OColumn("Childs"); // OK
+	OColumn childs_count = new OColumn("Childs");
 	@Odoo.Functional(method = "getAuthorName")
 	OColumn author_name = new OColumn("Author", OVarchar.class);
 	@Odoo.Functional(method = "hasVoted")
@@ -84,6 +83,36 @@ public class MailMessage extends OModel {
 		return true;
 	}
 
+	@Override
+	public Boolean checkForLocalUpdate() {
+		return false;
+	}
+
+	@Override
+	public Boolean checkForLocalLatestUpdate() {
+		return false;
+	}
+
+	@Override
+	public Boolean canCreateOnServer() {
+		return false;
+	}
+
+	@Override
+	public Boolean canDeleteFromLocal() {
+		return false;
+	}
+
+	@Override
+	public Boolean canDeleteFromServer() {
+		return false;
+	}
+
+	@Override
+	public Boolean canUpdateToServer() {
+		return false;
+	}
+
 	public String getPartnersName(ODataRow row) {
 		String partners = "to ";
 		List<String> partners_name = new ArrayList<String>();
@@ -93,7 +122,6 @@ public class MailMessage extends OModel {
 		return partners + TextUtils.join(", ", partners_name);
 	}
 
-	// OK
 	public Boolean hasVoted(ODataRow row) {
 		for (ODataRow r : row.getM2MRecord("vote_user_ids").browseEach()) {
 			if (r.getInt("id") == user().getUser_id()) {
@@ -103,7 +131,6 @@ public class MailMessage extends OModel {
 		return false;
 	}
 
-	// OK
 	public String getMessageTitle(ODataRow row) {
 		String title = "false";
 		if (!row.getString("record_name").equals("false"))

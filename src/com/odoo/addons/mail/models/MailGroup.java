@@ -48,6 +48,36 @@ public class MailGroup extends OModel {
 	}
 
 	@Override
+	public Boolean checkForLocalLatestUpdate() {
+		return false;
+	}
+
+	@Override
+	public Boolean checkForLocalUpdate() {
+		return false;
+	}
+
+	@Override
+	public Boolean canCreateOnServer() {
+		return false;
+	}
+
+	@Override
+	public Boolean canDeleteFromLocal() {
+		return false;
+	}
+
+	@Override
+	public Boolean canDeleteFromServer() {
+		return false;
+	}
+
+	@Override
+	public Boolean canUpdateToServer() {
+		return false;
+	}
+
+	@Override
 	public Boolean checkForCreateDate() {
 		return false;
 	}

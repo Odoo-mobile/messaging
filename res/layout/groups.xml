@@ -17,7 +17,8 @@
         android:id="@+id/listGroups"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        odoo:custom_layout="@layout/groups_list_item" >
+        odoo:custom_layout="@layout/groups_list_item"
+        odoo:emptyListIcon="@drawable/ic_action_social_group" >
     </odoo.controls.OList>
 
 </LinearLayout>
