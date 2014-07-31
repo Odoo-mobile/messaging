@@ -24,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.SearchView;
 
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
@@ -35,6 +36,7 @@ import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.AppScope;
 import com.odoo.support.BaseFragment;
 import com.odoo.util.drawer.DrawerItem;
+import com.odoo.util.logger.OLog;
 import com.openerp.OETouchListener;
 import com.openerp.OETouchListener.OnPullListener;
 import com.openerp.R;
@@ -66,10 +68,10 @@ public class Mail extends BaseFragment implements OnPullListener,
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
+		setHasOptionsMenu(true);
 		scope = new AppScope(this);
 		mTouchListener = scope.main().getTouchAttacher();
 		initType();
-		setHasOptionsMenu(true);
 		return inflater.inflate(R.layout.mail, container, false);
 	}
 
@@ -361,14 +363,20 @@ public class Mail extends BaseFragment implements OnPullListener,
 		if (view.getId() == R.id.img_starred_mlist) {
 			ImageView imgStarred = (ImageView) view;
 			boolean is_fav = row.getBoolean("starred");
+			OLog.log("Is_fav  = " + is_fav);
 			imgStarred.setColorFilter((!is_fav) ? Color.parseColor("#FF8800")
 					: Color.parseColor("#aaaaaa"));
 			OValues values = new OValues();
 			values.put("starred", !is_fav);
+			OLog.log("Is_fav  = " + !is_fav);
 			mail.update(values, row.getInt(OColumn.ROW_ID));
 			row.put("starred", !is_fav);
 			mListRecords.remove(position);
 			mListRecords.add(position, row);
+			if (is_fav == true) {
+				mListRecords.remove(position);
+				mListControl.initListControl(mListRecords);
+			}
 		}
 	}
 
@@ -386,20 +394,22 @@ public class Mail extends BaseFragment implements OnPullListener,
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		menu.clear();
 		inflater.inflate(R.menu.menu_mail, menu);
+		SearchView mSearchView = (SearchView) menu.findItem(
+				R.id.menu_mail_search).getActionView();
+		if (mListControl != null)
+			mSearchView.setOnQueryTextListener(mListControl.getQueryListener());
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.menu_message_create:
+		case R.id.menu_mail_create:
 			Intent i = new Intent(getActivity(), ComposeMail.class);
 			startActivity(i);
-			break;
-
+			return true;
 		default:
-			break;
+			return super.onOptionsItemSelected(item);
 		}
-		return super.onOptionsItemSelected(item);
 	}
 
 	@Override
