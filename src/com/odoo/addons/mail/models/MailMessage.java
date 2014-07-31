@@ -16,6 +16,7 @@ import com.odoo.orm.OColumn;
 import com.odoo.orm.OColumn.RelationType;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OModel;
+import com.odoo.orm.OValues;
 import com.odoo.orm.annotations.Odoo;
 import com.odoo.orm.types.OBoolean;
 import com.odoo.orm.types.ODateTime;
@@ -24,9 +25,11 @@ import com.odoo.orm.types.OInteger;
 import com.odoo.orm.types.OText;
 import com.odoo.orm.types.OVarchar;
 import com.odoo.util.ODate;
+import com.odoo.util.logger.OLog;
 
 public class MailMessage extends OModel {
-
+	Context mContext = null;
+	MailNotification notification = null;
 	OColumn type = new OColumn("Type", OInteger.class);
 	OColumn email_from = new OColumn("Email", OVarchar.class, 64)
 			.setDefault("false");
@@ -76,6 +79,7 @@ public class MailMessage extends OModel {
 
 	public MailMessage(Context context) {
 		super(context, "mail.message");
+		mContext = context;
 	}
 
 	@Override
@@ -111,6 +115,30 @@ public class MailMessage extends OModel {
 	@Override
 	public Boolean canUpdateToServer() {
 		return false;
+	}
+
+	public void markAsRead(Boolean to_read, Integer row_id) {
+		notification = new MailNotification(mContext);
+		ODataRow parent = select(row_id);
+		_markAsRead(to_read, row_id);
+		for (ODataRow child : parent.getO2MRecord("child_ids").browseEach()) {
+			_markAsRead(to_read, child.getInt(OColumn.ROW_ID));
+		}
+	}
+
+	private void _markAsRead(Boolean to_read, Integer row_id) {
+		// update MailMessage
+		OValues values = new OValues();
+		values.put("to_read", to_read);
+		update(values, row_id);
+
+		// updating mail.notification
+		OLog.log("row_id = " + row_id + " :  to_read = " + to_read
+				+ " : is_read =  " + !to_read);
+		OValues values_noti = new OValues();
+		values_noti.put("is_read", !to_read);
+		notification.update(values_noti, "message_id = ?",
+				new Object[] { row_id });
 	}
 
 	public String getPartnersName(ODataRow row) {

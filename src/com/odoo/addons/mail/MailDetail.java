@@ -24,6 +24,7 @@ import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OValues;
+import com.odoo.support.AppScope;
 import com.odoo.support.BaseFragment;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
@@ -31,6 +32,7 @@ import com.openerp.R;
 
 public class MailDetail extends BaseFragment implements OnViewClickListener,
 		OnListRowViewClickListener, BeforeListRowCreateListener {
+	public static final String TAG = "com.odoo.addons.mail.MailDetail";
 	private View mView = null;
 	private Integer mMailId = null;
 	private OList mListMessages = null;
@@ -45,6 +47,7 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		setHasOptionsMenu(true);
+		scope = new AppScope(this);
 		mView = inflater.inflate(R.layout.mail_detail_layout, container, false);
 		initArgs();
 		return mView;
@@ -64,8 +67,19 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		MailMessage mail = (MailMessage) db();
 		switch (item.getItemId()) {
-
+		case R.id.menu_mail_read:
+			mail.markAsRead(true, mMailId);
+			scope.main().refreshDrawer(Mail.TAG);
+			Toast.makeText(getActivity(), "Mark as Read", Toast.LENGTH_SHORT)
+					.show();
+			break;
+		case R.id.menu_mail_unread:
+			mail.markAsRead(false, mMailId);
+			Toast.makeText(getActivity(), "Mark as Un Read", Toast.LENGTH_SHORT)
+					.show();
+			break;
 		default:
 			break;
 		}
@@ -83,7 +97,7 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 					parent.getString("message_title"));
 			mRecords.add(0, parent);
 			mRecords.addAll(parent.getO2MRecord("child_ids")
-					.setOrder("date DESc").browseEach());
+					.setOrder("date DESC").browseEach());
 			mListMessages.initListControl(mRecords);
 		}
 	}
@@ -120,8 +134,7 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 			values.put("starred", !is_fav);
 			db().update(values, row.getInt(OColumn.ROW_ID));
 			row.put("starred", !is_fav);
-			mRecords.remove(position);
-			mRecords.add(position, row);
+			scope.main().refreshDrawer(Mail.TAG);
 		} else if (view.getId() == R.id.imgBtnReply) {
 			// FIXME: replace with startActivityForResult
 			startActivity(new Intent(getActivity(), ComposeMail.class));
@@ -141,6 +154,7 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 		boolean is_favorite = row.getBoolean("starred");
 		imgstar.setColorFilter((is_favorite) ? Color.parseColor("#FF8800")
 				: Color.parseColor("#aaaaaa"));
+		scope.main().refreshDrawer(Mail.TAG);
 
 	}
 

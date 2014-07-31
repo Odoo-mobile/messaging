@@ -21,5 +21,9 @@ Your inbox contains private messages or emails sent to you as well as informatio
 When you process messages in your inbox, you can mark some as todo. From this menu, you can process all your todo.</string>
     <string name="message_no_group_message">No message in this group.</string>
     <string name="message_no_outbox_message">No message in outbox.</string>
+    <string name="create_new">Create New</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="save">Save</string>
 
 </resources>
