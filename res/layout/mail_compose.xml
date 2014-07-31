@@ -1,5 +1,5 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res/com.openerp"
+    xmlns:odoo="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#DCE1E3"
@@ -7,33 +7,32 @@
     android:fillViewport="true"
     android:paddingTop="?android:attr/actionBarSize" >
 
-    <LinearLayout
+    <odoo.controls.OForm
+        android:id="@+id/mComposeMailForm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="10dp" >
-
-        <odoo.controls.OField
-            android:id="@+id/name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:editable="true"
-            app:field_name="To"
-            app:with_label="false" />
+        android:padding="10dp"
+        odoo:model="mail.message" >
 
         <odoo.controls.OField
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:editable="true"
-            app:field_name="subject"
-            app:with_label="false" />
+            odoo:customLayout="@layout/partners_contacts"
+            odoo:field_name="partner_ids"
+            odoo:with_label="false" />
 
         <odoo.controls.OField
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:editable="true"
-            app:field_name="body"
-            app:with_label="false" />
-    </LinearLayout>
+            odoo:field_name="subject"
+            odoo:with_label="false" />
+
+        <odoo.controls.OField
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            odoo:field_name="body"
+            odoo:with_label="false" />
+    </odoo.controls.OForm>
 
 </ScrollView>

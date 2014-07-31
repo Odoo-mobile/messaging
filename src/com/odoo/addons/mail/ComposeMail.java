@@ -1,5 +1,6 @@
 package com.odoo.addons.mail;
 
+import odoo.controls.OForm;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -10,11 +11,19 @@ import com.openerp.R;
 
 public class ComposeMail extends Activity {
 
+	private OForm mForm = null;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_mailcompose);
+		setContentView(R.layout.mail_compose);
 		initActionbar();
+		init();
+	}
+
+	private void init() {
+		mForm = (OForm) findViewById(R.id.mComposeMailForm);
+		mForm.setEditable(true);
 	}
 
 	private void initActionbar() {
@@ -36,9 +45,6 @@ public class ComposeMail extends Activity {
 			break;
 		case R.id.menu_mail_compose:
 			Toast.makeText(this, "Compose Mail", Toast.LENGTH_SHORT).show();
-			if (findViewById(R.id.name).equals("null"))
-				Toast.makeText(this, "plz select the at least one Recipient",
-						Toast.LENGTH_SHORT).show();
 		case R.id.menu_add_files:
 			Toast.makeText(this, "Attach Files", Toast.LENGTH_SHORT).show();
 			break;
