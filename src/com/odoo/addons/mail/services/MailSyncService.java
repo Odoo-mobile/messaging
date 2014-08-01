@@ -2,9 +2,7 @@ package com.odoo.addons.mail.services;
 
 import java.util.List;
 
-import odoo.OArguments;
 import odoo.ODomain;
-import odoo.Odoo;
 
 import org.json.JSONArray;
 
@@ -21,7 +19,6 @@ import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.models.MailNotification;
 import com.odoo.auth.OdooAccountManager;
 import com.odoo.orm.ODataRow;
-import com.odoo.orm.OSyncHelper;
 import com.odoo.orm.OValues;
 import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.OUser;
@@ -64,15 +61,16 @@ public class MailSyncService extends OService {
 			// #5 : send mails
 
 			if (mdb.getSyncHelper().syncDataLimit(10).syncWithServer(domain)) {
-				if (updateStarredOnServer(context, user, mdb.getSyncHelper())) {
-					// if (updateReadUnreadOnServer(context, user,
-					// mdb.getSyncHelper())) {
-					// if (sendMails(context, user, mdb.getSyncHelper())) {
-					if (updateOldMessages(context, user, mdb.ids())) {
-						if (user.getAndroidName().equals(account.name)) {
-							context.sendBroadcast(intent);
-						}
+				// if (updateStarredOnServer(context, user,
+				// mdb.getSyncHelper())) {
+				// if (updateReadUnreadOnServer(context, user,
+				// mdb.getSyncHelper())) {
+				// if (sendMails(context, user, mdb.getSyncHelper())) {
+				if (updateOldMessages(context, user, mdb.ids())) {
+					if (user.getAndroidName().equals(account.name)) {
+						context.sendBroadcast(intent);
 					}
+					// }
 					// }
 					// }
 				}
@@ -91,55 +89,74 @@ public class MailSyncService extends OService {
 	// return true;
 	// }
 
-	private Boolean updateStarredOnServer(Context context, OUser user,
-			OSyncHelper helper) {
-		JSONArray mIds_st = new JSONArray();
-		JSONArray mIds_sf = new JSONArray();
-		OArguments args_st = new OArguments();
-		OArguments args_sf = new OArguments();
-		for (ODataRow row : mdb.select("starred = ? and is_dirty = ?",
-				new String[] { "true", "true" })) {
-			mIds_st.put(row.getInt("id"));
-		}
-		for (ODataRow rows : mdb.select("starred = ? and is_dirty = ?",
-				new String[] { "false", "true" })) {
-			mIds_sf.put(rows.getInt("id"));
-		}
-
-		args_st.add(mIds_st);
-		args_st.add(true);
-		args_sf.add(mIds_sf);
-		args_sf.add(false);
-
-		Odoo.DEBUG = true;
-		boolean response = (Boolean) helper.callMethod("set_message_starred",
-				args_st, null);
-		response = (Boolean) helper.callMethod("set_message_starred", args_sf,
-				null);
-
-		if (response)
-			return true;
-		return true;
-	}
-
-	// private Boolean updateReadUnreadOnServer(Context context, OUser user,
+	// private Boolean updateStarredOnServer(Context context, OUser user,
 	// OSyncHelper helper) {
-	// JSONArray to_read = new JSONArray();
-	// JSONArray mIds = new JSONArray();
-	// OArguments args = new OArguments();
-	// for (ODataRow row : mdb.select()) {
-	// mIds.put(row.getInt("id"));
-	// to_read.put(row.getBoolean("starred"));
+	// JSONArray mIds_st = new JSONArray();
+	// JSONArray mIds_sf = new JSONArray();
+	// OArguments args_st = new OArguments();
+	// OArguments args_sf = new OArguments();
+	// for (ODataRow row : mdb.select("starred = ? and is_dirty = ?",
+	// new String[] { "true", "true" })) {
+	// mIds_st.put(row.getInt("id"));
 	// }
-	// args.add(mIds);
-	// args.add(to_read);
-	// args.add(true);
-	// boolean response = (Boolean) helper.callMethod("set_message_read",
-	// args, null);
-	// OLog.log("Read UnRead Response == " + response);
+	// for (ODataRow rows : mdb.select("starred = ? and is_dirty = ?",
+	// new String[] { "false", "true" })) {
+	// mIds_sf.put(rows.getInt("id"));
+	// }
+	//
+	// args_st.add(mIds_st);
+	// args_st.add(true);
+	// args_sf.add(mIds_sf);
+	// args_sf.add(false);
+	// boolean response = (Boolean) helper.callMethod("set_message_starred",
+	// args_st, null);
+	// response = (Boolean) helper.callMethod("set_message_starred", args_sf,
+	// null);
+	//
 	// if (response)
 	// return true;
+	// return true;
+	// }
+
+	// private Boolean updateReadUnReadStarredtoLocal(Context context, OUser
+	// user,
+	// OSyncHelper helper) {
 	// return false;
+	// }
+
+//	private Boolean updateReadUnreadOnServer(Context context, OUser user,
+//			OSyncHelper helper) {
+//		JSONArray mIds_rt = new JSONArray();
+//		JSONArray mIds_rf = new JSONArray();
+//		OArguments args_rt = new OArguments();
+//		OArguments args_rf = new OArguments();
+//		for (ODataRow row : mdb.select("is_dirty = ? and to_read = ?",
+//				new String[] { "true", "true" })) {
+//			mIds_rt.put(row.getInt("id"));
+//			// if (row.getInt("parent_id") != 0)
+//			// mIds_rt.put(row.getInt("id"));
+//
+//			OLog.log("To_read = " + row.getBoolean("to_read"));
+//		}
+//		for (ODataRow row : mdb.select("is_dirty = ? and to_read = ?",
+//				new String[] { "true", "false" })) {
+//			mIds_rf.put(row.getInt("id"));
+//			// if (row.getInt("parent_id") != 0)
+//			// mIds_rf.put(row.getInt("id"));
+//			OLog.log("To_read = " + row.getBoolean("to_read"));
+//		}
+//		args_rt.add(mIds_rt);
+//		args_rt.add(true);
+//		args_rf.add(mIds_rf);
+//		args_rf.add(false);
+//		boolean response = (Boolean) helper.callMethod("set_message_read",
+//				args_rt, null);
+//		response = (Boolean) helper.callMethod("set_message_read", args_rf,
+//				null);
+//		OLog.log("Read UnRead Response == " + response);
+//		if (response)
+//			return true;
+//		return false;
 	// }
 
 	private Boolean updateOldMessages(Context context, OUser user,

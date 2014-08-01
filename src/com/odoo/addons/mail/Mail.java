@@ -36,7 +36,6 @@ import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.AppScope;
 import com.odoo.support.BaseFragment;
 import com.odoo.util.drawer.DrawerItem;
-import com.odoo.util.logger.OLog;
 import com.openerp.OETouchListener;
 import com.openerp.OETouchListener.OnPullListener;
 import com.openerp.R;
@@ -215,19 +214,22 @@ public class Mail extends BaseFragment implements OnPullListener,
 						if (parent != null) {
 							// Child
 							if (!mParentList.containsKey("key_"
-									+ parent.getString("id"))) {
+									+ parent.getString(OColumn.ROW_ID))) {
 								parent.put("body", row.getString("author_name")
 										+ " - " + row.getString("body"));
 								parent.put("date", row.getString("date"));
 								parent.put("to_read", row.getBoolean("to_read"));
 								mParentList.put(
-										"key_" + parent.getString("id"), parent);
+										"key_"
+												+ parent.getString(OColumn.ROW_ID),
+										parent);
 
 							}
 						} else { // parent
 							if (!mParentList.containsKey("key_"
-									+ row.getString("id"))) {
-								mParentList.put("key_" + row.getString("id"),
+									+ row.getString(OColumn.ROW_ID))) {
+								mParentList.put(
+										"key_" + row.getString(OColumn.ROW_ID),
 										row);
 							}
 						}
@@ -273,29 +275,10 @@ public class Mail extends BaseFragment implements OnPullListener,
 
 	private int count(Context context, Type key) {
 		int count = 0;
-		switch (key) {
-		case Inbox:
-			count = new MailMessage(context).count(
-					"to_read = ? AND starred = ?", new Object[] { "true",
-							"false" });
-			break;
-		case ToMe:
-			count = new MailMessage(context).count("to_read = ?",
-					new Object[] { "true" });
-			break;
-		case ToDo:
-			count = new MailMessage(context).count(
-					"to_read = ? AND starred = ?", new Object[] { "true",
-							"true" });
-			break;
-		case Outbox:
-			count = new MailMessage(context).count("id = ?",
-					new Object[] { "false" });
-			break;
-
-		default:
-			break;
-		}
+		HashMap<String, Object> map = getWhere(key);
+		String where = (String) map.get("where");
+		String whereArgs[] = (String[]) map.get("whereArgs");
+		count = new MailMessage(context).count(where, whereArgs);
 		return count;
 	}
 
@@ -363,12 +346,10 @@ public class Mail extends BaseFragment implements OnPullListener,
 		if (view.getId() == R.id.img_starred_mlist) {
 			ImageView imgStarred = (ImageView) view;
 			boolean is_fav = row.getBoolean("starred");
-			OLog.log("Is_fav  = " + is_fav);
 			imgStarred.setColorFilter((!is_fav) ? Color.parseColor("#FF8800")
 					: Color.parseColor("#aaaaaa"));
 			OValues values = new OValues();
 			values.put("starred", !is_fav);
-			OLog.log("Is_fav  = " + !is_fav);
 			mail.update(values, row.getInt(OColumn.ROW_ID));
 			row.put("starred", !is_fav);
 			mListRecords.remove(position);

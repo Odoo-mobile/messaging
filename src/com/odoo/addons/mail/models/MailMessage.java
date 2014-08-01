@@ -25,12 +25,11 @@ import com.odoo.orm.types.OInteger;
 import com.odoo.orm.types.OText;
 import com.odoo.orm.types.OVarchar;
 import com.odoo.util.ODate;
-import com.odoo.util.logger.OLog;
 
 public class MailMessage extends OModel {
 	Context mContext = null;
 	MailNotification notification = null;
-	OColumn type = new OColumn("Type", OInteger.class);
+	OColumn type = new OColumn("Type", OInteger.class).setDefault("email");
 	OColumn email_from = new OColumn("Email", OVarchar.class, 64)
 			.setDefault("false");
 	OColumn author_id = new OColumn("Author", ResPartner.class,
@@ -56,14 +55,14 @@ public class MailMessage extends OModel {
 			.setRelatedColumn("message_id");
 	OColumn subject = new OColumn("Subject", OVarchar.class, 100)
 			.setDefault("false");
-	OColumn date = new OColumn("Date", ODateTime.class)
-			.setParsePatter(ODate.DEFAULT_FORMAT);
-	OColumn body = new OColumn("Body", OHtml.class);
-	OColumn to_read = new OColumn("To Read", OBoolean.class);
+	OColumn date = new OColumn("Date", ODateTime.class).setParsePatter(
+			ODate.DEFAULT_FORMAT).setDefault(
+			ODate.getUTCDate(ODate.DEFAULT_FORMAT));
+	OColumn body = new OColumn("Body", OHtml.class).setDefault("");
 	OColumn vote_user_ids = new OColumn("Voters", ResUsers.class,
 			RelationType.ManyToMany);
-
-	OColumn starred = new OColumn("Starred", OBoolean.class);
+	OColumn to_read = new OColumn("To Read", OBoolean.class).setDefault(true);
+	OColumn starred = new OColumn("Starred", OBoolean.class).setDefault(false);
 
 	// Functional Fields
 	@Odoo.Functional(method = "getMessageTitle")
@@ -80,6 +79,20 @@ public class MailMessage extends OModel {
 	public MailMessage(Context context) {
 		super(context, "mail.message");
 		mContext = context;
+		write_date.setDefault(false);
+		create_date.setDefault(false);
+	}
+
+	public Integer author_id() {
+		return new ResPartner(mContext).selectRowId(user().getPartner_id());
+	}
+
+	public Boolean to_read() {
+		return false;
+	}
+
+	public Boolean starred() {
+		return false;
 	}
 
 	@Override
@@ -133,8 +146,6 @@ public class MailMessage extends OModel {
 		update(values, row_id);
 
 		// updating mail.notification
-		OLog.log("row_id = " + row_id + " :  to_read = " + to_read
-				+ " : is_read =  " + !to_read);
 		OValues values_noti = new OValues();
 		values_noti.put("is_read", !to_read);
 		notification.update(values_noti, "message_id = ?",

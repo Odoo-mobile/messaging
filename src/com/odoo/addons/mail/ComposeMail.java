@@ -9,20 +9,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.base.ir.Attachment;
 import com.odoo.orm.ODataRow;
+import com.odoo.orm.OValues;
+import com.odoo.util.ODate;
 import com.openerp.R;
 
 public class ComposeMail extends Activity {
 	public static final String TAG = "com.odoo.addons.mail.ComposeMail";
 	Context mContext = null;
 	Attachment mAttachment = null;
+	MailMessage mail = null;
+	private OForm mForm = null;
 
 	enum AttachmentType {
 		IMAGE, FILE
 	}
-
-	private OForm mForm = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +39,7 @@ public class ComposeMail extends Activity {
 		initControls();
 		mContext = this;
 		mAttachment = new Attachment(mContext);
+		mail = new MailMessage(mContext);
 	}
 
 	private void initControls() {
@@ -47,7 +51,6 @@ public class ComposeMail extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == RESULT_OK) {
 			ODataRow attachment = mAttachment.handleResult(requestCode, data);
-
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
@@ -68,21 +71,31 @@ public class ComposeMail extends Activity {
 		switch (item.getItemId()) {
 		case android.R.id.home:
 			finish();
-			break;
+			return true;
 		case R.id.menu_mail_compose:
+			mailcompose();
 			Toast.makeText(this, "Compose Mail", Toast.LENGTH_SHORT).show();
+			finish();
+			return true;
 		case R.id.menu_add_files:
 			Toast.makeText(this, "Attach Images", Toast.LENGTH_SHORT).show();
 			mAttachment.requestAttachment(Attachment.Types.FILE);
-			break;
+			return true;
 		case R.id.menu_add_images:
 			Toast.makeText(this, "Attach Files", Toast.LENGTH_SHORT).show();
 			mAttachment
 					.requestAttachment(Attachment.Types.IMAGE_OR_CAPTURE_IMAGE);
-			break;
+			return true;
 		default:
-			break;
+			return super.onOptionsItemSelected(item);
 		}
-		return super.onOptionsItemSelected(item);
+	}
+
+	private void mailcompose() {
+		OValues values = new OValues();
+		values = mForm.getFormValues();
+		values.put("author_id", mail.author_id());
+		values.put("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
+		mail.create(values);
 	}
 }
