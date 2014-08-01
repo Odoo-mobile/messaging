@@ -2,9 +2,11 @@ package com.odoo.addons.mail.services;
 
 import java.util.List;
 
+import odoo.OArguments;
 import odoo.ODomain;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import android.accounts.Account;
 import android.app.Service;
@@ -18,7 +20,9 @@ import android.util.Log;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.models.MailNotification;
 import com.odoo.auth.OdooAccountManager;
+import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
+import com.odoo.orm.OSyncHelper;
 import com.odoo.orm.OValues;
 import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.OUser;
@@ -60,13 +64,14 @@ public class MailSyncService extends OService {
 			// #4 : update read/unread/starred server to local
 			// #5 : send mails
 
-			if (mdb.getSyncHelper().syncDataLimit(10).syncWithServer(domain)) {
-				// if (updateStarredOnServer(context, user,
-				// mdb.getSyncHelper())) {
-				// if (updateReadUnreadOnServer(context, user,
-				// mdb.getSyncHelper())) {
-				// if (sendMails(context, user, mdb.getSyncHelper())) {
-				if (updateOldMessages(context, user, mdb.ids())) {
+			if (sendMails(context, user, mdb, mdb.getSyncHelper())) {
+				if (mdb.getSyncHelper().syncDataLimit(30)
+						.syncWithServer(domain)) {
+					// if (updateStarredOnServer(context, user,
+					// mdb.getSyncHelper())) {
+					// if (updateReadUnreadOnServer(context, user,
+					// mdb.getSyncHelper())) {
+					// if (updateOldMessages(context, user, mdb.ids())) {
 					if (user.getAndroidName().equals(account.name)) {
 						context.sendBroadcast(intent);
 					}
@@ -81,83 +86,59 @@ public class MailSyncService extends OService {
 		}
 	}
 
-	// private Boolean sendMails(Context context, OUser user, OSyncHelper
-	// helper) {
-	// helper.callMethod(method, args)
-	// helper.callMethod(method, args, context)
-	// helper.callMethod(method, args, context, kwargs)
-	// return true;
-	// }
+	private Boolean sendMails(Context context, OUser user, MailMessage mails,
+			OSyncHelper helper) {
+		for (ODataRow mail : mails.select("id = ?", new Object[] { 0 })) {
+			try {
+				JSONObject arguments = new JSONObject();
+				arguments.put("composition_mode", "comment");
+				arguments.put("model", false);
+				arguments.put("parent_id", false);
+				arguments.put("subject", mail.getString("subject"));
+				arguments.put("body", mail.getString("body"));
+				arguments.put("post", true);
+				arguments.put("notify", false);
+				arguments.put("same_thread", true);
+				arguments.put("use_active_domain", false);
+				arguments.put("reply_to", false);
+				arguments.put("res_id", 0);
+				arguments.put("record_name", false);
+				JSONArray partner_ids = new JSONArray();
+				JSONArray p_ids = new JSONArray();
+				for (ODataRow partner : mail.getM2MRecord("partner_ids")
+						.browseEach()) {
+					p_ids.put(partner.getInt("id"));
 
-	// private Boolean updateStarredOnServer(Context context, OUser user,
-	// OSyncHelper helper) {
-	// JSONArray mIds_st = new JSONArray();
-	// JSONArray mIds_sf = new JSONArray();
-	// OArguments args_st = new OArguments();
-	// OArguments args_sf = new OArguments();
-	// for (ODataRow row : mdb.select("starred = ? and is_dirty = ?",
-	// new String[] { "true", "true" })) {
-	// mIds_st.put(row.getInt("id"));
-	// }
-	// for (ODataRow rows : mdb.select("starred = ? and is_dirty = ?",
-	// new String[] { "false", "true" })) {
-	// mIds_sf.put(rows.getInt("id"));
-	// }
-	//
-	// args_st.add(mIds_st);
-	// args_st.add(true);
-	// args_sf.add(mIds_sf);
-	// args_sf.add(false);
-	// boolean response = (Boolean) helper.callMethod("set_message_starred",
-	// args_st, null);
-	// response = (Boolean) helper.callMethod("set_message_starred", args_sf,
-	// null);
-	//
-	// if (response)
-	// return true;
-	// return true;
-	// }
+				}
+				partner_ids.put(6);
+				partner_ids.put(false);
+				partner_ids.put(p_ids);
+				arguments.put("partner_ids", new JSONArray().put(partner_ids));
+				arguments.put("template_id", false);
 
-	// private Boolean updateReadUnReadStarredtoLocal(Context context, OUser
-	// user,
-	// OSyncHelper helper) {
-	// return false;
-	// }
+				JSONObject kwargs = new JSONObject();
+				kwargs.put("context", helper.getContext(new JSONObject()));
 
-//	private Boolean updateReadUnreadOnServer(Context context, OUser user,
-//			OSyncHelper helper) {
-//		JSONArray mIds_rt = new JSONArray();
-//		JSONArray mIds_rf = new JSONArray();
-//		OArguments args_rt = new OArguments();
-//		OArguments args_rf = new OArguments();
-//		for (ODataRow row : mdb.select("is_dirty = ? and to_read = ?",
-//				new String[] { "true", "true" })) {
-//			mIds_rt.put(row.getInt("id"));
-//			// if (row.getInt("parent_id") != 0)
-//			// mIds_rt.put(row.getInt("id"));
-//
-//			OLog.log("To_read = " + row.getBoolean("to_read"));
-//		}
-//		for (ODataRow row : mdb.select("is_dirty = ? and to_read = ?",
-//				new String[] { "true", "false" })) {
-//			mIds_rf.put(row.getInt("id"));
-//			// if (row.getInt("parent_id") != 0)
-//			// mIds_rf.put(row.getInt("id"));
-//			OLog.log("To_read = " + row.getBoolean("to_read"));
-//		}
-//		args_rt.add(mIds_rt);
-//		args_rt.add(true);
-//		args_rf.add(mIds_rf);
-//		args_rf.add(false);
-//		boolean response = (Boolean) helper.callMethod("set_message_read",
-//				args_rt, null);
-//		response = (Boolean) helper.callMethod("set_message_read", args_rf,
-//				null);
-//		OLog.log("Read UnRead Response == " + response);
-//		if (response)
-//			return true;
-//		return false;
-	// }
+				OArguments args = new OArguments();
+				args.add(arguments);
+				String model = "mail.compose.message";
+				// Creating compose message
+				Object message_id = helper.callMethod(model, "create", args,
+						null, kwargs);
+				// sending mail
+				args = new OArguments();
+				args.add(new JSONArray().put(message_id));
+				args.add(helper.getContext(null));
+				helper.callMethod(model, "send_mail", args, null, null);
+				mails.delete(mail.getInt(OColumn.ROW_ID));
+			} catch (Exception e) {
+				Log.e(TAG, "sendMails():" + e.getMessage());
+			}
+		}
+		return true;
+	}
+
+
 
 	private Boolean updateOldMessages(Context context, OUser user,
 			List<Integer> ids) {

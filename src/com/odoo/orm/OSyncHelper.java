@@ -961,7 +961,12 @@ public class OSyncHelper {
 	 * @return the object
 	 */
 	public Object callMethod(String method, OArguments args, JSONObject context) {
-		return callMethod(method, args, context, null);
+		return callMethod(mModel.getModelName(), method, args, context, null);
+	}
+
+	public Object callMethod(String method, OArguments args,
+			JSONObject context, JSONObject kwargs) {
+		return callMethod(mModel.getModelName(), method, args, context, kwargs);
 	}
 
 	/**
@@ -977,7 +982,7 @@ public class OSyncHelper {
 	 *            the kwargs
 	 * @return the object
 	 */
-	public Object callMethod(String method, OArguments args,
+	public Object callMethod(String model, String method, OArguments args,
 			JSONObject context, JSONObject kwargs) {
 		try {
 			if (kwargs == null)
@@ -985,9 +990,11 @@ public class OSyncHelper {
 			if (context != null) {
 				args.add(mOdoo.updateContext(context));
 			}
-			JSONObject result = mOdoo.call_kw(mModel.getModelName(), method,
-					args.getArray(), kwargs);
-			return result.has("result");
+			JSONObject result = mOdoo.call_kw(model, method, args.getArray(),
+					kwargs);
+			if (result.has("result")) {
+				return result.get("result");
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

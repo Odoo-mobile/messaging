@@ -27,8 +27,9 @@ import com.odoo.orm.types.OVarchar;
 import com.odoo.util.ODate;
 
 public class MailMessage extends OModel {
-	Context mContext = null;
-	MailNotification notification = null;
+	private Context mContext = null;
+	private MailNotification notification = null;
+
 	OColumn type = new OColumn("Type", OInteger.class).setDefault("email");
 	OColumn email_from = new OColumn("Email", OVarchar.class, 64)
 			.setDefault("false");
@@ -85,14 +86,6 @@ public class MailMessage extends OModel {
 
 	public Integer author_id() {
 		return new ResPartner(mContext).selectRowId(user().getPartner_id());
-	}
-
-	public Boolean to_read() {
-		return false;
-	}
-
-	public Boolean starred() {
-		return false;
 	}
 
 	@Override

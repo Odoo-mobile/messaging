@@ -110,7 +110,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 		mListControl.initListControl(mListRecords);
 	}
 
-	private HashMap<String, Object> getWhere(Type type) {
+	private HashMap<String, Object> getWhere(Context context, Type type) {
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		String where = null;
 		String[] whereArgs = null;
@@ -120,7 +120,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 			whereArgs = new String[] { "true", "false", "0" };
 			if (mListControl != null) {
 				mListControl.setEmptyListIcon(R.drawable.ic_action_inbox);
-				mListControl.setEmptyListMessage(getActivity().getResources()
+				mListControl.setEmptyListMessage(context.getResources()
 						.getString(R.string.message_inbox_all_read));
 			}
 			break;
@@ -129,7 +129,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 			whereArgs = new String[] { "true", "false" };
 			if (mListControl != null) {
 				mListControl.setEmptyListIcon(R.drawable.ic_action_user);
-				mListControl.setEmptyListMessage(getActivity().getResources()
+				mListControl.setEmptyListMessage(context.getResources()
 						.getString(R.string.message_tome_all_read));
 			}
 			break;
@@ -138,7 +138,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 			whereArgs = new String[] { "true", "true" };
 			if (mListControl != null) {
 				mListControl.setEmptyListIcon(R.drawable.ic_action_clipboard);
-				mListControl.setEmptyListMessage(getActivity().getResources()
+				mListControl.setEmptyListMessage(context.getResources()
 						.getString(R.string.message_todo_all_read));
 			}
 			break;
@@ -147,7 +147,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 			whereArgs = new String[] { "0" };
 			if (mListControl != null) {
 				mListControl.setEmptyListIcon(R.drawable.ic_action_unsent_mail);
-				mListControl.setEmptyListMessage(getActivity().getResources()
+				mListControl.setEmptyListMessage(context.getResources()
 						.getString(R.string.message_no_outbox_message));
 			}
 			break;
@@ -158,7 +158,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 			if (mListControl != null) {
 				mListControl
 						.setEmptyListIcon(R.drawable.ic_action_social_group);
-				mListControl.setEmptyListMessage(getActivity().getResources()
+				mListControl.setEmptyListMessage(context.getResources()
 						.getString(R.string.message_no_group_message));
 			}
 			break;
@@ -197,6 +197,11 @@ public class Mail extends BaseFragment implements OnPullListener,
 
 		@Override
 		protected Boolean doInBackground(Void... params) {
+			try {
+				Thread.sleep(500);
+			} catch (Exception e) {
+
+			}
 			scope.main().runOnUiThread(new Runnable() {
 
 				@Override
@@ -204,7 +209,8 @@ public class Mail extends BaseFragment implements OnPullListener,
 					if (mOffset == 0)
 						mListRecords.clear();
 					LinkedHashMap<String, ODataRow> mParentList = new LinkedHashMap<String, ODataRow>();
-					HashMap<String, Object> map = getWhere(messageType);
+					HashMap<String, Object> map = getWhere(getActivity(),
+							messageType);
 					String where = (String) map.get("where");
 					String whereArgs[] = (String[]) map.get("whereArgs");
 					OModel model = db();
@@ -278,7 +284,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 
 	private int count_total(Context context, Type key) {
 		int total_count = 0;
-		HashMap<String, Object> map = getWhere(key);
+		HashMap<String, Object> map = getWhere(context, key);
 		String where = (String) map.get("where");
 		String whereArgs[] = (String[]) map.get("whereArgs");
 		total_count = new MailMessage(context).count(where, whereArgs);
