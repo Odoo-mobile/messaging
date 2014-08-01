@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-
 import odoo.controls.OList;
 import odoo.controls.OList.BeforeListRowCreateListener;
 import odoo.controls.OList.OnListBottomReachedListener;
@@ -25,7 +24,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.SearchView;
-
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
@@ -34,7 +32,7 @@ import com.odoo.orm.OModel;
 import com.odoo.orm.OValues;
 import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.AppScope;
-import com.odoo.support.BaseFragment;
+import com.odoo.support.fragment.BaseFragment;
 import com.odoo.util.drawer.DrawerItem;
 import com.openerp.OETouchListener;
 import com.openerp.OETouchListener.OnPullListener;
@@ -118,8 +116,8 @@ public class Mail extends BaseFragment implements OnPullListener,
 		String[] whereArgs = null;
 		switch (type) {
 		case Inbox:
-			where = "to_read = ? AND starred = ?";
-			whereArgs = new String[] { "true", "false" };
+			where = "to_read = ? AND starred = ? AND id != ?";
+			whereArgs = new String[] { "true", "false", "0" };
 			if (mListControl != null) {
 				mListControl.setEmptyListIcon(R.drawable.ic_action_inbox);
 				mListControl.setEmptyListMessage(getActivity().getResources()
@@ -163,6 +161,10 @@ public class Mail extends BaseFragment implements OnPullListener,
 				mListControl.setEmptyListMessage(getActivity().getResources()
 						.getString(R.string.message_no_group_message));
 			}
+			break;
+		case Archives:
+			where = "id != ?";
+			whereArgs = new String[] { "0" };
 			break;
 		default:
 			break;
@@ -260,26 +262,27 @@ public class Mail extends BaseFragment implements OnPullListener,
 	public List<DrawerItem> drawerMenus(Context context) {
 		List<DrawerItem> menu = new ArrayList<DrawerItem>();
 		menu.add(new DrawerItem(TAG, "Messaging", true));
-		menu.add(new DrawerItem(TAG, "Inbox", count(context, Type.Inbox),
+		menu.add(new DrawerItem(TAG, "Inbox", count_total(context, Type.Inbox),
 				R.drawable.ic_action_inbox, object(Type.Inbox)));
-		menu.add(new DrawerItem(TAG, "To: me", count(context, Type.ToMe),
+		menu.add(new DrawerItem(TAG, "To: me", count_total(context, Type.ToMe),
 				R.drawable.ic_action_user, object(Type.ToMe)));
-		menu.add(new DrawerItem(TAG, "To-do", count(context, Type.ToDo),
+		menu.add(new DrawerItem(TAG, "To-do", count_total(context, Type.ToDo),
 				R.drawable.ic_action_clipboard, object(Type.ToDo)));
-		menu.add(new DrawerItem(TAG, "Archives", count(context, Type.Archives),
+		menu.add(new DrawerItem(TAG, "Archives", 0,
 				R.drawable.ic_action_briefcase, object(Type.Archives)));
-		menu.add(new DrawerItem(TAG, "Outbox", count(context, Type.Outbox),
+		menu.add(new DrawerItem(TAG, "Outbox",
+				count_total(context, Type.Outbox),
 				R.drawable.ic_action_unsent_mail, object(Type.Outbox)));
 		return menu;
 	}
 
-	private int count(Context context, Type key) {
-		int count = 0;
+	private int count_total(Context context, Type key) {
+		int total_count = 0;
 		HashMap<String, Object> map = getWhere(key);
 		String where = (String) map.get("where");
 		String whereArgs[] = (String[]) map.get("whereArgs");
-		count = new MailMessage(context).count(where, whereArgs);
-		return count;
+		total_count = new MailMessage(context).count(where, whereArgs);
+		return total_count;
 	}
 
 	private Fragment object(Type type) {

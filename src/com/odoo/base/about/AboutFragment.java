@@ -30,7 +30,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.odoo.support.AppScope;
-import com.odoo.support.BaseFragment;
+import com.odoo.support.fragment.BaseFragment;
 import com.odoo.util.drawer.DrawerItem;
 import com.openerp.R;
 

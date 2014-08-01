@@ -25,7 +25,7 @@ import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OValues;
 import com.odoo.support.AppScope;
-import com.odoo.support.BaseFragment;
+import com.odoo.support.fragment.BaseFragment;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
 import com.openerp.R;

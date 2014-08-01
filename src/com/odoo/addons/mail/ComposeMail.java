@@ -62,6 +62,7 @@ public class ComposeMail extends Activity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.clear();
 		getMenuInflater().inflate(R.menu.menu_mail_compose, menu);
 		return true;
 	}

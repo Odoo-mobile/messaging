@@ -26,6 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             odoo:field_name="subject"
+            odoo:singleLine="true"
             odoo:with_label="false" />
 
         <odoo.controls.OField
