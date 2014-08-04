@@ -157,15 +157,15 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 
 	@Override
 	public void beforeListRowCreate(int position, ODataRow row, View view) {
-		if (position == 0) {
-			view.setBackgroundColor(Color.parseColor("#ebebeb"));
-		} else {
-			view.setBackgroundColor(Color.WHITE);
-		}
+		mListMessages.showAsCard((position != 0));
 		ImageView imgstar = (ImageView) view.findViewById(R.id.imgBtnStar);
+		ImageView imgHasVoted = (ImageView) view.findViewById(R.id.imgHasVoted);
+		boolean has_voted = row.getBoolean("has_voted");
 		boolean is_favorite = row.getBoolean("starred");
 		imgstar.setColorFilter((is_favorite) ? Color.parseColor("#FF8800")
 				: Color.parseColor("#aaaaaa"));
+		imgHasVoted.setColorFilter((has_voted) ? getActivity().getResources()
+				.getColor(R.color.odoo_purple) : Color.parseColor("#aaaaaa"));
 		scope.main().refreshDrawer(Mail.TAG);
 
 	}

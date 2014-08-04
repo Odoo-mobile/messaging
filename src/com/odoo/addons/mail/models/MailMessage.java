@@ -74,6 +74,8 @@ public class MailMessage extends OModel {
 	OColumn author_name = new OColumn("Author", OVarchar.class);
 	@Odoo.Functional(method = "hasVoted")
 	OColumn has_voted = new OColumn("Has voted", OVarchar.class);
+	@Odoo.Functional(method = "getVoteCounter")
+	OColumn vote_counter = new OColumn("Votes", OInteger.class);
 	@Odoo.Functional(method = "getPartnersName")
 	OColumn partners_name = new OColumn("Partners", OVarchar.class);
 
@@ -152,6 +154,14 @@ public class MailMessage extends OModel {
 			partners_name.add(p.getString("name"));
 		}
 		return partners + TextUtils.join(", ", partners_name);
+	}
+
+	public String getVoteCounter(ODataRow row) {
+		int votes = row.getM2MRecord(vote_user_ids.getName()).browseEach()
+				.size();
+		if (votes > 0)
+			return votes + "";
+		return "";
 	}
 
 	public Boolean hasVoted(ODataRow row) {

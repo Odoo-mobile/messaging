@@ -7,5 +7,6 @@
     <color name="list_divider">#ddd</color>
     <color name="odoo_green_dark">#669900</color>
     <color name="odoo_red_dark">#CC0000</color>
+    <color name="card_view_parent_background">#e5e5e5</color>
 
 </resources>
