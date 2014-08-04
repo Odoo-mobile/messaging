@@ -36,12 +36,17 @@ public class ComposeMail extends Activity {
 		setContentView(R.layout.mail_compose);
 		initActionbar();
 		init();
+		mForm = (OForm) findViewById(R.id.mComposeMailForm);
 		Bundle bundle = getIntent().getExtras();
 		if (bundle != null && bundle.containsKey(MailDetail.KEY_MESSAGE_ID)) {
 			mMailId = bundle.getInt(MailDetail.KEY_MESSAGE_ID);
 			mParentMail = mail.select(mMailId);
+			OField partners = (OField) mForm.findViewById(R.id.fieldPartners);
+			partners.setObjectEditable(false);
 			setTitle(getResources().getString(R.string.title_replay_mail));
+			mForm.initForm(mParentMail, true);
 		}
+		initControls();
 		if (bundle != null && bundle.containsKey(MailDetail.KEY_SUBJECT)) {
 			OField subject = (OField) mForm.findViewById(R.id.fieldSubject);
 			subject.setText(getIntent().getExtras().getString(
@@ -55,14 +60,12 @@ public class ComposeMail extends Activity {
 	}
 
 	private void init() {
-		initControls();
 		mContext = this;
 		mAttachment = new Attachment(mContext);
 		mail = new MailMessage(mContext);
 	}
 
 	private void initControls() {
-		mForm = (OForm) findViewById(R.id.mComposeMailForm);
 		mForm.setEditable(true);
 	}
 

@@ -16,6 +16,7 @@
         odoo:model="mail.message" >
 
         <odoo.controls.OField
+            android:id="@+id/fieldPartners"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             odoo:customLayout="@layout/partners_contacts"
