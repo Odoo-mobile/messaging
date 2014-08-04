@@ -1,5 +1,6 @@
 package com.odoo.addons.mail;
 
+import odoo.controls.OField;
 import odoo.controls.OForm;
 import android.app.Activity;
 import android.content.Context;
@@ -18,10 +19,12 @@ import com.openerp.R;
 
 public class ComposeMail extends Activity {
 	public static final String TAG = "com.odoo.addons.mail.ComposeMail";
-	Context mContext = null;
-	Attachment mAttachment = null;
-	MailMessage mail = null;
+	private Context mContext = null;
+	private Attachment mAttachment = null;
+	private MailMessage mail = null;
 	private OForm mForm = null;
+	private Integer mMailId = null;
+	private ODataRow mParentMail = null;
 
 	enum AttachmentType {
 		IMAGE, FILE
@@ -33,6 +36,22 @@ public class ComposeMail extends Activity {
 		setContentView(R.layout.mail_compose);
 		initActionbar();
 		init();
+		Bundle bundle = getIntent().getExtras();
+		if (bundle != null && bundle.containsKey(MailDetail.KEY_MESSAGE_ID)) {
+			mMailId = bundle.getInt(MailDetail.KEY_MESSAGE_ID);
+			mParentMail = mail.select(mMailId);
+			setTitle(getResources().getString(R.string.title_replay_mail));
+		}
+		if (bundle != null && bundle.containsKey(MailDetail.KEY_SUBJECT)) {
+			OField subject = (OField) mForm.findViewById(R.id.fieldSubject);
+			subject.setText(getIntent().getExtras().getString(
+					MailDetail.KEY_SUBJECT));
+		}
+		if (bundle != null && bundle.containsKey(MailDetail.KEY_BODY)) {
+			OField body = (OField) mForm.findViewById(R.id.fieldBody);
+			body.setText(getIntent().getExtras().getString(MailDetail.KEY_BODY));
+			body.requestFocus();
+		}
 	}
 
 	private void init() {

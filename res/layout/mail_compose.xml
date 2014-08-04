@@ -23,6 +23,7 @@
             odoo:with_label="false" />
 
         <odoo.controls.OField
+            android:id="@+id/fieldSubject"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             odoo:field_name="subject"
@@ -30,6 +31,7 @@
             odoo:with_label="false" />
 
         <odoo.controls.OField
+            android:id="@+id/fieldBody"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             odoo:field_name="body"

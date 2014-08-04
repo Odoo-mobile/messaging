@@ -16,7 +16,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -31,8 +33,12 @@ import com.odoo.util.drawer.DrawerItem;
 import com.openerp.R;
 
 public class MailDetail extends BaseFragment implements OnViewClickListener,
-		OnListRowViewClickListener, BeforeListRowCreateListener {
+		OnListRowViewClickListener, BeforeListRowCreateListener,
+		OnClickListener {
 	public static final String TAG = "com.odoo.addons.mail.MailDetail";
+	public static final String KEY_MESSAGE_ID = "message_id";
+	public static final String KEY_SUBJECT = "subject";
+	public static final String KEY_BODY = "body";
 	private View mView = null;
 	private Integer mMailId = null;
 	private OList mListMessages = null;
@@ -48,14 +54,15 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 			Bundle savedInstanceState) {
 		setHasOptionsMenu(true);
 		scope = new AppScope(this);
-		mView = inflater.inflate(R.layout.mail_detail_layout, container, false);
 		initArgs();
-		return mView;
+		return inflater.inflate(R.layout.mail_detail_layout, container, false);
 	}
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
+		mView = view;
 		init();
+
 	}
 
 	private void initArgs() {
@@ -100,6 +107,8 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 					.setOrder("date DESC").browseEach());
 			mListMessages.initListControl(mRecords);
 		}
+		mView.findViewById(R.id.btnStartFullComposeMode).setOnClickListener(
+				this);
 	}
 
 	@Override
@@ -136,8 +145,11 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 			row.put("starred", !is_fav);
 			scope.main().refreshDrawer(Mail.TAG);
 		} else if (view.getId() == R.id.imgBtnReply) {
-			// FIXME: replace with startActivityForResult
-			startActivity(new Intent(getActivity(), ComposeMail.class));
+			mView.findViewById(R.id.edtQuickReplyMessage).requestFocus();
+			InputMethodManager imm = (InputMethodManager) getActivity()
+					.getSystemService(Context.INPUT_METHOD_SERVICE);
+			imm.showSoftInput(mView.findViewById(R.id.edtQuickReplyMessage),
+					InputMethodManager.SHOW_IMPLICIT);
 		} else if (view.getId() == R.id.imgVotenb) {
 			Toast.makeText(getActivity(), "Voted", Toast.LENGTH_SHORT).show();
 		}
@@ -156,6 +168,23 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 				: Color.parseColor("#aaaaaa"));
 		scope.main().refreshDrawer(Mail.TAG);
 
+	}
+
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.btnStartFullComposeMode:
+			Bundle bundle = new Bundle();
+			bundle.putInt(KEY_MESSAGE_ID, mMailId);
+			bundle.putString(KEY_SUBJECT,
+					"Re: " + OControls.getText(mView, R.id.txvDetailSubject));
+			bundle.putString(KEY_BODY,
+					OControls.getText(mView, R.id.edtQuickReplyMessage));
+			Intent intent = new Intent(getActivity(), ComposeMail.class);
+			intent.putExtras(bundle);
+			startActivity(intent);
+			break;
+		}
 	}
 
 }

@@ -25,5 +25,6 @@ When you process messages in your inbox, you can mark some as todo. From this me
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="save">Save</string>
+    <string name="title_replay_mail">Reply</string>
 
 </resources>
