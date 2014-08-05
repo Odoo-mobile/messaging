@@ -2,10 +2,16 @@ package com.odoo.addons.mail.models;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import odoo.OArguments;
 import odoo.ODomain;
+
 import org.json.JSONArray;
+import org.json.JSONObject;
+
 import android.content.Context;
 import android.text.TextUtils;
+
 import com.odoo.base.ir.IrAttachment;
 import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
@@ -24,7 +30,6 @@ import com.odoo.util.ODate;
 
 public class MailMessage extends OModel {
 	private Context mContext = null;
-	private MailNotification notification = null;
 
 	OColumn type = new OColumn("Type", OInteger.class).setDefault("email");
 	OColumn email_from = new OColumn("Email", OVarchar.class, 64)
@@ -74,6 +79,8 @@ public class MailMessage extends OModel {
 	OColumn vote_counter = new OColumn("Votes", OInteger.class);
 	@Odoo.Functional(method = "getPartnersName")
 	OColumn partners_name = new OColumn("Partners", OVarchar.class);
+
+	private List<Integer> mNewCreateIds = new ArrayList<Integer>();
 
 	public MailMessage(Context context) {
 		super(context, "mail.message");
@@ -128,26 +135,86 @@ public class MailMessage extends OModel {
 		return false;
 	}
 
-	public void markAsRead(Boolean to_read, Integer row_id) {
-		notification = new MailNotification(mContext);
-		ODataRow parent = select(row_id);
-		_markAsRead(to_read, row_id);
-		for (ODataRow child : parent.getO2MRecord("child_ids").browseEach()) {
-			_markAsRead(to_read, child.getInt(OColumn.ROW_ID));
+	public boolean markAsTodo(ODataRow row, Boolean todo_state) {
+		try {
+			OArguments args = new OArguments();
+			args.add(new JSONArray().put(row.getInt("id")));
+			args.add(todo_state);
+			args.add(true);
+			getSyncHelper().callMethod("set_message_starred", args, null);
+			OValues values = new OValues();
+			values.put("starred", todo_state);
+			// updating local record
+			update(values, row.getInt(OColumn.ROW_ID));
+			// updating mail notification
+			values = new OValues();
+			values.put("starred", todo_state);
+			new MailNotification(mContext).update(values, "message_id = ?",
+					new Object[] { row.getInt(OColumn.ROW_ID) });
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		return false;
 	}
 
-	private void _markAsRead(Boolean to_read, Integer row_id) {
-		// update MailMessage
-		OValues values = new OValues();
-		values.put("to_read", to_read);
-		update(values, row_id);
+	@Override
+	public int create(OValues values) {
+		int newId = super.create(values);
+		mNewCreateIds.add(newId);
+		return newId;
+	}
 
-		// updating mail.notification
-		OValues values_noti = new OValues();
-		values_noti.put("is_read", !to_read);
-		notification.update(values_noti, "message_id = ?",
-				new Object[] { row_id });
+	public List<Integer> newMessageIds() {
+		return mNewCreateIds;
+	}
+
+	public boolean markAsRead(ODataRow row, Boolean is_read) {
+		try {
+			List<Integer> mIds = new ArrayList<Integer>();
+			List<ODataRow> childs = new ArrayList<ODataRow>();
+			Object default_model = false;
+			Object default_res_id = false;
+			ODataRow parent = ((Integer) row.getM2ORecord("parent_id").getId() == 0) ? row
+					: row.getM2ORecord("parent_id").browse();
+			default_model = parent.get("model");
+			default_res_id = parent.get("res_id");
+			mIds.add(parent.getInt("id"));
+			childs.addAll(parent.getO2MRecord("child_ids").browseEach());
+			for (ODataRow child : childs) {
+				mIds.add(child.getInt("id"));
+			}
+			JSONObject newContext = new JSONObject();
+			newContext.put("default_parent_id", parent.getInt("id"));
+			newContext.put("default_model", default_model);
+			newContext.put("default_res_id", default_res_id);
+
+			OArguments args = new OArguments();
+			args.add(new JSONArray(mIds.toString()));
+			args.add(is_read);
+			args.add(true);
+			args.add(newContext);
+			Integer updated = (Integer) getSyncHelper().callMethod(
+					"set_message_read", args, null);
+			if (updated > 0) {
+
+				OValues values = new OValues();
+				values.put("to_read", !is_read);
+				// updating local record
+				for (Integer id : mIds)
+					update(values, selectRowId(id));
+				// updating mail notification
+				values = new OValues();
+				values.put("is_read", is_read);
+				for (Integer id : mIds)
+					new MailNotification(mContext).update(values,
+							"message_id = ?", new Object[] { selectRowId(id) });
+			}
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	public String getPartnersName(ODataRow row) {

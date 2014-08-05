@@ -5,15 +5,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import odoo.OArguments;
 import odoo.controls.OList;
 import odoo.controls.OList.BeforeListRowCreateListener;
 import odoo.controls.OList.OnListBottomReachedListener;
 import odoo.controls.OList.OnListRowViewClickListener;
 import odoo.controls.OList.OnRowClickListener;
-
-import org.json.JSONArray;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -37,8 +33,6 @@ import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OModel;
-import com.odoo.orm.OSyncHelper;
-import com.odoo.orm.OValues;
 import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.AppScope;
 import com.odoo.support.fragment.BaseFragment;
@@ -65,8 +59,6 @@ public class Mail extends BaseFragment implements OnPullListener,
 	public enum Type {
 		Inbox, ToMe, ToDo, Archives, Outbox, Group
 	}
-
-	StarredOperation mStarredUnStarred = null;
 
 	private Type mType = Type.Inbox;
 	private int[] background_resources = new int[] {
@@ -105,6 +97,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 		mListControl.setOnListBottomReachedListener(this);
 		mListControl.setBeforeListRowCreateListener(this);
 		mListControl.setOnRowClickListener(this);
+		mListControl.setRecordLimit(mListRecords.size());
 		if (mLastSelectPosition == -1) {
 			mMessageLoader = new MessagesLoader(mType, 0);
 			mMessageLoader.execute();
@@ -330,6 +323,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 			mTouchListener.setPullComplete();
 			scope.main().refreshDrawer(TAG);
 			mListRecords.clear();
+			mListControl.setRecordLimit(mListRecords.size());
 			if (mMessageLoader != null)
 				mMessageLoader.cancel(true);
 			mMessageLoader = new MessagesLoader(mType, 0);
@@ -364,18 +358,12 @@ public class Mail extends BaseFragment implements OnPullListener,
 			ODataRow row) {
 		if (view.getId() == R.id.img_starred_mlist) {
 			if (inNetwork()) {
-				boolean starred = false;
-				MailNotification noti = new MailNotification(getActivity());
+				boolean starred = new MailNotification(getActivity())
+						.getStarred(row.getInt(OColumn.ROW_ID));
 				ImageView imgStarred = (ImageView) view;
-				starred = noti.getStarred(row.getInt(OColumn.ROW_ID));
-				mStarredUnStarred = new StarredOperation(position,
-						(starred) ? false : true);
-				mStarredUnStarred.execute();
 				imgStarred.setColorFilter((!starred) ? Color
 						.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
-
-				Toast.makeText(getActivity(), "In Network", Toast.LENGTH_SHORT)
-						.show();
+				new MarkAsTodo(getActivity(), row, !starred).execute();
 			} else {
 				Toast.makeText(getActivity(), "No Internet Connection",
 						Toast.LENGTH_SHORT).show();
@@ -384,45 +372,22 @@ public class Mail extends BaseFragment implements OnPullListener,
 		}
 	}
 
-	public class StarredOperation extends AsyncTask<Void, Void, Boolean> {
-		boolean mStarred = false;
-		boolean isConnection = true;
-		OSyncHelper mos = null;
-		int mPos = 0, row_id = 0, sid = 0;
-		MailNotification mNoti = new MailNotification(getActivity());
+	public static class MarkAsTodo extends AsyncTask<Void, Void, Boolean> {
 
-		public StarredOperation(int position, Boolean starred) {
-			mPos = position;
-			mos = db().getSyncHelper();
-			mStarred = starred;
-			if (mos == null)
-				isConnection = false;
+		private ODataRow mRecord = null;
+		private Boolean mTodoState = false;
+		private Context mContext = null;
+
+		public MarkAsTodo(Context context, ODataRow record, Boolean todo_state) {
+			mContext = context;
+			mRecord = record;
+			mTodoState = todo_state;
 		}
 
 		@Override
 		protected Boolean doInBackground(Void... params) {
-			if (!isConnection) {
-				return false;
-			}
-			JSONArray mIds = new JSONArray();
-			ODataRow row = (ODataRow) mListRecords.get(mPos);
-			mIds.put(row.getInt("id"));
-			row_id = row.getInt(OColumn.ROW_ID);
-			OArguments args = new OArguments();
-			args.add(mIds);
-			args.add(mStarred);
-			args.add(true);
-			OValues values = new OValues();
-			String starred = (mStarred) ? "true" : "false";
-			values.put("starred", starred);
-			boolean response = (Boolean) mos.callMethod("set_message_starred",
-					args, null);
-			return response;
-		}
-
-		@Override
-		protected void onPostExecute(Boolean result) {
-
+			MailMessage mail = new MailMessage(mContext);
+			return mail.markAsTodo(mRecord, mTodoState);
 		}
 
 	}

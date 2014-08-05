@@ -9,7 +9,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.accounts.Account;
+import android.app.ActivityManager;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.ContentProviderClient;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +19,7 @@ import android.content.SyncResult;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.odoo.MainActivity;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.models.MailNotification;
 import com.odoo.auth.OdooAccountManager;
@@ -27,6 +30,8 @@ import com.odoo.orm.OValues;
 import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.OUser;
 import com.odoo.support.service.OService;
+import com.odoo.util.OENotificationHelper;
+import com.openerp.R;
 
 public class MailSyncService extends OService {
 	public static final String TAG = MailSyncService.class.getSimpleName();
@@ -64,18 +69,38 @@ public class MailSyncService extends OService {
 			// #4 : update read/unread/starred server to local
 			// #5 : send mails
 
+			boolean showNotification = true;
+			ActivityManager am = (ActivityManager) context
+					.getSystemService(ACTIVITY_SERVICE);
+			List<ActivityManager.RunningTaskInfo> taskInfo = am
+					.getRunningTasks(1);
+			ComponentName componentInfo = taskInfo.get(0).topActivity;
+			if (componentInfo.getPackageName().equalsIgnoreCase("com.openerp")) {
+				showNotification = false;
+			}
 			if (sendMails(context, user, mdb, mdb.getSyncHelper())) {
 				if (mdb.getSyncHelper().syncDataLimit(30)
 						.syncWithServer(domain)) {
+					if (showNotification && mdb.newMessageIds().size() > 0) {
+						int newTotal = mdb.newMessageIds().size();
+						OENotificationHelper mNotification = new OENotificationHelper();
+						Intent mainActiivty = new Intent(context,
+								MainActivity.class);
+						mNotification.setResultIntent(mainActiivty, context);
+						mNotification.showNotification(context, newTotal
+								+ " new messages", newTotal
+								+ " new message received (Odoo)", authority,
+								R.drawable.ic_odoo_o);
+					}
 					// if (updateStarredOnServer(context, user,
 					// mdb.getSyncHelper())) {
 					// if (updateReadUnreadOnServer(context, user,
 					// mdb.getSyncHelper())) {
-					// if (updateOldMessages(context, user, mdb.ids())) {
-					if (user.getAndroidName().equals(account.name)) {
-						context.sendBroadcast(intent);
+					if (updateOldMessages(context, user, mdb.ids())) {
+						if (user.getAndroidName().equals(account.name)) {
+							context.sendBroadcast(intent);
+						}
 					}
-					// }
 					// }
 					// }
 				}

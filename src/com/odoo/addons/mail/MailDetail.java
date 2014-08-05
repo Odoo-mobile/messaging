@@ -3,15 +3,10 @@ package com.odoo.addons.mail;
 import java.util.ArrayList;
 import java.util.List;
 
-import odoo.OArguments;
 import odoo.controls.OForm.OnViewClickListener;
 import odoo.controls.OList;
 import odoo.controls.OList.BeforeListRowCreateListener;
 import odoo.controls.OList.OnListRowViewClickListener;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -28,12 +23,11 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.odoo.addons.mail.Mail.MarkAsTodo;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.models.MailNotification;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
-import com.odoo.orm.OSyncHelper;
-import com.odoo.orm.OValues;
 import com.odoo.support.AppScope;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.util.OControls;
@@ -51,25 +45,13 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 	private Integer mMailId = null;
 	private OList mListMessages = null;
 	private List<ODataRow> mRecords = new ArrayList<ODataRow>();
-	Integer mMessageId = null;
-	ODataRow mMessageData = null;
-	List<Object> mMessageObjects = new ArrayList<Object>();
-	Integer[] mStarredDrawables = new Integer[] { R.drawable.ic_action_starred,
-			R.drawable.ic_action_starred };
-
-	ReadUnreadOperation mReadUnread = null;
-	StarredOperation mStarredOperation = null;
-	MailMessage mail = null;
-	MailNotification noti = null;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		setHasOptionsMenu(true);
 		scope = new AppScope(this);
-		mail = new MailMessage(getActivity());
 		initArgs();
-
 		return inflater.inflate(R.layout.mail_detail_layout, container, false);
 	}
 
@@ -85,50 +67,6 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 		if (args.containsKey(OColumn.ROW_ID)) {
 			mMailId = args.getInt(OColumn.ROW_ID);
 		}
-		noti = new MailNotification(getActivity());
-	}
-
-	public class StarredOperation extends AsyncTask<Void, Void, Boolean> {
-		boolean mStarred = false;
-		boolean isConnection = true;
-		OSyncHelper mos = null;
-		int mPos = 0, row_id = 0, sid = 0;
-
-		public StarredOperation(int position, Boolean starred) {
-			mPos = position;
-			mos = db().getSyncHelper();
-			mStarred = starred;
-			if (mos == null)
-				isConnection = false;
-		}
-
-		@Override
-		protected Boolean doInBackground(Void... params) {
-			if (!isConnection) {
-				return false;
-			}
-			JSONArray mIds = new JSONArray();
-			ODataRow row = (ODataRow) mRecords.get(mPos);
-			mIds.put(row.getInt("id"));
-			row_id = row.getInt(OColumn.ROW_ID);
-			OArguments args = new OArguments();
-			args.add(mIds);
-			args.add(mStarred);
-			args.add(true);
-			OValues values = new OValues();
-			String value = (mStarred) ? "true" : "false";
-			values.put("starred", value);
-			boolean response = (Boolean) mos.callMethod("set_message_starred",
-					args, null);
-			db().update(values, row_id);
-			return response;
-		}
-
-		@Override
-		protected void onPostExecute(Boolean result) {
-
-		}
-
 	}
 
 	private void init() {
@@ -174,15 +112,14 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 			ODataRow row) {
 		if (view.getId() == R.id.imgBtnStar) {
 			if (inNetwork()) {
+				boolean starred = new MailNotification(getActivity())
+						.getStarred(row.getInt(OColumn.ROW_ID));
 				ImageView imgStarred = (ImageView) view;
-				boolean is_fav = row.getBoolean("starred");
-				imgStarred.setColorFilter((is_fav) ? Color
+				imgStarred.setColorFilter((!starred) ? Color
 						.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
-				mStarredOperation = new StarredOperation(position,
-						(is_fav) ? false : true);
-				mStarredOperation.execute();
+				new MarkAsTodo(getActivity(), row, !starred).execute();
 			} else {
-				Toast.makeText(getActivity(), "Not in Network",
+				Toast.makeText(getActivity(), "No Connection",
 						Toast.LENGTH_SHORT).show();
 			}
 		} else if (view.getId() == R.id.imgBtnReply) {
@@ -236,25 +173,22 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 
 		switch (item.getItemId()) {
 		case R.id.menu_mail_read:
-			boolean is_read = noti.getIsread(mMailId);
-			if (inNetwork()) {
-				mReadUnread = new ReadUnreadOperation((is_read) ? false : true);
-				mReadUnread.execute();
-			} else {
+			if (inNetwork())
+				new MarkAsReadUnread(getActivity(), db().select(mMailId), true)
+						.execute();
+			else
 				Toast.makeText(getActivity(), "No Internet Connection",
 						Toast.LENGTH_SHORT).show();
-			}
+
 			break;
 		case R.id.menu_mail_unread:
-			is_read = noti.getIsread(mMailId);
-			if (inNetwork()) {
-				mReadUnread = new ReadUnreadOperation((is_read) ? false : true);
-				mReadUnread.execute();
-
-			} else {
-				Toast.makeText(getActivity(), "No Internet Connection",
+			if (inNetwork())
+				new MarkAsReadUnread(getActivity(), db().select(mMailId), false)
+						.execute();
+			else
+				Toast.makeText(getActivity(), "No Connection",
 						Toast.LENGTH_SHORT).show();
-			}
+
 			break;
 		default:
 			break;
@@ -262,72 +196,22 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 		return super.onOptionsItemSelected(item);
 	}
 
-	public class ReadUnreadOperation extends AsyncTask<Void, Void, Boolean> {
-		boolean mIsRead = false;
-		boolean isConnection = true;
-		OSyncHelper mor = null;
+	public static class MarkAsReadUnread extends AsyncTask<Void, Void, Boolean> {
+		private ODataRow mRecord = null;
+		private Context mContext = null;
+		private Boolean mIsRead = null;
 
-		public ReadUnreadOperation(boolean isread) {
-			mor = db().getSyncHelper();
-			mIsRead = isread;
+		public MarkAsReadUnread(Context context, ODataRow row, Boolean is_read) {
+			mContext = context;
+			mRecord = row;
+			mIsRead = is_read;
 		}
 
 		@Override
 		protected Boolean doInBackground(Void... params) {
-			if (!isConnection)
-				return false;
-			try {
-				// update is_read server
-				OArguments args = new OArguments();
-				JSONArray mIds = new JSONArray();
-				JSONObject newContext = new JSONObject();
-				Object default_model = false;
-				Object default_res_id = false;
-				for (ODataRow row : db().select(
-						OColumn.ROW_ID + " = ? or parent_id = ?",
-						new String[] { mMailId + "", mMailId + "" })) {
-					mIds.put(row.getInt("id"));
-					if (row.getInt(OColumn.ROW_ID) == mMailId) {
-						default_model = row.getString("model");
-						default_res_id = row.getInt("res_id");
-					}
-				}
-				newContext.put("default_parent_id", mMailId);
-				newContext.put("default_model", default_model);
-				newContext.put("default_res_id", default_res_id);
-				args.add(mIds);
-				args.add(mIsRead);
-				args.add(true);
-				args.add(newContext);
-				Integer updated = (Integer) mor.callMethod("set_message_read",
-						args, null);
-				// update local table
-				if (updated > 0) {
-					OValues values = new OValues();
-					if (noti.getColumn("is_read") != null)
-						values.put("is_read", mIsRead);
-					else
-						values.put("read", mIsRead);
-					// Updating notification model
-					noti.update(values, "message_id = ?",
-							new Object[] { mMailId });
-					values = new OValues();
-					values.put("to_read", !mIsRead);
-					// updating mail message model
-					db().update(values,
-							OColumn.ROW_ID + " = ? or parent_id = ?",
-							new Object[] { mMailId, mMailId });
-				}
-				return true;
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return false;
+			MailMessage mail = new MailMessage(mContext);
+			return mail.markAsRead(mRecord, mIsRead);
 		}
 
-		@Override
-		protected void onPostExecute(Boolean result) {
-			super.onPostExecute(result);
-		}
 	}
 }
