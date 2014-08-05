@@ -1,11 +1,14 @@
 package com.odoo.addons.mail.models;
 
+import java.util.List;
+
 import odoo.ODomain;
 import android.content.Context;
 
 import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.OColumn.RelationType;
+import com.odoo.orm.ODataRow;
 import com.odoo.orm.OModel;
 import com.odoo.orm.annotations.Odoo;
 import com.odoo.orm.types.OBoolean;
@@ -27,6 +30,22 @@ public class MailNotification extends OModel {
 	public MailNotification(Context context) {
 		super(context, "mail.notification");
 		setCreateWriteLocal(true);
+	}
+
+	public Boolean getStarred(int msgid) {
+		boolean starred = false;
+		List<ODataRow> row = (List<ODataRow>) select("message_id = ?",
+				new String[] { msgid + "" });
+		starred = row.get(0).getBoolean("starred");
+		return starred;
+	}
+
+	public Boolean getIsread(int msgid) {
+		boolean isread = false;
+		List<ODataRow> row = (List<ODataRow>) select("message_id = ?",
+				new String[] { msgid + "" });
+		isread = row.get(0).getBoolean("is_read");
+		return isread;
 	}
 
 	@Override

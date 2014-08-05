@@ -2,14 +2,10 @@ package com.odoo.addons.mail.models;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import odoo.ODomain;
-
 import org.json.JSONArray;
-
 import android.content.Context;
 import android.text.TextUtils;
-
 import com.odoo.base.ir.IrAttachment;
 import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
@@ -93,6 +89,13 @@ public class MailMessage extends OModel {
 	@Override
 	public Boolean checkForWriteDate() {
 		return true;
+	}
+
+	public Boolean getValueofReadUnReadField(int id) {
+		boolean read = false;
+		ODataRow row = select(id);
+		read = row.getBoolean("to_read");
+		return read;
 	}
 
 	@Override

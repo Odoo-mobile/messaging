@@ -138,8 +138,6 @@ public class MailSyncService extends OService {
 		return true;
 	}
 
-
-
 	private Boolean updateOldMessages(Context context, OUser user,
 			List<Integer> ids) {
 		try {

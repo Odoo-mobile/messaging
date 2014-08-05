@@ -4,11 +4,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+
+import odoo.OArguments;
 import odoo.controls.OList;
 import odoo.controls.OList.BeforeListRowCreateListener;
 import odoo.controls.OList.OnListBottomReachedListener;
 import odoo.controls.OList.OnListRowViewClickListener;
 import odoo.controls.OList.OnRowClickListener;
+
+import org.json.JSONArray;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -24,11 +29,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.SearchView;
+import android.widget.Toast;
+
 import com.odoo.addons.mail.models.MailMessage;
+import com.odoo.addons.mail.models.MailNotification;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OModel;
+import com.odoo.orm.OSyncHelper;
 import com.odoo.orm.OValues;
 import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.AppScope;
@@ -56,6 +65,8 @@ public class Mail extends BaseFragment implements OnPullListener,
 	public enum Type {
 		Inbox, ToMe, ToDo, Archives, Outbox, Group
 	}
+
+	StarredOperation mStarredUnStarred = null;
 
 	private Type mType = Type.Inbox;
 	private int[] background_resources = new int[] {
@@ -351,23 +362,69 @@ public class Mail extends BaseFragment implements OnPullListener,
 	@Override
 	public void onRowViewClick(ViewGroup view_group, View view, int position,
 			ODataRow row) {
-		MailMessage mail = new MailMessage(getActivity());
 		if (view.getId() == R.id.img_starred_mlist) {
-			ImageView imgStarred = (ImageView) view;
-			boolean is_fav = row.getBoolean("starred");
-			imgStarred.setColorFilter((!is_fav) ? Color.parseColor("#FF8800")
-					: Color.parseColor("#aaaaaa"));
-			OValues values = new OValues();
-			values.put("starred", !is_fav);
-			mail.update(values, row.getInt(OColumn.ROW_ID));
-			row.put("starred", !is_fav);
-			mListRecords.remove(position);
-			mListRecords.add(position, row);
-			if (is_fav == true) {
-				mListRecords.remove(position);
-				mListControl.initListControl(mListRecords);
+			if (inNetwork()) {
+				boolean starred = false;
+				MailNotification noti = new MailNotification(getActivity());
+				ImageView imgStarred = (ImageView) view;
+				starred = noti.getStarred(row.getInt(OColumn.ROW_ID));
+				mStarredUnStarred = new StarredOperation(position,
+						(starred) ? false : true);
+				mStarredUnStarred.execute();
+				imgStarred.setColorFilter((!starred) ? Color
+						.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
+
+				Toast.makeText(getActivity(), "In Network", Toast.LENGTH_SHORT)
+						.show();
+			} else {
+				Toast.makeText(getActivity(), "No Internet Connection",
+						Toast.LENGTH_SHORT).show();
 			}
+
 		}
+	}
+
+	public class StarredOperation extends AsyncTask<Void, Void, Boolean> {
+		boolean mStarred = false;
+		boolean isConnection = true;
+		OSyncHelper mos = null;
+		int mPos = 0, row_id = 0, sid = 0;
+		MailNotification mNoti = new MailNotification(getActivity());
+
+		public StarredOperation(int position, Boolean starred) {
+			mPos = position;
+			mos = db().getSyncHelper();
+			mStarred = starred;
+			if (mos == null)
+				isConnection = false;
+		}
+
+		@Override
+		protected Boolean doInBackground(Void... params) {
+			if (!isConnection) {
+				return false;
+			}
+			JSONArray mIds = new JSONArray();
+			ODataRow row = (ODataRow) mListRecords.get(mPos);
+			mIds.put(row.getInt("id"));
+			row_id = row.getInt(OColumn.ROW_ID);
+			OArguments args = new OArguments();
+			args.add(mIds);
+			args.add(mStarred);
+			args.add(true);
+			OValues values = new OValues();
+			String starred = (mStarred) ? "true" : "false";
+			values.put("starred", starred);
+			boolean response = (Boolean) mos.callMethod("set_message_starred",
+					args, null);
+			return response;
+		}
+
+		@Override
+		protected void onPostExecute(Boolean result) {
+
+		}
+
 	}
 
 	@Override
