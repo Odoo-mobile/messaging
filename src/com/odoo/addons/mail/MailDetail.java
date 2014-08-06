@@ -9,6 +9,7 @@ import odoo.controls.OList.BeforeListRowCreateListener;
 import odoo.controls.OList.OnListRowViewClickListener;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter.AuthorityEntry;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -20,18 +21,24 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.odoo.addons.mail.Mail.MarkAsTodo;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.models.MailNotification;
+import com.odoo.auth.OdooAccountManager;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
+import com.odoo.orm.OValues;
 import com.odoo.support.AppScope;
+import com.odoo.support.OUser;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.util.OControls;
+import com.odoo.util.ODate;
 import com.odoo.util.drawer.DrawerItem;
+import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailDetail extends BaseFragment implements OnViewClickListener,
@@ -74,6 +81,7 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 		mListMessages.setOnListRowViewClickListener(R.id.imgBtnStar, this);
 		mListMessages.setOnListRowViewClickListener(R.id.imgBtnReply, this);
 		mListMessages.setBeforeListRowCreateListener(this);
+		mView.findViewById(R.id.btnCreateReply).setOnClickListener(this);
 		if (mMailId != null) {
 			ODataRow parent = db().select(mMailId);
 			OControls.setText(mView, R.id.txvDetailSubject,
@@ -162,7 +170,20 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 			intent.putExtras(bundle);
 			startActivity(intent);
 			break;
-
+		case R.id.btnCreateReply:
+			EditText body = (EditText) mView
+					.findViewById(R.id.edtQuickReplyMessage);
+			MailMessage mail = new MailMessage(getActivity());
+			OValues val = new OValues();
+			val.put("body", body.getText());
+			val.put("parent_id", mMailId);
+			val.put("author_id", mail.author_id());
+			// TODO
+			// val.put("partner_ids",mail.getManyToManyColumns("partner_ids"));
+			val.put("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
+			mail.create(val);
+			body.setText("");
+			break;
 		}
 
 	}
@@ -190,6 +211,7 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 						Toast.LENGTH_SHORT).show();
 
 			break;
+
 		default:
 			break;
 		}

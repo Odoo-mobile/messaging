@@ -15,6 +15,7 @@ import com.odoo.base.ir.Attachment;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OValues;
 import com.odoo.util.ODate;
+import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class ComposeMail extends Activity {
@@ -117,6 +118,7 @@ public class ComposeMail extends Activity {
 	private void mailcompose() {
 		OValues values = new OValues();
 		values = mForm.getFormValues();
+		OLog.log(mForm.getFormValues() + "");
 		values.put("author_id", mail.author_id());
 		values.put("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
 		mail.create(values);
