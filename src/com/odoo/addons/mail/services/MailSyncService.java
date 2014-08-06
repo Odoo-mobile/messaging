@@ -115,47 +115,22 @@ public class MailSyncService extends OService {
 			OSyncHelper helper) {
 		for (ODataRow mail : mails.select("id = ?", new Object[] { 0 })) {
 			try {
-				JSONObject arguments = new JSONObject();
-				arguments.put("composition_mode", "comment");
-				arguments.put("model", false);
-				arguments.put("parent_id", false);
-				arguments.put("subject", mail.getString("subject"));
-				arguments.put("body", mail.getString("body"));
-				arguments.put("post", true);
-				arguments.put("notify", false);
-				arguments.put("same_thread", true);
-				arguments.put("use_active_domain", false);
-				arguments.put("reply_to", false);
-				arguments.put("res_id", 0);
-				arguments.put("record_name", false);
 				JSONArray partner_ids = new JSONArray();
 				JSONArray p_ids = new JSONArray();
-				for (ODataRow partner : mail.getM2MRecord("partner_ids")
-						.browseEach()) {
+				List<ODataRow> partners = mail.getM2MRecord("partner_ids")
+						.browseEach();
+				for (ODataRow partner : partners) {
 					p_ids.put(partner.getInt("id"));
-
 				}
 				partner_ids.put(6);
 				partner_ids.put(false);
 				partner_ids.put(p_ids);
-				arguments.put("partner_ids", new JSONArray().put(partner_ids));
-				arguments.put("template_id", false);
-
-				JSONObject kwargs = new JSONObject();
-				kwargs.put("context", helper.getContext(new JSONObject()));
-
-				OArguments args = new OArguments();
-				args.add(arguments);
-				String model = "mail.compose.message";
-				// Creating compose message
-				Object message_id = helper.callMethod(model, "create", args,
-						null, kwargs);
-				// sending mail
-				args = new OArguments();
-				args.add(new JSONArray().put(message_id));
-				args.add(helper.getContext(null));
-				helper.callMethod(model, "send_mail", args, null, null);
-				mails.delete(mail.getInt(OColumn.ROW_ID));
+				if ((Integer) mail.getM2ORecord("parent_id").getId() == 0) {
+					_sendMail(mail, partner_ids, helper, mails);
+				} else {
+					ODataRow parent = mail.getM2ORecord("parent_id").browse();
+					sendReply(parent, mail, partner_ids, helper, mails);
+				}
 			} catch (Exception e) {
 				Log.e(TAG, "sendMails():" + e.getMessage());
 			}
@@ -163,12 +138,89 @@ public class MailSyncService extends OService {
 		return true;
 	}
 
+	private void _sendMail(ODataRow mail, JSONArray partner_ids,
+			OSyncHelper helper, MailMessage mails) {
+		try {
+			JSONObject arguments = new JSONObject();
+			arguments.put("composition_mode", "comment");
+			arguments.put("model", false);
+			arguments.put("parent_id", false);
+			arguments.put("subject", mail.getString("subject"));
+			arguments.put("body", mail.getString("body"));
+			arguments.put("post", true);
+			arguments.put("notify", false);
+			arguments.put("same_thread", true);
+			arguments.put("use_active_domain", false);
+			arguments.put("reply_to", false);
+			arguments.put("res_id", false);
+			arguments.put("record_name", false);
+			arguments.put("partner_ids", new JSONArray().put(partner_ids));
+			arguments.put("template_id", false);
+
+			JSONObject kwargs = new JSONObject();
+			kwargs.put("context", helper.getContext(new JSONObject()));
+
+			OArguments args = new OArguments();
+			args.add(arguments);
+			String model = "mail.compose.message";
+			// Creating compose message
+			Object message_id = helper.callMethod(model, "create", args, null,
+					kwargs);
+			// sending mail
+			args = new OArguments();
+			args.add(new JSONArray().put(message_id));
+			args.add(helper.getContext(null));
+			helper.callMethod(model, "send_mail", args, null, null);
+			mails.delete(mail.getInt(OColumn.ROW_ID));
+		} catch (Exception e) {
+			Log.e(TAG, "_sendMail() : " + e.getMessage());
+		}
+	}
+
+	private void sendReply(ODataRow parent, ODataRow mail,
+			JSONArray partner_ids, OSyncHelper helper, MailMessage mails) {
+		try {
+			// sending reply
+			String model = (parent.getString("model").equals("false")) ? "mail.thread"
+					: parent.getString("model");
+			String method = "message_post";
+			Object res_model = (parent.getString("model").equals("false")) ? false
+					: parent.getString("model");
+			Object res_id = (parent.getInt("res_id") == 0) ? false : parent
+					.getInt("res_id");
+
+			JSONObject jContext = new JSONObject();
+			jContext.put("default_model", res_model);
+			jContext.put("default_res_id", res_id);
+			jContext.put("default_parent_id", parent.getInt("id"));
+			jContext.put("mail_post_autofollow", true);
+			jContext.put("mail_post_autofollow_partner_ids", new JSONArray());
+			JSONObject kwargs = new JSONObject();
+			kwargs.put("context", jContext);
+			kwargs.put("subject", mail.getString("subject"));
+			kwargs.put("body", mail.getString("body"));
+			kwargs.put("parent_id", parent.getInt("id"));
+			kwargs.put("attachment_ids", new JSONArray());
+			kwargs.put("partner_ids", new JSONArray().put(partner_ids));
+
+			OArguments args = new OArguments();
+			args.add(new JSONArray().put(res_id));
+			Integer messageId = (Integer) helper.callMethod(model, method,
+					args, null, kwargs);
+			OValues vals = new OValues();
+			vals.put(OColumn.ROW_ID, mail.getInt(OColumn.ROW_ID));
+			vals.put("id", messageId);
+			mails.update(vals, mail.getInt(OColumn.ROW_ID));
+		} catch (Exception e) {
+			Log.e(TAG, "sendReply() : " + e.getMessage());
+		}
+	}
+
 	private Boolean updateOldMessages(Context context, OUser user,
 			List<Integer> ids) {
 		try {
 			ODomain domain = new ODomain();
 			domain.add("message_id", "in", ids);
-			domain.add("partner_id", "=", user.getPartner_id());
 			MailNotification mailNotification = new MailNotification(context);
 			MailMessage message = new MailMessage(context);
 			if (mailNotification.getSyncHelper().syncWithServer(domain, false)) {
@@ -179,12 +231,9 @@ public class MailSyncService extends OService {
 					if (notifications.size() > 0) {
 						OValues vals = new OValues();
 						ODataRow noti = notifications.get(0);
-						vals.put(
-								"to_read",
-								(noti.contains("read")) ? !noti
-										.getBoolean("read") : !noti
-										.getBoolean("is_read"));
-						vals.put("starred", noti.get("starred"));
+						vals.put(OColumn.ROW_ID, row_id);
+						vals.put("notification_ids",
+								noti.getInt(OColumn.ROW_ID));
 						message.update(vals, row_id);
 					}
 				}

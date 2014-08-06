@@ -10,6 +10,7 @@ import odoo.controls.OList.BeforeListRowCreateListener;
 import odoo.controls.OList.OnListBottomReachedListener;
 import odoo.controls.OList.OnListRowViewClickListener;
 import odoo.controls.OList.OnRowClickListener;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -47,6 +48,8 @@ public class Mail extends BaseFragment implements OnPullListener,
 
 	public static final String TAG = Mail.class.getSimpleName();
 	public static final String KEY = "fragment_mail";
+	public static final String KEY_MESSAGE_ID = "mail_id";
+	public static final Integer REQUEST_COMPOSE_MAIL = 234;
 	private View mView = null;
 	private OList mListControl = null;
 	private List<ODataRow> mListRecords = new ArrayList<ODataRow>();
@@ -227,8 +230,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 							// Child
 							if (!mParentList.containsKey("key_"
 									+ parent.getString(OColumn.ROW_ID))) {
-								parent.put("body", row.getString("author_name")
-										+ " - " + row.getString("body"));
+								parent.put("body", row.getString("body"));
 								parent.put("date", row.getString("date"));
 								parent.put("to_read", row.getBoolean("to_read"));
 								mParentList.put(
@@ -417,10 +419,26 @@ public class Mail extends BaseFragment implements OnPullListener,
 		switch (item.getItemId()) {
 		case R.id.menu_mail_create:
 			Intent i = new Intent(getActivity(), ComposeMail.class);
-			startActivity(i);
+			startActivityForResult(i, REQUEST_COMPOSE_MAIL);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
+		}
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode == REQUEST_COMPOSE_MAIL
+				&& resultCode == Activity.RESULT_OK) {
+			if (inNetwork()) {
+				scope.main().requestSync(MailProvider.AUTHORITY);
+				Toast.makeText(getActivity(), "Message Sent", Toast.LENGTH_LONG)
+						.show();
+			} else {
+				Toast.makeText(getActivity(), "Message can't send",
+						Toast.LENGTH_LONG).show();
+			}
 		}
 	}
 

@@ -63,7 +63,10 @@ public class MailMessage extends OModel {
 	OColumn body = new OColumn("Body", OHtml.class).setDefault("");
 	OColumn vote_user_ids = new OColumn("Voters", ResUsers.class,
 			RelationType.ManyToMany);
+
+	@Odoo.Functional(method = "getToRead", store = true, depends = { "notification_ids" })
 	OColumn to_read = new OColumn("To Read", OBoolean.class).setDefault(true);
+	@Odoo.Functional(method = "getStarred", store = true, depends = { "notification_ids" })
 	OColumn starred = new OColumn("Starred", OBoolean.class).setDefault(false);
 
 	// Functional Fields
@@ -81,10 +84,12 @@ public class MailMessage extends OModel {
 	OColumn partners_name = new OColumn("Partners", OVarchar.class);
 
 	private List<Integer> mNewCreateIds = new ArrayList<Integer>();
+	private MailNotification notification = null;
 
 	public MailMessage(Context context) {
 		super(context, "mail.message");
 		mContext = context;
+		notification = new MailNotification(mContext);
 		write_date.setDefault(false);
 		create_date.setDefault(false);
 	}
@@ -135,6 +140,19 @@ public class MailMessage extends OModel {
 		return false;
 	}
 
+	public Boolean getToRead(OValues vals) {
+		ODataRow noti = notification.select(vals.getInt(notification_ids
+				.getName()));
+		return (noti.contains("is_read")) ? !noti.getBoolean("is_read") : !noti
+				.getBoolean("read");
+	}
+
+	public Boolean getStarred(OValues vals) {
+		ODataRow noti = notification.select(vals.getInt(notification_ids
+				.getName()));
+		return noti.getBoolean("starred");
+	}
+
 	public boolean markAsTodo(ODataRow row, Boolean todo_state) {
 		try {
 			OArguments args = new OArguments();
@@ -167,6 +185,28 @@ public class MailMessage extends OModel {
 
 	public List<Integer> newMessageIds() {
 		return mNewCreateIds;
+	}
+
+	public Integer sendQuickReply(String subject, String body, Integer parent_id) {
+		OValues vals = new OValues();
+		vals.put("subject", subject);
+		vals.put("body", body);
+		vals.put("parent_id", parent_id);
+		vals.put("author_id", author_id());
+		vals.put("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
+		List<Integer> p_ids = new ArrayList<Integer>();
+		for (ODataRow partner : select(parent_id).getM2MRecord("partner_ids")
+				.browseEach()) {
+			p_ids.add(partner.getInt(OColumn.ROW_ID));
+		}
+		vals.put("partner_ids", p_ids);
+		Integer replyId = create(vals);
+		// Creating notification for record
+		OValues nVals = new OValues();
+		nVals.put("partner_id", author_id());
+		nVals.put("message_id", replyId);
+		notification.create(nVals);
+		return replyId;
 	}
 
 	public boolean markAsRead(ODataRow row, Boolean is_read) {

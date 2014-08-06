@@ -84,7 +84,7 @@
                         android:textAppearance="?android:attr/textAppearanceMedium" />
 
                     <ImageView
-                        android:id="@+id/btnCreateReply"
+                        android:id="@+id/btnSendQuickReply"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="5dp"

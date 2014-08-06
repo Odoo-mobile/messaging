@@ -7,12 +7,13 @@ import odoo.controls.OForm.OnViewClickListener;
 import odoo.controls.OList;
 import odoo.controls.OList.BeforeListRowCreateListener;
 import odoo.controls.OList.OnListRowViewClickListener;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter.AuthorityEntry;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,26 +29,24 @@ import android.widget.Toast;
 import com.odoo.addons.mail.Mail.MarkAsTodo;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.models.MailNotification;
-import com.odoo.auth.OdooAccountManager;
+import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
-import com.odoo.orm.OValues;
 import com.odoo.support.AppScope;
-import com.odoo.support.OUser;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.util.OControls;
-import com.odoo.util.ODate;
 import com.odoo.util.drawer.DrawerItem;
-import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailDetail extends BaseFragment implements OnViewClickListener,
 		OnListRowViewClickListener, BeforeListRowCreateListener,
 		OnClickListener {
 	public static final String TAG = "com.odoo.addons.mail.MailDetail";
+	public static final String KEY_MESSAGE_REPLY_ID = "message_reply_id";
 	public static final String KEY_MESSAGE_ID = "message_id";
 	public static final String KEY_SUBJECT = "subject";
 	public static final String KEY_BODY = "body";
+	public static final Integer REQUEST_REPLY = 125;
 	private View mView = null;
 	private Integer mMailId = null;
 	private OList mListMessages = null;
@@ -81,9 +80,12 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 		mListMessages.setOnListRowViewClickListener(R.id.imgBtnStar, this);
 		mListMessages.setOnListRowViewClickListener(R.id.imgBtnReply, this);
 		mListMessages.setBeforeListRowCreateListener(this);
-		mView.findViewById(R.id.btnCreateReply).setOnClickListener(this);
+		mView.findViewById(R.id.btnSendQuickReply).setOnClickListener(this);
 		if (mMailId != null) {
 			ODataRow parent = db().select(mMailId);
+			if (parent.getInt("id") == 0) {
+				OControls.setInvisible(mView, R.id.quickReplyBox);
+			}
 			OControls.setText(mView, R.id.txvDetailSubject,
 					parent.getString("message_title"));
 			mRecords.add(0, parent);
@@ -168,24 +170,60 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 					OControls.getText(mView, R.id.edtQuickReplyMessage));
 			Intent intent = new Intent(getActivity(), ComposeMail.class);
 			intent.putExtras(bundle);
-			startActivity(intent);
+			startActivityForResult(intent, REQUEST_REPLY);
 			break;
-		case R.id.btnCreateReply:
-			EditText body = (EditText) mView
+		case R.id.btnSendQuickReply:
+			EditText edt = (EditText) mView
 					.findViewById(R.id.edtQuickReplyMessage);
-			MailMessage mail = new MailMessage(getActivity());
-			OValues val = new OValues();
-			val.put("body", body.getText());
-			val.put("parent_id", mMailId);
-			val.put("author_id", mail.author_id());
-			// TODO
-			// val.put("partner_ids",mail.getManyToManyColumns("partner_ids"));
-			val.put("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
-			mail.create(val);
-			body.setText("");
+			edt.setError(null);
+			if (TextUtils.isEmpty(edt.getText())) {
+				edt.setError("Message required");
+			} else {
+				MailMessage mail = new MailMessage(getActivity());
+				String subject = mRecords.get(0).getString("message_title");
+				String mail_body = OControls.getText(mView,
+						R.id.edtQuickReplyMessage);
+				Integer replyId = mail.sendQuickReply(subject, mail_body,
+						mMailId);
+				if (replyId != null) {
+					mRecords.add(1, mail.select(replyId));
+					mListMessages.setRecordOffset(0);
+					mListMessages.initListControl(mRecords);
+					if (inNetwork()) {
+						scope.main().requestSync(MailProvider.AUTHORITY);
+						Toast.makeText(getActivity(), "Reply Sent",
+								Toast.LENGTH_LONG).show();
+					} else {
+						Toast.makeText(getActivity(), "Reply can't send",
+								Toast.LENGTH_LONG).show();
+					}
+					OControls.setText(mView, R.id.edtQuickReplyMessage, "");
+				}
+			}
 			break;
 		}
 
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode == REQUEST_REPLY && resultCode == Activity.RESULT_OK) {
+			int replyId = data.getExtras().getInt(
+					MailDetail.KEY_MESSAGE_REPLY_ID);
+			mRecords.add(1, db().select(replyId));
+			mListMessages.setRecordOffset(0);
+			mListMessages.initListControl(mRecords);
+			OControls.setText(mView, R.id.edtQuickReplyMessage, "");
+			if (inNetwork()) {
+				scope.main().requestSync(MailProvider.AUTHORITY);
+				Toast.makeText(getActivity(), "Reply Sent", Toast.LENGTH_LONG)
+						.show();
+			} else {
+				Toast.makeText(getActivity(), "Reply can't send",
+						Toast.LENGTH_LONG).show();
+			}
+		}
 	}
 
 	@Override

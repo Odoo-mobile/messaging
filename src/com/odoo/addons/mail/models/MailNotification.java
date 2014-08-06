@@ -10,7 +10,6 @@ import com.odoo.orm.OColumn;
 import com.odoo.orm.OColumn.RelationType;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OModel;
-import com.odoo.orm.OValues;
 import com.odoo.orm.annotations.Odoo;
 import com.odoo.orm.types.OBoolean;
 
@@ -21,8 +20,8 @@ public class MailNotification extends OModel {
 
 	@Odoo.api.v8
 	@Odoo.api.v9alpha
-	OColumn is_read = new OColumn("Is Read", OBoolean.class).setDefault(false);
-	OColumn starred = new OColumn("Starred", OBoolean.class);
+	OColumn is_read = new OColumn("Is Read", OBoolean.class).setDefault(true);
+	OColumn starred = new OColumn("Starred", OBoolean.class).setDefault(false);
 	OColumn partner_id = new OColumn("Partner_id", ResPartner.class,
 			RelationType.ManyToOne);
 	OColumn message_id = new OColumn("Message_id", MailMessage.class,
@@ -57,20 +56,6 @@ public class MailNotification extends OModel {
 		ODomain domain = new ODomain();
 		domain.add("partner_id", "=", user().getPartner_id());
 		return domain;
-	}
-
-	@Override
-	public int update(OValues updateValues, String where, Object[] whereArgs) {
-		ODataRow noti = select(updateValues.getInt(OColumn.ROW_ID));
-		MailMessage mail = new MailMessage(mContext);
-		OValues values = new OValues();
-		values.put("starred", noti.get("starred"));
-		if (getColumn("is_read") != null)
-			values.put("to_read", !noti.getBoolean("is_read"));
-		else
-			values.put("to_read", !noti.getBoolean("read"));
-		mail.update(values, (Integer) noti.getM2ORecord("message_id").getId());
-		return super.update(updateValues, where, whereArgs);
 	}
 
 	@Override

@@ -10,12 +10,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.odoo.App;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.base.ir.Attachment;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OValues;
 import com.odoo.util.ODate;
-import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class ComposeMail extends Activity {
@@ -26,6 +26,7 @@ public class ComposeMail extends Activity {
 	private OForm mForm = null;
 	private Integer mMailId = null;
 	private ODataRow mParentMail = null;
+	private App mApp = null;
 
 	enum AttachmentType {
 		IMAGE, FILE
@@ -35,6 +36,7 @@ public class ComposeMail extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.mail_compose);
+		setResult(RESULT_CANCELED);
 		initActionbar();
 		init();
 		mForm = (OForm) findViewById(R.id.mComposeMailForm);
@@ -62,6 +64,7 @@ public class ComposeMail extends Activity {
 
 	private void init() {
 		mContext = this;
+		mApp = (App) getApplicationContext();
 		mAttachment = new Attachment(mContext);
 		mail = new MailMessage(mContext);
 	}
@@ -118,9 +121,21 @@ public class ComposeMail extends Activity {
 	private void mailcompose() {
 		OValues values = new OValues();
 		values = mForm.getFormValues();
-		OLog.log(mForm.getFormValues() + "");
-		values.put("author_id", mail.author_id());
-		values.put("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
-		mail.create(values);
+		if (mMailId != null) {
+			Integer replyId = mail.sendQuickReply(values.getString("subject"),
+					values.getString("body"), mMailId);
+			Intent data = new Intent();
+			data.putExtra(MailDetail.KEY_MESSAGE_REPLY_ID, replyId);
+			setResult(RESULT_OK, data);
+			finish();
+		} else {
+			values.put("author_id", mail.author_id());
+			values.put("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
+			Integer mailId = mail.create(values);
+			Intent data = new Intent();
+			data.putExtra(Mail.KEY_MESSAGE_ID, mailId);
+			setResult(RESULT_OK, data);
+			finish();
+		}
 	}
 }

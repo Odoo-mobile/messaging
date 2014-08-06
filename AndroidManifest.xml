@@ -68,6 +68,8 @@
         </activity>
 
         <!-- Contact service -->
+        <!--
+        FIXME: 
         <service
             android:name="com.odoo.base.res.services.ContactSyncService"
             android:exported="true"
@@ -83,7 +85,7 @@
                 android:name="android.provider.CONTACTS_STRUCTURE"
                 android:resource="@xml/contacts" />
         </service>
-
+        -->
         <!-- Mail Provider -->
         <provider
             android:name="com.odoo.addons.mail.providers.mail.MailProvider"
