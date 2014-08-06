@@ -3,7 +3,7 @@
     <item
         android:id="@+id/menu_add_all_attachments"
         android:icon="@drawable/ic_action_content_new_attachment"
-        android:showAsAction="ifRoom|withText"
+        android:showAsAction="always"
         android:title="@string/add_attachment">
         <menu>
             <item
@@ -22,7 +22,7 @@
         android:id="@+id/menu_mail_compose"
         android:icon="@drawable/ic_action_send_now"
         android:orderInCategory="100"
-        android:showAsAction="ifRoom|withText"
+        android:showAsAction="always"
         android:title="@string/send_now"/>
 
 </menu>

@@ -101,15 +101,11 @@ public class ComposeMail extends Activity {
 			return true;
 		case R.id.menu_mail_compose:
 			mailcompose();
-			Toast.makeText(this, "Compose Mail", Toast.LENGTH_SHORT).show();
-			finish();
 			return true;
 		case R.id.menu_add_files:
-			Toast.makeText(this, "Attach Images", Toast.LENGTH_SHORT).show();
 			mAttachment.requestAttachment(Attachment.Types.FILE);
 			return true;
 		case R.id.menu_add_images:
-			Toast.makeText(this, "Attach Files", Toast.LENGTH_SHORT).show();
 			mAttachment
 					.requestAttachment(Attachment.Types.IMAGE_OR_CAPTURE_IMAGE);
 			return true;
@@ -121,21 +117,24 @@ public class ComposeMail extends Activity {
 	private void mailcompose() {
 		OValues values = new OValues();
 		values = mForm.getFormValues();
-		if (mMailId != null) {
-			Integer replyId = mail.sendQuickReply(values.getString("subject"),
-					values.getString("body"), mMailId);
-			Intent data = new Intent();
-			data.putExtra(MailDetail.KEY_MESSAGE_REPLY_ID, replyId);
-			setResult(RESULT_OK, data);
-			finish();
-		} else {
-			values.put("author_id", mail.author_id());
-			values.put("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
-			Integer mailId = mail.create(values);
-			Intent data = new Intent();
-			data.putExtra(Mail.KEY_MESSAGE_ID, mailId);
-			setResult(RESULT_OK, data);
-			finish();
+		if (values != null) {
+			if (mMailId != null) {
+				Integer replyId = mail.sendQuickReply(
+						values.getString("subject"), values.getString("body"),
+						mMailId);
+				Intent data = new Intent();
+				data.putExtra(MailDetail.KEY_MESSAGE_REPLY_ID, replyId);
+				setResult(RESULT_OK, data);
+				finish();
+			} else {
+				values.put("author_id", mail.author_id());
+				values.put("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
+				Integer mailId = mail.create(values);
+				Intent data = new Intent();
+				data.putExtra(Mail.KEY_MESSAGE_ID, mailId);
+				setResult(RESULT_OK, data);
+				finish();
+			}
 		}
 	}
 }

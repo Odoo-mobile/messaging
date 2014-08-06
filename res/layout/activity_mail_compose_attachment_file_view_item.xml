@@ -1,14 +1,28 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<odoo.controls.OForm xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.openerp"
     android:layout_width="160dp"
     android:layout_height="160dp"
-    android:background="#ebebeb" >
+    android:background="#ebebeb"
+    app:model="ir.attachment" >
 
-    <ImageView
+    <odoo.controls.OField
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        app:binaryType="image"
+        app:defaultImage="@drawable/file_attachment"
+        app:field_name="file_uri"
+        app:with_label="false" >
+    </odoo.controls.OField>
+
+    <!--
+         <ImageView
         android:id="@+id/imgAttachmentFile"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
         android:src="@drawable/file_attachment" />
+    -->
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,7 +32,17 @@
         android:orientation="horizontal"
         android:paddingLeft="5dp" >
 
-        <TextView
+        <odoo.controls.OField
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            app:field_color="#ffffff"
+            app:field_name="datas_fname"
+            app:singleLine="true" >
+        </odoo.controls.OField>
+
+        <!--
+             <TextView
             android:id="@+id/txvFileName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -27,6 +51,7 @@
             android:singleLine="true"
             android:text="Medium Text"
             android:textColor="#ffffff" />
+        -->
 
         <ImageView
             android:id="@+id/imgBtnRemoveAttachment"
@@ -38,4 +63,4 @@
             android:tint="#fff" />
     </LinearLayout>
 
-</FrameLayout>
+</odoo.controls.OForm>

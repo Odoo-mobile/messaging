@@ -36,8 +36,8 @@ public class MailMessage extends OModel {
 			.setDefault("false");
 	OColumn author_id = new OColumn("Author", ResPartner.class,
 			RelationType.ManyToOne);
-	OColumn partner_ids = new OColumn("Partners", ResPartner.class,
-			RelationType.ManyToMany);
+	OColumn partner_ids = new OColumn("To", ResPartner.class,
+			RelationType.ManyToMany).setRequired(true);
 	OColumn notified_partner_ids = new OColumn("Notified Partners",
 			ResPartner.class, RelationType.ManyToMany);
 	OColumn attachment_ids = new OColumn("Attachments", IrAttachment.class,
@@ -55,12 +55,13 @@ public class MailMessage extends OModel {
 	OColumn notification_ids = new OColumn("Notifications",
 			MailNotification.class, RelationType.OneToMany)
 			.setRelatedColumn("message_id");
-	OColumn subject = new OColumn("Subject", OVarchar.class, 100)
-			.setDefault("false");
-	OColumn date = new OColumn("Date", ODateTime.class).setParsePatter(
+	OColumn subject = new OColumn("Subject", OVarchar.class, 100).setDefault(
+			"false").setRequired(true);
+	OColumn date = new OColumn("Date", ODateTime.class).setParsePattern(
 			ODate.DEFAULT_FORMAT).setDefault(
 			ODate.getUTCDate(ODate.DEFAULT_FORMAT));
-	OColumn body = new OColumn("Body", OHtml.class).setDefault("");
+	OColumn body = new OColumn("Body", OHtml.class).setDefault("").setRequired(
+			true);
 	OColumn vote_user_ids = new OColumn("Voters", ResUsers.class,
 			RelationType.ManyToMany);
 

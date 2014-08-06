@@ -2,7 +2,6 @@ package com.odoo.addons.mail;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import odoo.controls.OForm.OnViewClickListener;
 import odoo.controls.OList;
 import odoo.controls.OList.BeforeListRowCreateListener;
@@ -25,7 +24,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.odoo.addons.mail.Mail.MarkAsTodo;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.models.MailNotification;
@@ -81,6 +79,7 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 		mListMessages.setOnListRowViewClickListener(R.id.imgBtnReply, this);
 		mListMessages.setBeforeListRowCreateListener(this);
 		mView.findViewById(R.id.btnSendQuickReply).setOnClickListener(this);
+
 		if (mMailId != null) {
 			ODataRow parent = db().select(mMailId);
 			if (parent.getInt("id") == 0) {

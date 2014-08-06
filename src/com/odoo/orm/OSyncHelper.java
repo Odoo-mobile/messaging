@@ -405,7 +405,7 @@ public class OSyncHelper {
 	}
 
 	/**
-	 * Creates the record onserver.
+	 * Creates the record on server.
 	 * 
 	 * @param model
 	 *            the model
@@ -413,18 +413,44 @@ public class OSyncHelper {
 	private void createRecordOnserver(OModel model) {
 		try {
 			for (ODataRow row : model.select("id = ? ", new Object[] { 0 })) {
+				create(model, row);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Creates record on server
+	 * 
+	 * @param data_row
+	 *            the data_row
+	 */
+	public void create(ODataRow data_row) {
+		create(mModel, data_row);
+	}
+
+	/**
+	 * Creates record on server
+	 * 
+	 * @param model
+	 *            the model
+	 * @param data_row
+	 *            the data_row
+	 */
+	public void create(OModel model, ODataRow data_row) {
+		try {
+			JSONObject values = createJSONValues(model, data_row);
+			if (values != null) {
 				Integer newId = 0;
-				JSONObject values = createJSONValues(model, row);
-				if (values != null) {
-					values.remove("id");
-					JSONObject result = mOdoo.createNew(model.getModelName(),
-							values);
-					newId = result.getInt("result");
-					OValues vals = new OValues();
-					vals.put("id", newId);
-					vals.put("is_dirty", "false");
-					model.update(vals, row.getInt(OColumn.ROW_ID));
-				}
+				values.remove("id");
+				JSONObject result = mOdoo.createNew(model.getModelName(),
+						values);
+				newId = result.getInt("result");
+				OValues vals = new OValues();
+				vals.put("id", newId);
+				vals.put("is_dirty", "false");
+				model.update(vals, data_row.getInt(OColumn.ROW_ID));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -990,8 +1016,9 @@ public class OSyncHelper {
 			if (context != null) {
 				args.add(mOdoo.updateContext(context));
 			}
-			JSONObject result = mOdoo.call_kw(model, method, args.getArray(),
-					kwargs);
+
+			JSONObject result = mOdoo.call_kw(mModel.getModelName(), method,
+					args.getArray(), kwargs);
 			if (result.has("result")) {
 				return result.get("result");
 			}

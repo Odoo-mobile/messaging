@@ -19,6 +19,7 @@
             android:id="@+id/fieldPartners"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
             odoo:customLayout="@layout/partners_contacts"
             odoo:field_name="partner_ids"
             odoo:with_label="false" />
@@ -27,6 +28,7 @@
             android:id="@+id/fieldSubject"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
             odoo:field_name="subject"
             odoo:singleLine="true"
             odoo:with_label="false" />
@@ -38,6 +40,15 @@
             odoo:field_name="body"
             odoo:textLines="5"
             odoo:with_label="false" />
+
+        <!--
+        <odoo.controls.OList
+            odoo:custom_layout="@layout/activity_mail_compose_attachment_file_view_item"
+            odoo:emptyListIcon="@drawable/attachment"
+            odoo:emptyListMessage="No Attachment Available"
+            odoo:showDivider="true" >
+        </odoo.controls.OList>
+        -->
     </odoo.controls.OForm>
 
 </ScrollView>
