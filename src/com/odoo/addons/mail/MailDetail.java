@@ -2,6 +2,7 @@ package com.odoo.addons.mail;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import odoo.controls.OForm.OnViewClickListener;
 import odoo.controls.OList;
 import odoo.controls.OList.BeforeListRowCreateListener;
@@ -24,6 +25,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
 import com.odoo.addons.mail.Mail.MarkAsTodo;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.models.MailNotification;
@@ -187,9 +189,9 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 				Integer replyId = mail.sendQuickReply(subject, mail_body,
 						mMailId);
 				if (replyId != null) {
-					mRecords.add(1, mail.select(replyId));
-					mListMessages.setRecordOffset(0);
-					mListMessages.initListControl(mRecords);
+					List<ODataRow> newRecord = new ArrayList<ODataRow>();
+					newRecord.add(db().select(replyId));
+					mListMessages.appendRecords(1, newRecord);
 					if (inNetwork()) {
 						scope.main().requestSync(MailProvider.AUTHORITY);
 						Toast.makeText(getActivity(), "Reply Sent",
@@ -212,9 +214,9 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 		if (requestCode == REQUEST_REPLY && resultCode == Activity.RESULT_OK) {
 			int replyId = data.getExtras().getInt(
 					MailDetail.KEY_MESSAGE_REPLY_ID);
-			mRecords.add(1, db().select(replyId));
-			mListMessages.setRecordOffset(0);
-			mListMessages.initListControl(mRecords);
+			List<ODataRow> newRecord = new ArrayList<ODataRow>();
+			newRecord.add(db().select(replyId));
+			mListMessages.appendRecords(1, newRecord);
 			OControls.setText(mView, R.id.edtQuickReplyMessage, "");
 			if (inNetwork()) {
 				scope.main().requestSync(MailProvider.AUTHORITY);

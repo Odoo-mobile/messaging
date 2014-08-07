@@ -181,7 +181,7 @@ public class MailMessage extends OModel {
 	@Override
 	public int create(OValues values) {
 		int newId = super.create(values);
-		if (values.getBoolean("to_read"))
+		if (values.contains("to_read") && values.getBoolean("to_read"))
 			mNewCreateIds.add(newId);
 		return newId;
 	}
