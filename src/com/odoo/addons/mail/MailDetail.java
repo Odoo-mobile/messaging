@@ -145,6 +145,8 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 	@Override
 	public void beforeListRowCreate(int position, ODataRow row, View view) {
 		mListMessages.showAsCard((position != 0));
+		view.setBackgroundColor((position == 0) ? Color.parseColor("#e5e5e5")
+				: Color.parseColor("#ffffff"));
 		ImageView imgstar = (ImageView) view.findViewById(R.id.imgBtnStar);
 		ImageView imgHasVoted = (ImageView) view.findViewById(R.id.imgHasVoted);
 		boolean has_voted = row.getBoolean("has_voted");

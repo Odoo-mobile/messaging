@@ -27,6 +27,7 @@ import com.odoo.orm.types.OInteger;
 import com.odoo.orm.types.OText;
 import com.odoo.orm.types.OVarchar;
 import com.odoo.util.ODate;
+import com.openerp.R;
 
 public class MailMessage extends OModel {
 	private Context mContext = null;
@@ -37,9 +38,9 @@ public class MailMessage extends OModel {
 	OColumn author_id = new OColumn("Author", ResPartner.class,
 			RelationType.ManyToOne);
 	OColumn partner_ids = new OColumn("To", ResPartner.class,
-			RelationType.ManyToMany).setRequired(true);
+			RelationType.ManyToMany).setRequired(true).setRecordSyncLimit(25);
 	OColumn notified_partner_ids = new OColumn("Notified Partners",
-			ResPartner.class, RelationType.ManyToMany);
+			ResPartner.class, RelationType.ManyToMany).setRecordSyncLimit(25);
 	OColumn attachment_ids = new OColumn("Attachments", IrAttachment.class,
 			RelationType.ManyToMany);
 	OColumn parent_id = new OColumn("Parent", MailMessage.class,
@@ -101,7 +102,7 @@ public class MailMessage extends OModel {
 
 	@Override
 	public Boolean checkForWriteDate() {
-		return true;
+		return false;
 	}
 
 	public Boolean getValueofReadUnReadField(int id) {
@@ -180,7 +181,8 @@ public class MailMessage extends OModel {
 	@Override
 	public int create(OValues values) {
 		int newId = super.create(values);
-		mNewCreateIds.add(newId);
+		if (values.getBoolean("to_read"))
+			mNewCreateIds.add(newId);
 		return newId;
 	}
 
@@ -189,6 +191,7 @@ public class MailMessage extends OModel {
 	}
 
 	public Integer sendQuickReply(String subject, String body, Integer parent_id) {
+		body += mContext.getResources().getString(R.string.mail_watermark);
 		OValues vals = new OValues();
 		vals.put("subject", subject);
 		vals.put("body", body);
@@ -316,25 +319,13 @@ public class MailMessage extends OModel {
 	@Override
 	public ODomain defaultDomain() {
 		Integer user_id = user().getUser_id();
-		List<Integer> parent_ids = new ArrayList<Integer>();
-		for (ODataRow row : select("parent_id = ?", new Object[] { "0" })) {
-			parent_ids.add(row.getInt("id"));
-		}
 		ODomain domain = new ODomain();
-		if (parent_ids.size() > 0) {
-			domain.add("|");
-			domain.add("id", "child_of", parent_ids);
-		}
 		domain.add("|");
 		domain.add("partner_ids.user_ids", "in", new JSONArray().put(user_id));
 		domain.add("|");
 		domain.add("notification_ids.partner_id.user_ids", "in",
 				new JSONArray().put(user_id));
 		domain.add("author_id.user_ids", "in", new JSONArray().put(user_id));
-		if (!isEmptyTable()) {
-			domain.add("|");
-			domain.add("date", ">", getSyncHelper().getLastSyncDate(this));
-		}
 		return domain;
 	}
 

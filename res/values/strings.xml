@@ -26,5 +26,6 @@ When you process messages in your inbox, you can mark some as todo. From this me
     <string name="delete">Delete</string>
     <string name="save">Save</string>
     <string name="title_replay_mail">Reply</string>
+    <string name="mail_watermark"><Data><![CDATA[<p>--<br /><small>Sent from <a href="https://play.google.com/store/apps/details?id=com.openerp" target="_blank"><b>Odoo Mobile</b></a></small></p>]]></Data></string>
 
 </resources>

@@ -63,12 +63,6 @@ public class MailSyncService extends OService {
 				domain.add("model", "=", "mail.group");
 			}
 
-			// #1 : Sync new messages
-			// #2 : Starred local to server
-			// #3 : read/unread local to server
-			// #4 : update read/unread/starred server to local
-			// #5 : send mails
-
 			boolean showNotification = true;
 			ActivityManager am = (ActivityManager) context
 					.getSystemService(ACTIVITY_SERVICE);
@@ -80,7 +74,7 @@ public class MailSyncService extends OService {
 			}
 			if (sendMails(context, user, mdb, mdb.getSyncHelper())) {
 				if (mdb.getSyncHelper().syncDataLimit(30)
-						.syncWithServer(domain)) {
+						.syncWithServer(domain, true)) {
 					if (showNotification && mdb.newMessageIds().size() > 0) {
 						int newTotal = mdb.newMessageIds().size();
 						OENotificationHelper mNotification = new OENotificationHelper();
@@ -88,21 +82,15 @@ public class MailSyncService extends OService {
 								MainActivity.class);
 						mNotification.setResultIntent(mainActiivty, context);
 						mNotification.showNotification(context, newTotal
-								+ " new messages", newTotal
+								+ " unread messages", newTotal
 								+ " new message received (Odoo)", authority,
 								R.drawable.ic_odoo_o);
 					}
-					// if (updateStarredOnServer(context, user,
-					// mdb.getSyncHelper())) {
-					// if (updateReadUnreadOnServer(context, user,
-					// mdb.getSyncHelper())) {
 					if (updateOldMessages(context, user, mdb.ids())) {
 						if (user.getAndroidName().equals(account.name)) {
 							context.sendBroadcast(intent);
 						}
 					}
-					// }
-					// }
 				}
 			}
 

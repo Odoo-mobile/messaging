@@ -8,9 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
-import com.odoo.App;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.base.ir.Attachment;
 import com.odoo.orm.ODataRow;
@@ -26,7 +24,6 @@ public class ComposeMail extends Activity {
 	private OForm mForm = null;
 	private Integer mMailId = null;
 	private ODataRow mParentMail = null;
-	private App mApp = null;
 
 	enum AttachmentType {
 		IMAGE, FILE
@@ -64,7 +61,6 @@ public class ComposeMail extends Activity {
 
 	private void init() {
 		mContext = this;
-		mApp = (App) getApplicationContext();
 		mAttachment = new Attachment(mContext);
 		mail = new MailMessage(mContext);
 	}
@@ -127,6 +123,8 @@ public class ComposeMail extends Activity {
 				setResult(RESULT_OK, data);
 				finish();
 			} else {
+				values.put("body", values.getString("body")
+						+ getResources().getString(R.string.mail_watermark));
 				values.put("author_id", mail.author_id());
 				values.put("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
 				Integer mailId = mail.create(values);

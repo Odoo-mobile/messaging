@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:padding="10dp"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="#757575" />
+            android:textColor="#414141" />
     </LinearLayout>
 
     <FrameLayout

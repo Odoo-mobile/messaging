@@ -57,7 +57,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 	private Boolean mSynced = false;
 	private OETouchListener mTouchListener = null;
 	private Integer mLastSelectPosition = -1;
-	private Integer mLimit = 10;
+	private Integer mLimit = 20;
 
 	public enum Type {
 		Inbox, ToMe, ToDo, Archives, Outbox, Group
