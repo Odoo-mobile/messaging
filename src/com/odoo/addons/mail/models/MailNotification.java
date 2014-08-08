@@ -39,7 +39,8 @@ public class MailNotification extends OModel {
 		boolean starred = false;
 		List<ODataRow> row = (List<ODataRow>) select("message_id = ?",
 				new String[] { msgid + "" });
-		starred = row.get(0).getBoolean("starred");
+		if (row.size() > 0)
+			starred = row.get(0).getBoolean("starred");
 		return starred;
 	}
 

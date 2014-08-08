@@ -58,6 +58,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 	private OETouchListener mTouchListener = null;
 	private Integer mLastSelectPosition = -1;
 	private Integer mLimit = 20;
+	private MailMessage db = null;
 
 	public enum Type {
 		Inbox, ToMe, ToDo, Archives, Outbox, Group
@@ -224,8 +225,8 @@ public class Mail extends BaseFragment implements OnPullListener,
 					model.setLimit(mLimit).setOffset(mOffset);
 					for (ODataRow row : model.select(where, whereArgs, null,
 							null, "date DESC")) {
-						ODataRow parent = row.getM2ORecord("parent_id")
-								.browse();
+						ODataRow parent = row.getM2ORecord("parent_id").browse(
+								model);
 						if (parent != null) {
 							// Child
 							if (!mParentList.containsKey("key_"
@@ -289,11 +290,13 @@ public class Mail extends BaseFragment implements OnPullListener,
 	}
 
 	private int count_total(Context context, Type key) {
+		if (db == null)
+			db = new MailMessage(context);
 		int total_count = 0;
 		HashMap<String, Object> map = getWhere(context, key);
 		String where = (String) map.get("where");
 		String whereArgs[] = (String[]) map.get("whereArgs");
-		total_count = new MailMessage(context).count(where, whereArgs);
+		total_count = db.count(where, whereArgs);
 		return total_count;
 	}
 

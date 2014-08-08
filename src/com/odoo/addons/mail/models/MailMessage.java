@@ -72,8 +72,10 @@ public class MailMessage extends OModel {
 	OColumn starred = new OColumn("Starred", OBoolean.class).setDefault(false);
 
 	// Functional Fields
-	@Odoo.Functional(method = "getMessageTitle")
-	OColumn message_title = new OColumn("Title");
+	@Odoo.Functional(method = "setMessageTitle", store = true, depends = {
+			"record_name", "subject" }, checkRowId = false)
+	OColumn message_title = new OColumn("Title", OVarchar.class)
+			.setLocalColumn();
 	@Odoo.Functional(method = "getChildCount")
 	OColumn childs_count = new OColumn("Childs");
 	@Odoo.Functional(method = "getAuthorName")
@@ -94,6 +96,8 @@ public class MailMessage extends OModel {
 		notification = new MailNotification(mContext);
 		write_date.setDefault(false);
 		create_date.setDefault(false);
+		to_read.setLocalColumn(false);
+		starred.setLocalColumn(false);
 	}
 
 	public Integer author_id() {
@@ -167,10 +171,16 @@ public class MailMessage extends OModel {
 			// updating local record
 			update(values, row.getInt(OColumn.ROW_ID));
 			// updating mail notification
-			values = new OValues();
-			values.put("starred", todo_state);
-			new MailNotification(mContext).update(values, "message_id = ?",
-					new Object[] { row.getInt(OColumn.ROW_ID) });
+			String where = "message_id = ?";
+			Object[] selection_args = new Object[] { row.getInt(OColumn.ROW_ID) };
+			if (notification.count(where, selection_args) > 0) {
+				notification.update(values, where, selection_args);
+			} else {
+				OValues vals = new OValues();
+				vals.put("message_id", row.getInt(OColumn.ROW_ID));
+				vals.put("partner_id", author_id());
+				notification.create(vals);
+			}
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -241,7 +251,6 @@ public class MailMessage extends OModel {
 			Integer updated = (Integer) getSyncHelper().callMethod(
 					"set_message_read", args, null);
 			if (updated > 0) {
-
 				OValues values = new OValues();
 				values.put("to_read", !is_read);
 				// updating local record
@@ -249,10 +258,22 @@ public class MailMessage extends OModel {
 					update(values, selectRowId(id));
 				// updating mail notification
 				values = new OValues();
-				values.put("is_read", is_read);
-				for (Integer id : mIds)
-					new MailNotification(mContext).update(values,
-							"message_id = ?", new Object[] { selectRowId(id) });
+				if (notification.getColumn("is_read") != null)
+					values.put("is_read", is_read);
+				else
+					values.put("read", is_read);
+				for (Integer id : mIds) {
+					int message_id = selectRowId(id);
+					String where = "message_id = ?";
+					Object[] selection_args = new Object[] { message_id };
+					if (notification.count(where, selection_args) > 0)
+						notification.update(values, where, selection_args);
+					else {
+						values.put("message_id", message_id);
+						values.put("partner_id", author_id());
+						notification.create(values);
+					}
+				}
 			}
 			return true;
 		} catch (Exception e) {
@@ -271,7 +292,7 @@ public class MailMessage extends OModel {
 	}
 
 	public String getVoteCounter(ODataRow row) {
-		int votes = row.getM2MRecord(vote_user_ids.getName()).browseEach()
+		int votes = row.getM2MRecord(vote_user_ids.getName()).getRelIds()
 				.size();
 		if (votes > 0)
 			return votes + "";
@@ -279,15 +300,15 @@ public class MailMessage extends OModel {
 	}
 
 	public Boolean hasVoted(ODataRow row) {
-		for (ODataRow r : row.getM2MRecord("vote_user_ids").browseEach()) {
-			if (r.getInt("id") == user().getUser_id()) {
+		for (Integer id : row.getM2MRecord("vote_user_ids").getRelIds()) {
+			if (id == user().getUser_id()) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public String getMessageTitle(ODataRow row) {
+	public String setMessageTitle(OValues row) {
 		String title = "false";
 		if (!row.getString("record_name").equals("false"))
 			title = row.getString("record_name");
@@ -301,18 +322,14 @@ public class MailMessage extends OModel {
 	}
 
 	public String getChildCount(ODataRow row) {
-		List<ODataRow> childs = row.getO2MRecord("child_ids").browseEach();
-		return (childs.size() > 0) ? childs.size() + " replies" : " ";
+		int childs = row.getO2MRecord("child_ids").getIds(this).size();
+		return (childs > 0) ? childs + " replies" : " ";
 	}
 
 	public String getAuthorName(ODataRow row) {
-		String author_name = null;
-		ODataRow author = row.getM2ORecord("author_id").browse();
-		if (author != null) {
-			author_name = author.getString("name");
-		} else {
+		String author_name = row.getM2ORecord("author_id").getName();
+		if (author_name.equals("false"))
 			author_name = row.getString("email_from");
-		}
 		return author_name;
 	}
 
