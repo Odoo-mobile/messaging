@@ -31,6 +31,7 @@ import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.OUser;
 import com.odoo.support.service.OService;
 import com.odoo.util.OENotificationHelper;
+import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailSyncService extends OService {
@@ -196,8 +197,10 @@ public class MailSyncService extends OService {
 			Integer messageId = (Integer) helper.callMethod(model, method,
 					args, null, kwargs);
 			OValues vals = new OValues();
+			OLog.log("message id = " + messageId);
 			vals.put(OColumn.ROW_ID, mail.getInt(OColumn.ROW_ID));
 			vals.put("id", messageId);
+			OLog.log("update Ocolumn row_oid = " + mail.getInt(OColumn.ROW_ID));
 			mails.update(vals, mail.getInt(OColumn.ROW_ID));
 		} catch (Exception e) {
 			Log.e(TAG, "sendReply() : " + e.getMessage());

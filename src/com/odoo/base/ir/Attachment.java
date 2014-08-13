@@ -52,8 +52,6 @@ import com.odoo.orm.OModel;
 import com.odoo.orm.OSyncHelper;
 import com.odoo.orm.OValues;
 import com.odoo.orm.OdooHelper;
-import com.odoo.support.OUser;
-import com.odoo.util.Base64Helper;
 import com.openerp.R;
 
 /**

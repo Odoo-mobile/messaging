@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo.controls.OForm xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.openerp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    app:model="ir.attachment" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:padding="5dp" >
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.2"
+            android:contentDescription="Attachment"
+            android:src="@drawable/file_attachment" />
+
+        <odoo.controls.OField
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            app:defaultImage="@drawable/file_attachment"
+            app:fieldTextStyle="bold"
+            app:field_name="datas_fname"
+            app:with_label="false" >
+        </odoo.controls.OField>
+    </LinearLayout>
+
+</odoo.controls.OForm>

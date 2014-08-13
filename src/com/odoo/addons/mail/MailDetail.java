@@ -3,10 +3,14 @@ package com.odoo.addons.mail;
 import java.util.ArrayList;
 import java.util.List;
 
+import odoo.OArguments;
 import odoo.controls.OForm.OnViewClickListener;
 import odoo.controls.OList;
 import odoo.controls.OList.BeforeListRowCreateListener;
 import odoo.controls.OList.OnListRowViewClickListener;
+
+import org.json.JSONArray;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -32,10 +36,12 @@ import com.odoo.addons.mail.models.MailNotification;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
+import com.odoo.orm.OSyncHelper;
 import com.odoo.support.AppScope;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
+import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailDetail extends BaseFragment implements OnViewClickListener,
@@ -51,12 +57,16 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 	private Integer mMailId = null;
 	private OList mListMessages = null;
 	private List<ODataRow> mRecords = new ArrayList<ODataRow>();
+	private boolean has_voted = false;
+	private Context mContext = null;
+	MailMessage mail = null;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		setHasOptionsMenu(true);
 		scope = new AppScope(this);
+		mContext = getActivity();
 		initArgs();
 		return inflater.inflate(R.layout.mail_detail_layout, container, false);
 	}
@@ -70,6 +80,7 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 
 	private void initArgs() {
 		Bundle args = getArguments();
+		mail = (MailMessage) db();
 		if (args.containsKey(OColumn.ROW_ID)) {
 			mMailId = args.getInt(OColumn.ROW_ID);
 		}
@@ -79,6 +90,7 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 		mListMessages = (OList) mView.findViewById(R.id.lstMessageDetail);
 		mListMessages.setOnListRowViewClickListener(R.id.imgBtnStar, this);
 		mListMessages.setOnListRowViewClickListener(R.id.imgBtnReply, this);
+		mListMessages.setOnListRowViewClickListener(R.id.imgHasVoted, this);
 		mListMessages.setBeforeListRowCreateListener(this);
 		mView.findViewById(R.id.btnSendQuickReply).setOnClickListener(this);
 
@@ -141,6 +153,36 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 					InputMethodManager.SHOW_IMPLICIT);
 		} else if (view.getId() == R.id.imgVotenb) {
 			Toast.makeText(getActivity(), "Voted", Toast.LENGTH_SHORT).show();
+		} else if (view.getId() == R.id.imgHasVoted) {
+			if (inNetwork()) {
+				try {
+					MailMessage mail = new MailMessage(mContext);
+					int mail_id = row.getInt("id");
+					OSyncHelper helper = db().getSyncHelper();
+					OArguments args = new OArguments();
+					args.add(new JSONArray("[" + mail_id + "]"));
+					// updating Like(Has_vote) on server
+					Boolean response = (Boolean) helper.callMethod(
+							"vote_toggle", args);
+					Toast.makeText(mContext, "Voted .. live",
+							Toast.LENGTH_SHORT).show();
+					if (response) {
+						mail.addManyToManyRecord("vote_user_ids",
+								row.getInt("local_id"), mail.author_id());
+						mListMessages.initListControl(mRecords);
+					} else {
+						mail.deleteManyToManyRecord("vote_user_ids",
+								row.getInt("local_id"), mail.author_id());
+						mListMessages.initListControl(mRecords);
+					}
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			} else {
+				Toast.makeText(getActivity(), "No connection",
+						Toast.LENGTH_SHORT).show();
+			}
 		}
 	}
 
@@ -151,13 +193,14 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 				: Color.parseColor("#ffffff"));
 		ImageView imgstar = (ImageView) view.findViewById(R.id.imgBtnStar);
 		ImageView imgHasVoted = (ImageView) view.findViewById(R.id.imgHasVoted);
-		boolean has_voted = row.getBoolean("has_voted");
+		has_voted = row.getBoolean("has_voted");
 		boolean is_favorite = row.getBoolean("starred");
 		imgstar.setColorFilter((is_favorite) ? Color.parseColor("#FF8800")
 				: Color.parseColor("#aaaaaa"));
 		imgHasVoted.setColorFilter((has_voted) ? getActivity().getResources()
 				.getColor(R.color.odoo_purple) : Color.parseColor("#aaaaaa"));
 		scope.main().refreshDrawer(Mail.TAG);
+		OLog.log("has Attachment = " + mail.hasAttachment(row) + "");
 
 	}
 
@@ -231,8 +274,6 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// MailMessage mail = (MailMessage) db();
-
 		switch (item.getItemId()) {
 		case R.id.menu_mail_read:
 			if (inNetwork())

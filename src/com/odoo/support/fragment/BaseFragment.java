@@ -39,6 +39,8 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 	/** The list search adapter. */
 	private ArrayAdapter<Object> listSearchAdapter;
 
+	private String mTitle = "";
+
 	/**
 	 * Gets the query listener.
 	 * 

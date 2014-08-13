@@ -17,6 +17,7 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,6 +28,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.Toast;
+import android.widgets.SwipeRefreshLayout;
+import android.widgets.SwipeRefreshLayout.OnRefreshListener;
 
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.models.MailNotification;
@@ -44,7 +47,7 @@ import com.openerp.R;
 
 public class Mail extends BaseFragment implements OnPullListener,
 		BeforeListRowCreateListener, OnListRowViewClickListener,
-		OnRowClickListener, OnListBottomReachedListener {
+		OnRowClickListener, OnListBottomReachedListener, OnRefreshListener {
 
 	public static final String TAG = Mail.class.getSimpleName();
 	public static final String KEY = "fragment_mail";
@@ -59,6 +62,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 	private Integer mLastSelectPosition = -1;
 	private Integer mLimit = 20;
 	private MailMessage db = null;
+	private SwipeRefreshLayout mSwipeRefresh = null;
 
 	public enum Type {
 		Inbox, ToMe, ToDo, Archives, Outbox, Group
@@ -74,7 +78,6 @@ public class Mail extends BaseFragment implements OnPullListener,
 			Bundle savedInstanceState) {
 		setHasOptionsMenu(true);
 		scope = new AppScope(this);
-		mTouchListener = scope.main().getTouchAttacher();
 		initType();
 		return inflater.inflate(R.layout.mail, container, false);
 	}
@@ -94,8 +97,15 @@ public class Mail extends BaseFragment implements OnPullListener,
 	}
 
 	private void init() {
+		mSwipeRefresh = (SwipeRefreshLayout) mView
+				.findViewById(R.id.swipe_container);
+		mSwipeRefresh.setOnRefreshListener(this);
+		mSwipeRefresh.setColorScheme(android.R.color.holo_blue_bright,
+				android.R.color.holo_green_light,
+				android.R.color.holo_orange_light,
+				android.R.color.holo_red_light);
+
 		mListControl = (OList) mView.findViewById(R.id.lstMeesages);
-		mTouchListener.setPullableView(mListControl, this);
 		mListControl
 				.setOnListRowViewClickListener(R.id.img_starred_mlist, this);
 		mListControl.setOnListBottomReachedListener(this);
@@ -191,7 +201,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 		public MessagesLoader(Type type, Integer offset) {
 			messageType = type;
 			mOffset = offset;
-			if (mOffset == 0)
+			if (mOffset == 0 && mListRecords.size() == 0)
 				mView.findViewById(R.id.loadingProgress).setVisibility(
 						View.VISIBLE);
 			else
@@ -325,7 +335,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			super.onReceive(context, intent);
-			mTouchListener.setPullComplete();
+			hideRefreshingProgress();
 			scope.main().refreshDrawer(TAG);
 			mListRecords.clear();
 			mListControl.setRecordLimit(mListRecords.size());
@@ -456,5 +466,26 @@ public class Mail extends BaseFragment implements OnPullListener,
 	@Override
 	public Boolean showLoader() {
 		return true;
+	}
+
+	private void hideRefreshingProgress() {
+		new Handler().postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				mSwipeRefresh.setRefreshing(false);
+			}
+		}, 1000);
+	}
+
+	@Override
+	public void onRefresh() {
+		if (app().inNetwork()) {
+			scope.main().requestSync(MailProvider.AUTHORITY);
+		} else {
+			hideRefreshingProgress();
+			Toast.makeText(getActivity(), "No Connection", Toast.LENGTH_LONG)
+					.show();
+		}
+
 	}
 }

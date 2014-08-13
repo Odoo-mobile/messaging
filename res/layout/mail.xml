@@ -13,12 +13,18 @@
         android:paddingTop="5dp"
         android:visibility="gone" />
 
-    <odoo.controls.OList
-        android:id="@+id/lstMeesages"
+    <android.widgets.SwipeRefreshLayout
+        android:id="@+id/swipe_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        odoo:custom_layout="@layout/mail_list_item"
-        odoo:emptyListIcon="@drawable/ic_action_inbox" >
-    </odoo.controls.OList>
+        android:layout_height="match_parent" >
+
+        <odoo.controls.OList
+            android:id="@+id/lstMeesages"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            odoo:custom_layout="@layout/mail_list_item"
+            odoo:emptyListIcon="@drawable/ic_action_inbox" >
+        </odoo.controls.OList>
+    </android.widgets.SwipeRefreshLayout>
 
 </LinearLayout>
