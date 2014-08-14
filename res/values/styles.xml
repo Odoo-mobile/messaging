@@ -20,8 +20,8 @@
         <item name="android:actionBarStyle">@style/CustomActionbar</item>
     </style>
 
-    <style name="CustomActionbar" parent="android:Theme.Holo.Light.DarkActionBar">
-        <item name="android:background">@color/odoo_purple_tran</item>
+    <style name="CustomActionbar" parent="android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
+        <item name="android:background">@color/odoo_purple</item>
         <item name="android:titleTextStyle">@style/ActionBar.TitleTextStyle</item>
     </style>
 
