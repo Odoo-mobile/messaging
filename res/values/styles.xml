@@ -20,7 +20,7 @@
         <item name="android:actionBarStyle">@style/CustomActionbar</item>
     </style>
 
-    <style name="CustomActionbar" parent="android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
+    <style name="CustomActionbar" parent="android:Theme.Holo.Light.DarkActionBar">
         <item name="android:background">@color/odoo_purple_tran</item>
         <item name="android:titleTextStyle">@style/ActionBar.TitleTextStyle</item>
     </style>
@@ -28,13 +28,6 @@
     <style name="ActionBar.TitleTextStyle" parent="android:style/TextAppearance.Holo.Widget.ActionBar.Title">
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">#ffffff</item>
-    </style>
-
-    <style name="Widget.PullToRefresh.ProgressBar.Horizontal.Center" parent="android:Widget.ProgressBar.Horizontal">
-        <item name="android:progressDrawable">@drawable/ptr_progress_horizontal_holo_center</item>
-        <item name="android:indeterminateDrawable">@drawable/ptr_progress_indeterminate_horizontal_holo</item>
-        <item name="android:minHeight">5dip</item>
-        <item name="android:maxHeight">16dip</item>
     </style>
 
 </resources>
