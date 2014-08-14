@@ -21,7 +21,7 @@
         <odoo.controls.OList
             android:id="@+id/lstMeesages"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             odoo:custom_layout="@layout/mail_list_item"
             odoo:emptyListIcon="@drawable/ic_action_inbox" >
         </odoo.controls.OList>

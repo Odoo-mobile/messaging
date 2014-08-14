@@ -11,11 +11,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+import android.widgets.SwipeRefreshLayout;
+import android.widgets.SwipeRefreshLayout.OnRefreshListener;
 
 import com.odoo.addons.mail.models.MailGroup;
 import com.odoo.addons.mail.providers.group.MailGroupProvider;
@@ -25,22 +28,20 @@ import com.odoo.support.AppScope;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
-import com.openerp.OETouchListener;
-import com.openerp.OETouchListener.OnPullListener;
 import com.openerp.R;
 
-public class Groups extends BaseFragment implements OnPullListener,
-		BeforeListRowCreateListener, OnRowClickListener {
+public class Groups extends BaseFragment implements
+		BeforeListRowCreateListener, OnRowClickListener, OnRefreshListener {
 	public static final String TAG = "com.odoo.addons.mail.MailGroup";
 	public static final String KEY = "group_id";
 
 	private View mView = null;
 	private List<ODataRow> mGroupListItems = new ArrayList<ODataRow>();
 	private OList mListGroup;
-	private OETouchListener mTouchAttacher;
 	private GroupsLoader mGroupsLoader = null;
 	private Boolean mSynced = false;
 	private Integer mLastPosition = -1;
+	private SwipeRefreshLayout mSwipeRefresh = null;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -73,11 +74,16 @@ public class Groups extends BaseFragment implements OnPullListener,
 	}
 
 	private void initControls() {
-		mTouchAttacher = scope.main().getTouchAttacher();
+		mSwipeRefresh = (SwipeRefreshLayout) mView
+				.findViewById(R.id.swipe_container);
+		mSwipeRefresh.setColorScheme(android.R.color.holo_blue_bright,
+				android.R.color.holo_green_light,
+				android.R.color.holo_orange_light,
+				android.R.color.holo_red_light);
+		mSwipeRefresh.setOnRefreshListener(this);
 		mListGroup = (OList) mView.findViewById(R.id.listGroups);
 		mListGroup.setBeforeListRowCreateListener(this);
 		mListGroup.setOnRowClickListener(this);
-		mTouchAttacher.setPullableView(mListGroup, this);
 	}
 
 	@Override
@@ -100,15 +106,6 @@ public class Groups extends BaseFragment implements OnPullListener,
 		bundle.putString("group", value);
 		mail.setArguments(bundle);
 		return mail;
-	}
-
-	@Override
-	public void onPullStarted(View arg0) {
-		if (inNetwork())
-			scope.main().requestSync(MailGroupProvider.AUTHORITY);
-		else
-			mTouchAttacher.setPullComplete();
-
 	}
 
 	class GroupsLoader extends AsyncTask<Void, Void, Void> {
@@ -155,10 +152,10 @@ public class Groups extends BaseFragment implements OnPullListener,
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			mTouchAttacher.setPullComplete();
+			scope.main().refreshDrawer(TAG);
 			mGroupsLoader = new GroupsLoader();
 			mGroupsLoader.execute();
-			scope.main().refreshDrawer(TAG);
+			hideRefreshingProgress();
 		}
 
 	};
@@ -185,5 +182,26 @@ public class Groups extends BaseFragment implements OnPullListener,
 			Toast.makeText(getActivity(), "You must first join group.",
 					Toast.LENGTH_LONG).show();
 		}
+	}
+
+	@Override
+	public void onRefresh() {
+		if (inNetwork()) {
+			scope.main().requestSync(MailGroupProvider.AUTHORITY);
+		} else {
+			hideRefreshingProgress();
+			Toast.makeText(getActivity(), "No Connection", Toast.LENGTH_LONG)
+					.show();
+		}
+
+	}
+
+	private void hideRefreshingProgress() {
+		new Handler().postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				mSwipeRefresh.setRefreshing(false);
+			}
+		}, 1000);
 	}
 }

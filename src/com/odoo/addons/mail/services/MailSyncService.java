@@ -22,7 +22,6 @@ import android.util.Log;
 import com.odoo.MainActivity;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.models.MailNotification;
-import com.odoo.auth.OdooAccountManager;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OSyncHelper;
@@ -30,7 +29,7 @@ import com.odoo.orm.OValues;
 import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.OUser;
 import com.odoo.support.service.OService;
-import com.odoo.util.OENotificationHelper;
+import com.odoo.util.ONotificationHelper;
 import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
@@ -45,12 +44,11 @@ public class MailSyncService extends OService {
 	}
 
 	@Override
-	public void performSync(Context context, Account account, Bundle extras,
-			String authority, ContentProviderClient provider,
+	public void performSync(Context context, OUser user, Account account,
+			Bundle extras, String authority, ContentProviderClient provider,
 			SyncResult syncResult) {
 		Log.d(TAG, "MailSyncService->Start");
 		mContext = context;
-		OUser user = OdooAccountManager.getAccountDetail(context, account.name);
 		Intent intent = new Intent();
 		intent.setAction(SyncFinishReceiver.SYNC_FINISH);
 		try {
@@ -78,7 +76,7 @@ public class MailSyncService extends OService {
 						.syncWithServer(domain, true)) {
 					if (showNotification && mdb.newMessageIds().size() > 0) {
 						int newTotal = mdb.newMessageIds().size();
-						OENotificationHelper mNotification = new OENotificationHelper();
+						ONotificationHelper mNotification = new ONotificationHelper();
 						Intent mainActiivty = new Intent(context,
 								MainActivity.class);
 						mNotification.setResultIntent(mainActiivty, context);

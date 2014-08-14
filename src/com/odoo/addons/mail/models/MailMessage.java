@@ -27,7 +27,6 @@ import com.odoo.orm.types.OInteger;
 import com.odoo.orm.types.OText;
 import com.odoo.orm.types.OVarchar;
 import com.odoo.util.ODate;
-import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailMessage extends OModel {
@@ -100,16 +99,6 @@ public class MailMessage extends OModel {
 		to_read.setLocalColumn(false);
 		starred.setLocalColumn(false);
 	}
-
-	/* private void test() {
-	 String sql =
-	 "select author_id, t2.name from mail_message as t1 join res_partner as t2 on t1.author_id = t2.id and t2.name like 'Admin%'";
-	 SQLiteDatabase db = getReadableDatabase();
-	 Cursor c = db.rawQuery(sql, null);
-	 OLog.log(c.getCount() + " : JOIN WORKS");
-	 c.close();
-	 db.close();
-	 } */
 
 	public Integer author_id() {
 		return new ResPartner(mContext).selectRowId(user().getPartner_id());
@@ -194,7 +183,6 @@ public class MailMessage extends OModel {
 			}
 			return true;
 		} catch (Exception e) {
-			OLog.log("markas TODO");
 			e.printStackTrace();
 		}
 		return false;
@@ -313,7 +301,7 @@ public class MailMessage extends OModel {
 
 	public Boolean hasVoted(ODataRow row) {
 		for (Integer id : row.getM2MRecord("vote_user_ids").getRelIds()) {
-			if (id == user().getUser_id()) {
+			if (id == author_id()) {
 				return true;
 			}
 		}
@@ -321,14 +309,9 @@ public class MailMessage extends OModel {
 	}
 
 	public Boolean hasAttachment(ODataRow row) {
-		// int i = 0;
-		// i = row.getM2MRecord("attachment_ids").getRelIds().size();
-		// OLog.log("i value = " + i + " : Row Values = "
-		// + row.getM2MRecord("attachment_ids").getRelIds().size());
-		if (row.getM2MRecord("attachment_ids").getRelIds().size() <= 0)
-			return false;
-		else
+		if (row.getM2MRecord("attachment_ids").getRelIds().size() > 0)
 			return true;
+		return false;
 	}
 
 	public String setMessageTitle(OValues row) {

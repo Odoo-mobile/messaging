@@ -29,7 +29,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.odoo.auth.OdooAccountManager;
 import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OSyncHelper;
 import com.odoo.support.OUser;
@@ -41,12 +40,10 @@ public class ContactSyncService extends OService {
 	public static final String TAG = "com.odoo.base.res.services.ContactSyncService";
 
 	@Override
-	public void performSync(Context context, Account account, Bundle extras,
-			String authority, ContentProviderClient provider,
+	public void performSync(Context context, OUser user, Account account,
+			Bundle extras, String authority, ContentProviderClient provider,
 			SyncResult syncResult) {
 		try {
-			OUser user = OdooAccountManager.getAccountDetail(context,
-					account.name);
 			ResPartner db = new ResPartner(context);
 			OSyncHelper odoo = db.getSyncHelper();
 			OContact contact = new OContact(context, user);

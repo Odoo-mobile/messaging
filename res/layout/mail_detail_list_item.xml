@@ -2,7 +2,7 @@
     xmlns:odoo="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ffffff"
+    android:background="@android:color/transparent"
     android:orientation="vertical"
     odoo:model="mail.message" >
 
@@ -98,6 +98,7 @@
                         android:padding="5dp" >
 
                         <odoo.controls.OField
+                            android:id="@+id/voteCounter"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             odoo:fieldTextStyle="bold"
@@ -111,7 +112,6 @@
                             android:id="@+id/imgHasVoted"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:clickable="true"
                             android:src="@drawable/ic_action_rating_good"
                             android:tint="#aaaaaa" />
                     </LinearLayout>

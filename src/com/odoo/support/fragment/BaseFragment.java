@@ -38,8 +38,7 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 	private OModel mDb = null;
 	/** The list search adapter. */
 	private ArrayAdapter<Object> listSearchAdapter;
-
-	private String mTitle = "";
+	private Boolean showActionbar = true;
 
 	/**
 	 * Gets the query listener.
@@ -51,6 +50,16 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 	public OnQueryTextListener getQueryListener(ArrayAdapter<Object> listAdapter) {
 		listSearchAdapter = listAdapter;
 		return queryListener;
+	}
+
+	/**
+	 * Show action bar.
+	 * 
+	 * @param show
+	 *            the show
+	 */
+	protected void showActionBar(Boolean show) {
+		showActionbar = show;
 	}
 
 	/** The query listener. */
@@ -176,6 +185,16 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 
 	public App app() {
 		return (App) getActivity().getApplicationContext();
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		if (!getActivity().getActionBar().isShowing() && showActionbar)
+			getActivity().getActionBar().show();
+		scope = new AppScope(getActivity());
+		if (scope.main().getNavItem() != null)
+			scope.main().setTitle(scope.main().getNavItem().getTitle());
 	}
 
 }

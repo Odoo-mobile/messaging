@@ -15,7 +15,6 @@ import android.os.Bundle;
 
 import com.odoo.addons.mail.models.MailGroup;
 import com.odoo.addons.mail.providers.mail.MailProvider;
-import com.odoo.auth.OdooAccountManager;
 import com.odoo.base.mail.MailFollowers;
 import com.odoo.orm.ODataRow;
 import com.odoo.receivers.SyncFinishReceiver;
@@ -32,10 +31,9 @@ public class MailGroupSyncService extends OService {
 	}
 
 	@Override
-	public void performSync(Context context, Account account, Bundle extras,
-			String authority, ContentProviderClient provider,
+	public void performSync(Context context, OUser user, Account account,
+			Bundle extras, String authority, ContentProviderClient provider,
 			SyncResult syncResult) {
-		OUser user = OdooAccountManager.getAccountDetail(context, account.name);
 		Intent intent = new Intent();
 		intent.setAction(SyncFinishReceiver.SYNC_FINISH);
 		MailGroup mailGroup = new MailGroup(context);
@@ -64,8 +62,7 @@ public class MailGroupSyncService extends OService {
 						messageBundle);
 			}
 		}
-		if (OdooAccountManager.current_user.getAndroidName().equals(
-				account.name)) {
+		if (OUser.current(context).getAndroidName().equals(account.name)) {
 			context.sendBroadcast(intent);
 		}
 

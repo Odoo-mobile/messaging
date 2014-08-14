@@ -41,13 +41,11 @@ import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.AppScope;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.util.drawer.DrawerItem;
-import com.openerp.OETouchListener;
-import com.openerp.OETouchListener.OnPullListener;
 import com.openerp.R;
 
-public class Mail extends BaseFragment implements OnPullListener,
-		BeforeListRowCreateListener, OnListRowViewClickListener,
-		OnRowClickListener, OnListBottomReachedListener, OnRefreshListener {
+public class Mail extends BaseFragment implements BeforeListRowCreateListener,
+		OnListRowViewClickListener, OnRowClickListener,
+		OnListBottomReachedListener, OnRefreshListener {
 
 	public static final String TAG = Mail.class.getSimpleName();
 	public static final String KEY = "fragment_mail";
@@ -58,7 +56,6 @@ public class Mail extends BaseFragment implements OnPullListener,
 	private List<ODataRow> mListRecords = new ArrayList<ODataRow>();
 	private MessagesLoader mMessageLoader = null;
 	private Boolean mSynced = false;
-	private OETouchListener mTouchListener = null;
 	private Integer mLastSelectPosition = -1;
 	private Integer mLimit = 20;
 	private MailMessage db = null;
@@ -209,6 +206,7 @@ public class Mail extends BaseFragment implements OnPullListener,
 						View.GONE);
 			if (db().isEmptyTable() && !mSynced) {
 				scope.main().requestSync(MailProvider.AUTHORITY);
+				mSwipeRefresh.setRefreshing(true);
 				mSyncing = true;
 			}
 		}
@@ -284,7 +282,6 @@ public class Mail extends BaseFragment implements OnPullListener,
 	@Override
 	public List<DrawerItem> drawerMenus(Context context) {
 		List<DrawerItem> menu = new ArrayList<DrawerItem>();
-		menu.add(new DrawerItem(TAG, "Messaging", true));
 		menu.add(new DrawerItem(TAG, "Inbox", count_total(context, Type.Inbox),
 				R.drawable.ic_action_inbox, object(Type.Inbox)));
 		menu.add(new DrawerItem(TAG, "To: me", count_total(context, Type.ToMe),
@@ -345,15 +342,6 @@ public class Mail extends BaseFragment implements OnPullListener,
 			mMessageLoader.execute();
 		}
 	};
-
-	@Override
-	public void onPullStarted(View arg) {
-		if (inNetwork()) {
-			scope.main().requestSync(MailProvider.AUTHORITY);
-		} else {
-			mTouchListener.setPullComplete();
-		}
-	}
 
 	@Override
 	public void beforeListRowCreate(int position, ODataRow row, View view) {

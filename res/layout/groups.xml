@@ -13,12 +13,18 @@
         android:paddingTop="5dp"
         android:visibility="gone" />
 
-    <odoo.controls.OList
-        android:id="@+id/listGroups"
+    <android.widgets.SwipeRefreshLayout
+        android:id="@+id/swipe_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        odoo:custom_layout="@layout/groups_list_item"
-        odoo:emptyListIcon="@drawable/ic_action_social_group" >
-    </odoo.controls.OList>
+        android:layout_height="match_parent" >
+
+        <odoo.controls.OList
+            android:id="@+id/listGroups"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            odoo:custom_layout="@layout/groups_list_item"
+            odoo:emptyListIcon="@drawable/ic_action_social_group" >
+        </odoo.controls.OList>
+    </android.widgets.SwipeRefreshLayout>
 
 </LinearLayout>
