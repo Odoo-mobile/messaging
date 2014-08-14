@@ -1,5 +1,6 @@
 <odoo.controls.OForm xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:odoo="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res/com.openerp"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/transparent"
@@ -147,6 +148,17 @@
             android:layout_height="wrap_content"
             odoo:field_name="body"
             odoo:with_label="false" >
+        </odoo.controls.OField>
+
+        <odoo.controls.OField
+            android:id="@+id/msg_attachment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:customLayoutOriantation="vertical"
+            odoo:customLayout="@layout/mail_detail_list_attachment"
+            odoo:field_name="attachment_ids"
+            odoo:label_bottom_border_height="0"
+            odoo:label_color="@color/odoo_purple" >
         </odoo.controls.OField>
     </LinearLayout>
 

@@ -42,7 +42,6 @@ import com.odoo.support.AppScope;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
-import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailDetail extends BaseFragment implements OnViewClickListener,
@@ -214,7 +213,10 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 		imgHasVoted.setColorFilter((has_voted) ? getActivity().getResources()
 				.getColor(R.color.odoo_purple) : Color.parseColor("#aaaaaa"));
 		scope.main().refreshDrawer(Mail.TAG);
-		OLog.log("has Attachment = " + mail.hasAttachment(row) + "");
+		if (mail.hasAttachment(row) == true)
+			OControls.setVisible(view, R.id.msg_attachment);
+		else
+			OControls.setGone(view, R.id.msg_attachment);
 
 	}
 

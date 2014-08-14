@@ -26,7 +26,7 @@ public class ComposeMail extends Activity {
 	private ODataRow mParentMail = null;
 
 	enum AttachmentType {
-		IMAGE, FILE
+		IMAGE, FILE, CAPTURE_IMAGE, IMAGE_OR_CAPTURE_IMAGE, AUDIO, OTHER
 	}
 
 	@Override

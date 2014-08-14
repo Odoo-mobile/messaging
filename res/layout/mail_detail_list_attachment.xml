@@ -7,25 +7,30 @@
     app:model="ir.attachment" >
 
     <LinearLayout
+        android:id="@+id/mailAttachment"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
+        android:background="?android:selectableItemBackground"
+        android:clickable="true"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="5dp" >
+        android:padding="8dp" >
 
         <ImageView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.2"
-            android:contentDescription="Attachment"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginRight="5dp"
             android:src="@drawable/file_attachment" />
 
         <odoo.controls.OField
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="2"
+            android:layout_weight="1"
             app:defaultImage="@drawable/file_attachment"
             app:fieldTextStyle="bold"
+            app:field_color="#414141"
             app:field_name="datas_fname"
+            app:field_textAppearance="?android:attr/textAppearanceSmall"
             app:with_label="false" >
         </odoo.controls.OField>
     </LinearLayout>

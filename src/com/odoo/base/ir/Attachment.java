@@ -31,6 +31,7 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -145,7 +146,12 @@ public class Attachment implements OnClickListener {
 	}
 
 	private void requestIntent(Intent intent, int requestCode) {
-		((Activity) mContext).startActivityForResult(intent, requestCode);
+		try {
+			((Activity) mContext).startActivityForResult(intent, requestCode);
+		} catch (ActivityNotFoundException e) {
+			Toast.makeText(mContext, "No Activity Found to handle request",
+					Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	public ODataRow handleResult(Intent data) {
