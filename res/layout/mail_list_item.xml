@@ -45,12 +45,8 @@
         android:layout_marginTop="18dp"
         odoo:binaryType="round_image"
         odoo:defaultImage="@drawable/avatar"
-        odoo:fieldTextStyle="bold"
-        odoo:field_color="#414141"
-        odoo:field_name="author_id"
+        odoo:field_name="author_id_image_small"
         odoo:imageWidthHeight="50"
-        odoo:ref_column="image_small"
-        odoo:singleLine="true"
         odoo:with_label="false" >
     </odoo.controls.OField>
 
@@ -82,7 +78,7 @@
                     android:layout_height="wrap_content"
                     odoo:fieldTextStyle="bold"
                     odoo:field_color="#414141"
-                    odoo:field_name="author_name"
+                    odoo:field_name="author_id_name"
                     odoo:field_textAppearance="?android:attr/textAppearanceSmall"
                     odoo:with_label="false" >
                 </odoo.controls.OField>
@@ -92,7 +88,7 @@
                     android:layout_height="wrap_content"
                     odoo:fieldTextStyle="bold"
                     odoo:field_color="@color/gray_text"
-                    odoo:field_name="childs_count"
+                    odoo:field_name="child_count"
                     odoo:field_textAppearance="?android:attr/textAppearanceSmall"
                     odoo:singleLine="true"
                     odoo:with_label="false" />

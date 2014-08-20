@@ -76,8 +76,6 @@ public class MailMessage extends OModel {
 			"record_name", "subject" }, checkRowId = false)
 	OColumn message_title = new OColumn("Title", OVarchar.class)
 			.setLocalColumn();
-	@Odoo.Functional(method = "getChildCount")
-	OColumn childs_count = new OColumn("Childs");
 	@Odoo.Functional(method = "getAuthorName")
 	OColumn author_name = new OColumn("Author", OVarchar.class);
 	@Odoo.Functional(method = "hasVoted")

@@ -1,7 +1,6 @@
 package com.odoo.addons.mail;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -36,7 +35,7 @@ import com.odoo.addons.mail.models.MailNotification;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
-import com.odoo.orm.OModel;
+import com.odoo.orm.sql.OQuery;
 import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.AppScope;
 import com.odoo.support.fragment.BaseFragment;
@@ -101,7 +100,6 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 				android.R.color.holo_green_light,
 				android.R.color.holo_orange_light,
 				android.R.color.holo_red_light);
-
 		mListControl = (OList) mView.findViewById(R.id.lstMeesages);
 		mListControl
 				.setOnListRowViewClickListener(R.id.img_starred_mlist, this);
@@ -125,68 +123,83 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 		mListControl.initListControl(mListRecords);
 	}
 
-	private HashMap<String, Object> getWhere(Context context, Type type) {
-		HashMap<String, Object> map = new HashMap<String, Object>();
-		String where = null;
-		String[] whereArgs = null;
+	private OQuery setSelection(Context context, OQuery query, Type type) {
+		MailMessage db = new MailMessage(context);
 		switch (type) {
 		case Inbox:
-			where = "to_read = ? AND starred = ? AND id != ?";
-			whereArgs = new String[] { "true", "false", "0" };
-			if (mListControl != null) {
-				mListControl.setEmptyListIcon(R.drawable.ic_action_inbox);
-				mListControl.setEmptyListMessage(context.getResources()
-						.getString(R.string.message_inbox_all_read));
-			}
+			query.addWhere("to_read", "=", true, "AND");
+			query.addWhere("starred", "=", false, "AND");
+			query.addWhere("id", "!=", 0);
 			break;
 		case ToMe:
-			where = "to_read = ? AND starred = ? ";
-			whereArgs = new String[] { "true", "false" };
-			if (mListControl != null) {
-				mListControl.setEmptyListIcon(R.drawable.ic_action_user);
-				mListControl.setEmptyListMessage(context.getResources()
-						.getString(R.string.message_tome_all_read));
-			}
+			query.addWhere("to_read", "=", true);
+			query.addWhere("starred", "=", false);
+			query.addWhere("partner_ids.res_partner_id", "=", db.author_id());
 			break;
 		case ToDo:
-			where = "to_read = ? AND starred = ?";
-			whereArgs = new String[] { "true", "true" };
-			if (mListControl != null) {
-				mListControl.setEmptyListIcon(R.drawable.ic_action_clipboard);
-				mListControl.setEmptyListMessage(context.getResources()
-						.getString(R.string.message_todo_all_read));
-			}
+			query.addWhere("to_read", "=", true);
+			query.addWhere("starred", "=", true);
 			break;
 		case Outbox:
-			where = "id = ?";
-			whereArgs = new String[] { "0" };
-			if (mListControl != null) {
-				mListControl.setEmptyListIcon(R.drawable.ic_action_unsent_mail);
-				mListControl.setEmptyListMessage(context.getResources()
-						.getString(R.string.message_no_outbox_message));
-			}
+			query.addWhere("id", "=", 0);
 			break;
 		case Group:
 			Integer group_id = getArguments().getInt(Groups.KEY);
-			where = "res_id = ? and model = ?";
-			whereArgs = new String[] { group_id + "", "mail.group" };
-			if (mListControl != null) {
-				mListControl
-						.setEmptyListIcon(R.drawable.ic_action_social_group);
-				mListControl.setEmptyListMessage(context.getResources()
-						.getString(R.string.message_no_group_message));
-			}
+			query.addWhere("res_id", "=", group_id);
+			query.addWhere("model", "=", "mail.group");
 			break;
 		case Archives:
-			where = "id != ?";
-			whereArgs = new String[] { "0" };
+			query.addWhere("id", "!=", 0);
 			break;
 		default:
 			break;
 		}
-		map.put("where", where);
-		map.put("whereArgs", whereArgs);
-		return map;
+		return query;
+	}
+
+	private OQuery setSelectionArgs(Context context, OQuery query, Type type) {
+		switch (type) {
+		case Inbox:
+			if (mListControl != null) {
+				mListControl.setEmptyListIcon(R.drawable.ic_action_inbox);
+				mListControl.setEmptyListMessage(getActivity().getResources()
+						.getString(R.string.message_inbox_all_read));
+			}
+			break;
+		case ToMe:
+			if (mListControl != null) {
+				mListControl.setEmptyListIcon(R.drawable.ic_action_user);
+				mListControl.setEmptyListMessage(getActivity().getResources()
+						.getString(R.string.message_tome_all_read));
+			}
+			break;
+		case ToDo:
+			if (mListControl != null) {
+				mListControl.setEmptyListIcon(R.drawable.ic_action_clipboard);
+				mListControl.setEmptyListMessage(getActivity().getResources()
+						.getString(R.string.message_todo_all_read));
+			}
+			break;
+		case Outbox:
+			if (mListControl != null) {
+				mListControl.setEmptyListIcon(R.drawable.ic_action_unsent_mail);
+				mListControl.setEmptyListMessage(getActivity().getResources()
+						.getString(R.string.message_no_outbox_message));
+			}
+			break;
+		case Group:
+			if (mListControl != null) {
+				mListControl
+						.setEmptyListIcon(R.drawable.ic_action_social_group);
+				mListControl.setEmptyListMessage(getActivity().getResources()
+						.getString(R.string.message_no_group_message));
+			}
+			break;
+		default:
+			break;
+		}
+		setSelection(context, query, type);
+		return query;
 	}
 
 	public class MessagesLoader extends AsyncTask<Void, Void, Boolean> {
@@ -225,32 +238,55 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 					if (mOffset == 0)
 						mListRecords.clear();
 					LinkedHashMap<String, ODataRow> mParentList = new LinkedHashMap<String, ODataRow>();
-					HashMap<String, Object> map = getWhere(getActivity(),
-							messageType);
-					String where = (String) map.get("where");
-					String whereArgs[] = (String[]) map.get("whereArgs");
-					OModel model = db();
-					model.setLimit(mLimit).setOffset(mOffset);
-					for (ODataRow row : model.select(where, whereArgs, null,
-							null, "date DESC")) {
-						ODataRow parent = row.getM2ORecord("parent_id").browse(
-								model);
-						if (parent != null) {
+					String[] cols = { "author_id.image_small",
+							"author_id.name", "date", "message_title", "body",
+							"parent_id", "starred", "to_read" };
+					OQuery q = db().browse().columns(cols);
+					q.setLimit(mLimit).setOffset(mOffset);
+					q = setSelectionArgs(getActivity(), q, messageType);
+					q.setLimit(mLimit).setOffset(mOffset)
+							.setOrder("date", "DESC");
+
+					for (ODataRow row : q.fetch()) {
+						Integer parent_id = row.getInt("parent_id");
+
+						if (parent_id != 0) {
 							// Child
-							if (!mParentList.containsKey("key_"
-									+ parent.getString(OColumn.ROW_ID))) {
-								parent.put("body", row.getString("body"));
-								parent.put("date", row.getString("date"));
-								parent.put("to_read", row.getBoolean("to_read"));
-								mParentList.put(
-										"key_"
-												+ parent.getString(OColumn.ROW_ID),
-										parent);
+							if (!mParentList.containsKey("key_" + parent_id)) {
+								List<ODataRow> parents = db()
+										.browse()
+										.columns(cols)
+										.addWhere(OColumn.ROW_ID, "=",
+												parent_id).fetch();
+								if (parents.size() > 0) {
+									ODataRow parent = parents.get(0);
+									parent.put("body", row.getString("body"));
+									parent.put("date", row.getString("date"));
+									parent.put("to_read",
+											row.getBoolean("to_read"));
+									int childs = db().count(
+											"parent_id = ?",
+											new Object[] { parent
+													.get(OColumn.ROW_ID) });
+									parent.put("child_count",
+											(childs > 0) ? childs + " replies"
+													: "");
+									mParentList.put(
+											"key_"
+													+ parent.getString(OColumn.ROW_ID),
+											parent);
+								}
 
 							}
 						} else { // parent
 							if (!mParentList.containsKey("key_"
 									+ row.getString(OColumn.ROW_ID))) {
+								int childs = db()
+										.count("parent_id = ?",
+												new Object[] { row
+														.get(OColumn.ROW_ID) });
+								row.put("child_count", (childs > 0) ? childs
+										+ " replies" : "");
 								mParentList.put(
 										"key_" + row.getString(OColumn.ROW_ID),
 										row);
@@ -260,7 +296,9 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 					for (String k : mParentList.keySet()) {
 						mListRecords.add(mParentList.get(k));
 					}
-					mListControl.setRecordOffset(model.getNextOffset());
+
+					mListControl.setRecordOffset(q.getNextOffset());
+
 				}
 			});
 			return true;
@@ -299,12 +337,9 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 	private int count_total(Context context, Type key) {
 		if (db == null)
 			db = new MailMessage(context);
-		int total_count = 0;
-		HashMap<String, Object> map = getWhere(context, key);
-		String where = (String) map.get("where");
-		String whereArgs[] = (String[]) map.get("whereArgs");
-		total_count = db.count(where, whereArgs);
-		return total_count;
+		OQuery q = db.browse().columns("id");
+		q = setSelection(context, q, key);
+		return q.fetch().size();
 	}
 
 	private Fragment object(Type type) {
