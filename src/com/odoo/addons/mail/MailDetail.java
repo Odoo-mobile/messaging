@@ -5,7 +5,6 @@ import java.util.List;
 
 import odoo.OArguments;
 import odoo.controls.OField;
-import odoo.controls.OForm.OnViewClickListener;
 import odoo.controls.OList;
 import odoo.controls.OList.BeforeListRowCreateListener;
 import odoo.controls.OList.OnListRowViewClickListener;
@@ -26,7 +25,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -44,7 +42,7 @@ import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
 import com.openerp.R;
 
-public class MailDetail extends BaseFragment implements OnViewClickListener,
+public class MailDetail extends BaseFragment implements
 		OnListRowViewClickListener, BeforeListRowCreateListener,
 		OnClickListener {
 	public static final String TAG = "com.odoo.addons.mail.MailDetail";
@@ -88,8 +86,8 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 	private void init() {
 		mListMessages = (OList) mView.findViewById(R.id.lstMessageDetail);
 		mListMessages.setOnListRowViewClickListener(R.id.imgBtnStar, this);
-		mListMessages.setOnListRowViewClickListener(R.id.imgBtnReply, this);
 		mListMessages.setOnListRowViewClickListener(R.id.imgVotenb, this);
+		mListMessages.setOnListRowViewClickListener(R.id.msg_attachment, this);
 		mListMessages.setBeforeListRowCreateListener(this);
 		mView.findViewById(R.id.btnSendQuickReply).setOnClickListener(this);
 
@@ -125,11 +123,6 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 	}
 
 	@Override
-	public void onFormViewClick(View view, ODataRow row) {
-
-	}
-
-	@Override
 	public void onRowViewClick(ViewGroup view_group, View view, int position,
 			ODataRow row) {
 		switch (view.getId()) {
@@ -145,13 +138,6 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 				Toast.makeText(getActivity(), "No Connection",
 						Toast.LENGTH_SHORT).show();
 			}
-			break;
-		case R.id.imgBtnReply:
-			mView.findViewById(R.id.edtQuickReplyMessage).requestFocus();
-			InputMethodManager imm = (InputMethodManager) getActivity()
-					.getSystemService(Context.INPUT_METHOD_SERVICE);
-			imm.showSoftInput(mView.findViewById(R.id.edtQuickReplyMessage),
-					InputMethodManager.SHOW_IMPLICIT);
 			break;
 		case R.id.imgVotenb:
 			if (inNetwork()) {
@@ -196,6 +182,9 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 						Toast.LENGTH_LONG).show();
 			}
 			break;
+		case R.id.msg_attachment:
+			// FIXME: handle attachment download
+			break;
 		}
 	}
 
@@ -212,12 +201,10 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 				: Color.parseColor("#aaaaaa"));
 		imgHasVoted.setColorFilter((has_voted) ? getActivity().getResources()
 				.getColor(R.color.odoo_purple) : Color.parseColor("#aaaaaa"));
-		scope.main().refreshDrawer(Mail.TAG);
 		if (mail.hasAttachment(row) == true)
 			OControls.setVisible(view, R.id.msg_attachment);
 		else
 			OControls.setGone(view, R.id.msg_attachment);
-
 	}
 
 	@Override
@@ -334,4 +321,5 @@ public class MailDetail extends BaseFragment implements OnViewClickListener,
 		}
 
 	}
+
 }
