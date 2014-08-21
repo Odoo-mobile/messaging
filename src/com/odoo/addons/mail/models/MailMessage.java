@@ -93,7 +93,7 @@ public class MailMessage extends OModel {
 		mContext = context;
 		notification = new MailNotification(mContext);
 		write_date.setDefault(false);
-		create_date.setDefault(false);
+		create_date.setDefault(false);	
 		to_read.setLocalColumn(false);
 		starred.setLocalColumn(false);
 	}

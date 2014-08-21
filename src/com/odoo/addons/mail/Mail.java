@@ -403,7 +403,7 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 						.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
 				new MarkAsTodo(getActivity(), row, !starred).execute();
 			} else {
-				Toast.makeText(getActivity(), "No Internet Connection",
+				Toast.makeText(getActivity(), _s(R.string.no_connection),
 						Toast.LENGTH_SHORT).show();
 			}
 
@@ -469,10 +469,10 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 				&& resultCode == Activity.RESULT_OK) {
 			if (inNetwork()) {
 				scope.main().requestSync(MailProvider.AUTHORITY);
-				Toast.makeText(getActivity(), "Message Sent", Toast.LENGTH_LONG)
-						.show();
+				Toast.makeText(getActivity(), _s(R.string.message_sent),
+						Toast.LENGTH_LONG).show();
 			} else {
-				Toast.makeText(getActivity(), "Message can't send",
+				Toast.makeText(getActivity(), _s(R.string.message_cant_sent),
 						Toast.LENGTH_LONG).show();
 			}
 		}
@@ -506,8 +506,8 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 			scope.main().requestSync(MailProvider.AUTHORITY);
 		} else {
 			hideRefreshingProgress();
-			Toast.makeText(getActivity(), "No Connection", Toast.LENGTH_LONG)
-					.show();
+			Toast.makeText(getActivity(), _s(R.string.no_connection),
+					Toast.LENGTH_LONG).show();
 		}
 
 	}

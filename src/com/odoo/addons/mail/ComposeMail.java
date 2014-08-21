@@ -72,7 +72,7 @@ public class ComposeMail extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == RESULT_OK) {
-//			ODataRow attachment = mAttachment.handleResult(requestCode, data);
+			
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
@@ -99,11 +99,11 @@ public class ComposeMail extends Activity {
 			mailcompose();
 			return true;
 		case R.id.menu_add_files:
-//			mAttachment.requestAttachment(Attachment.Types.FILE);
+			// mAttachment.requestAttachment(Attachment.Types.FILE);
 			return true;
 		case R.id.menu_add_images:
-//			mAttachment
-//					.requestAttachment(Attachment.Types.IMAGE_OR_CAPTURE_IMAGE);
+			// mAttachment
+			// .requestAttachment(Attachment.Types.IMAGE_OR_CAPTURE_IMAGE);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);

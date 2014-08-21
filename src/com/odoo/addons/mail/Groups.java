@@ -179,7 +179,7 @@ public class Groups extends BaseFragment implements
 			mail.setArguments(bundle);
 			startFragment(mail, true);
 		} else {
-			Toast.makeText(getActivity(), "You must first join group.",
+			Toast.makeText(getActivity(), _s(R.string.first_join_group),
 					Toast.LENGTH_LONG).show();
 		}
 	}
@@ -190,8 +190,8 @@ public class Groups extends BaseFragment implements
 			scope.main().requestSync(MailGroupProvider.AUTHORITY);
 		} else {
 			hideRefreshingProgress();
-			Toast.makeText(getActivity(), "No Connection", Toast.LENGTH_LONG)
-					.show();
+			Toast.makeText(getActivity(), _s(R.string.no_connection),
+					Toast.LENGTH_LONG).show();
 		}
 
 	}

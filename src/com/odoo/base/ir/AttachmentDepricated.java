@@ -189,7 +189,6 @@ public class AttachmentDepricated implements OnClickListener {
 			uri = data.getParcelableExtra(Intent.EXTRA_STREAM);
 			break;
 		}
-
 		return uriToDataRow(uri, bitmap);
 	}
 
@@ -310,7 +309,6 @@ public class AttachmentDepricated implements OnClickListener {
 				Log.i(TAG, "Attachment created #" + a_id);
 				mNewAttachmentIds.add(a_id);
 			}
-
 			// }
 		}
 	}
@@ -335,6 +333,7 @@ public class AttachmentDepricated implements OnClickListener {
 				for (OValues values : mAttachments) {
 					long id = 0;// FIXME: mOdoo.create(values);
 					Log.i(TAG, "Attachment created #" + id);
+
 				}
 			}
 			return null;

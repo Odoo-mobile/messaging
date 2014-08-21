@@ -2,15 +2,12 @@ package com.odoo.addons.mail;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import odoo.OArguments;
 import odoo.controls.OField;
 import odoo.controls.OList;
 import odoo.controls.OList.BeforeListRowCreateListener;
 import odoo.controls.OList.OnListRowViewClickListener;
-
 import org.json.JSONArray;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -28,7 +25,6 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.odoo.addons.mail.Mail.MarkAsTodo;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.models.MailNotification;
@@ -41,6 +37,7 @@ import com.odoo.support.AppScope;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
+import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailDetail extends BaseFragment implements
@@ -138,7 +135,7 @@ public class MailDetail extends BaseFragment implements
 						.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
 				new MarkAsTodo(getActivity(), row, !starred).execute();
 			} else {
-				Toast.makeText(getActivity(), "No Connection",
+				Toast.makeText(getActivity(), _s(R.string.no_connection),
 						Toast.LENGTH_SHORT).show();
 			}
 			break;
@@ -181,7 +178,7 @@ public class MailDetail extends BaseFragment implements
 					e.printStackTrace();
 				}
 			} else {
-				Toast.makeText(getActivity(), "No Connection",
+				Toast.makeText(getActivity(), _s(R.string.no_connection),
 						Toast.LENGTH_LONG).show();
 			}
 			break;
@@ -208,6 +205,28 @@ public class MailDetail extends BaseFragment implements
 			OControls.setVisible(view, R.id.msg_attachment);
 		else
 			OControls.setGone(view, R.id.msg_attachment);
+		// ImageView imgattachment = (ImageView) view
+		// .findViewById(R.id.attachment_test);
+		// File external_storage = new File(
+		// Environment.getExternalStorageDirectory() + "/Pictures");
+		// File[] files = external_storage.listFiles();
+		// for (File f : files) {
+		// OLog.log("Name of files = " + f.getName());
+		// Uri uri = Uri.parse(external_storage + "" + f.getName());
+		// OLog.log("Image Uri ==" + uri);
+		// imgattachment.setImageURI(uri);
+		// }
+
+		// String basepath = external_storage.getAbsolutePath() + "/Pictures";
+		// Uri uri = Uri.parse(basepath); // pass URI which store in the DB
+		// Table.
+		// OLog.log("Uri == " + uri);
+		// imgattachment.setImageURI(uri);
+
+	}
+
+	public void set_attachment_image() {
+
 	}
 
 	@Override
@@ -243,11 +262,12 @@ public class MailDetail extends BaseFragment implements
 					mListMessages.appendRecords(1, newRecord);
 					if (inNetwork()) {
 						scope.main().requestSync(MailProvider.AUTHORITY);
-						Toast.makeText(getActivity(), "Reply Sent",
+						Toast.makeText(getActivity(), _s(R.string.reply_sent),
 								Toast.LENGTH_LONG).show();
 					} else {
-						Toast.makeText(getActivity(), "Reply can't send",
-								Toast.LENGTH_LONG).show();
+						Toast.makeText(getActivity(),
+								_s(R.string.reply_cant_sent), Toast.LENGTH_LONG)
+								.show();
 					}
 					OControls.setText(mView, R.id.edtQuickReplyMessage, "");
 				}
@@ -269,10 +289,10 @@ public class MailDetail extends BaseFragment implements
 			OControls.setText(mView, R.id.edtQuickReplyMessage, "");
 			if (inNetwork()) {
 				scope.main().requestSync(MailProvider.AUTHORITY);
-				Toast.makeText(getActivity(), "Reply Sent", Toast.LENGTH_LONG)
-						.show();
+				Toast.makeText(getActivity(), _s(R.string.reply_sent),
+						Toast.LENGTH_LONG).show();
 			} else {
-				Toast.makeText(getActivity(), "Reply can't send",
+				Toast.makeText(getActivity(), _s(R.string.reply_cant_sent),
 						Toast.LENGTH_LONG).show();
 			}
 		}
@@ -286,7 +306,7 @@ public class MailDetail extends BaseFragment implements
 				new MarkAsReadUnread(getActivity(), db().select(mMailId), true)
 						.execute();
 			else
-				Toast.makeText(getActivity(), "No Internet Connection",
+				Toast.makeText(getActivity(), _s(R.string.no_connection),
 						Toast.LENGTH_SHORT).show();
 
 			break;
@@ -295,7 +315,7 @@ public class MailDetail extends BaseFragment implements
 				new MarkAsReadUnread(getActivity(), db().select(mMailId), false)
 						.execute();
 			else
-				Toast.makeText(getActivity(), "No Connection",
+				Toast.makeText(getActivity(), _s(R.string.no_connection),
 						Toast.LENGTH_SHORT).show();
 
 			break;

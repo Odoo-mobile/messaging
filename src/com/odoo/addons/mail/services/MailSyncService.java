@@ -208,10 +208,14 @@ public class MailSyncService extends OService {
 	private Boolean updateOldMessages(Context context, OUser user,
 			List<Integer> ids) {
 		try {
+			JSONArray ids_array = new JSONArray();
+			for (int id : ids)
+				ids_array.put(id);
 			ODomain domain = new ODomain();
 			domain.add("message_id", "in", ids);
 			MailNotification mailNotification = new MailNotification(context);
 			MailMessage message = new MailMessage(context);
+			OSyncHelper helper = message.getSyncHelper();
 			if (mailNotification.getSyncHelper().syncWithServer(domain, false)) {
 				for (Integer id : ids) {
 					int row_id = message.selectRowId(id);
@@ -225,6 +229,7 @@ public class MailSyncService extends OService {
 								noti.getInt(OColumn.ROW_ID));
 						message.update(vals, row_id);
 					}
+					updateMailVotes(message, helper, user, ids_array);
 				}
 				return true;
 			}
@@ -232,5 +237,21 @@ public class MailSyncService extends OService {
 			e.printStackTrace();
 		}
 		return false;
+	}
+
+	private void updateMailVotes(MailMessage db, OSyncHelper os, OUser user,
+			JSONArray ids_array) {
+		try {
+			/*
+			 * JSONObject vote_fields = new JSONObject();
+			 * vote_fields.accumulate("fields", "vote_user_ids"); Object
+			 * vote_detail = os.callMethod("mail.message", "search_read", null,
+			 * null, vote_fields); OLog.log("Call Method Result ==" +
+			 * vote_detail); os.search_read("mail.message", vote_fields,
+			 * domain.get(), 0, 0, null, null);
+			 */
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
