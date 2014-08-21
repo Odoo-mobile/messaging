@@ -33,6 +33,7 @@ import com.odoo.addons.mail.Mail.MarkAsTodo;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.models.MailNotification;
 import com.odoo.addons.mail.providers.mail.MailProvider;
+import com.odoo.base.ir.Attachments;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OSyncHelper;
@@ -57,6 +58,7 @@ public class MailDetail extends BaseFragment implements
 	private List<ODataRow> mRecords = new ArrayList<ODataRow>();
 	private Context mContext = null;
 	private MailMessage mail = null;
+	private Attachments mAttachment = null;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -64,6 +66,7 @@ public class MailDetail extends BaseFragment implements
 		setHasOptionsMenu(true);
 		scope = new AppScope(this);
 		mContext = getActivity();
+		mAttachment = new Attachments(getActivity());
 		initArgs();
 		return inflater.inflate(R.layout.mail_detail_layout, container, false);
 	}
@@ -183,7 +186,7 @@ public class MailDetail extends BaseFragment implements
 			}
 			break;
 		case R.id.msg_attachment:
-			// FIXME: handle attachment download
+			mAttachment.downloadAttachment(row.getInt(OColumn.ROW_ID));
 			break;
 		}
 	}

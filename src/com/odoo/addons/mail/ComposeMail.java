@@ -10,7 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.odoo.addons.mail.models.MailMessage;
-import com.odoo.base.ir.Attachment;
+import com.odoo.base.ir.Attachments;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OValues;
 import com.odoo.util.ODate;
@@ -19,7 +19,7 @@ import com.openerp.R;
 public class ComposeMail extends Activity {
 	public static final String TAG = "com.odoo.addons.mail.ComposeMail";
 	private Context mContext = null;
-	private Attachment mAttachment = null;
+	private Attachments mAttachment = null;
 	private MailMessage mail = null;
 	private OForm mForm = null;
 	private Integer mMailId = null;
@@ -61,7 +61,7 @@ public class ComposeMail extends Activity {
 
 	private void init() {
 		mContext = this;
-		mAttachment = new Attachment(mContext);
+		mAttachment = new Attachments(mContext);
 		mail = new MailMessage(mContext);
 	}
 
@@ -72,7 +72,7 @@ public class ComposeMail extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == RESULT_OK) {
-			ODataRow attachment = mAttachment.handleResult(requestCode, data);
+//			ODataRow attachment = mAttachment.handleResult(requestCode, data);
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
@@ -99,11 +99,11 @@ public class ComposeMail extends Activity {
 			mailcompose();
 			return true;
 		case R.id.menu_add_files:
-			mAttachment.requestAttachment(Attachment.Types.FILE);
+//			mAttachment.requestAttachment(Attachment.Types.FILE);
 			return true;
 		case R.id.menu_add_images:
-			mAttachment
-					.requestAttachment(Attachment.Types.IMAGE_OR_CAPTURE_IMAGE);
+//			mAttachment
+//					.requestAttachment(Attachment.Types.IMAGE_OR_CAPTURE_IMAGE);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
