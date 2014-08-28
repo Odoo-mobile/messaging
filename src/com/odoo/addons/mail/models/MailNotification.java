@@ -5,6 +5,7 @@ import java.util.List;
 import odoo.ODomain;
 import android.content.Context;
 
+import com.odoo.addons.mail.providers.notification.MailNotificationProvider;
 import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.OColumn.RelationType;
@@ -12,6 +13,7 @@ import com.odoo.orm.ODataRow;
 import com.odoo.orm.OModel;
 import com.odoo.orm.annotations.Odoo;
 import com.odoo.orm.types.OBoolean;
+import com.odoo.support.provider.OContentProvider;
 
 public class MailNotification extends OModel {
 
@@ -25,7 +27,7 @@ public class MailNotification extends OModel {
 	OColumn partner_id = new OColumn("Partner_id", ResPartner.class,
 			RelationType.ManyToOne);
 	OColumn message_id = new OColumn("Message_id", MailMessage.class,
-			RelationType.ManyToOne);
+			RelationType.ManyToOne).syncMasterRecord(false);
 
 	Context mContext = null;
 
@@ -97,5 +99,10 @@ public class MailNotification extends OModel {
 	@Override
 	public Boolean checkForWriteDate() {
 		return false;
+	}
+
+	@Override
+	public OContentProvider getContentProvider() {
+		return new MailNotificationProvider();
 	}
 }
