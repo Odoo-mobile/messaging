@@ -163,7 +163,10 @@
             android:exported="true"
             android:label="Groups"
             android:syncable="true" />
-
+        <provider
+            android:name="com.odoo.addons.mail.providers.notification.MailNotificationProvider"
+            android:authorities="com.odoo.addons.mail.providers.notification"
+            android:multiprocess="true" />
         <!-- Mail Group provider service -->
         <service
             android:name="com.odoo.addons.mail.services.MailGroupSyncService"

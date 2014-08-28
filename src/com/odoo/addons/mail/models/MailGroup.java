@@ -2,6 +2,7 @@ package com.odoo.addons.mail.models;
 
 import android.content.Context;
 
+import com.odoo.addons.mail.providers.group.MailGroupProvider;
 import com.odoo.base.mail.MailFollowers;
 import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
@@ -12,6 +13,7 @@ import com.odoo.orm.types.OBlob;
 import com.odoo.orm.types.OBoolean;
 import com.odoo.orm.types.OText;
 import com.odoo.orm.types.OVarchar;
+import com.odoo.support.provider.OContentProvider;
 
 public class MailGroup extends OModel {
 	Context mContext = null;
@@ -85,5 +87,10 @@ public class MailGroup extends OModel {
 	@Override
 	public Boolean checkForWriteDate() {
 		return false;
+	}
+
+	@Override
+	public OContentProvider getContentProvider() {
+		return new MailGroupProvider();
 	}
 }

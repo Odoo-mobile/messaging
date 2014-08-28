@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:orientation="horizontal"
-    odoo:background_selector="@drawable/oe_listview_background_selector"
+    odoo:background_selector="?android:attr/listSelector"
     odoo:model="mail.message" >
 
     <LinearLayout
@@ -88,7 +88,7 @@
                     android:layout_height="wrap_content"
                     odoo:fieldTextStyle="bold"
                     odoo:field_color="@color/gray_text"
-                    odoo:field_name="child_count"
+                    odoo:field_name="total_childs"
                     odoo:field_textAppearance="?android:attr/textAppearanceSmall"
                     odoo:singleLine="true"
                     odoo:with_label="false" />

@@ -12,8 +12,10 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.base.ir.IrAttachment;
 import com.odoo.base.res.ResPartner;
+import com.odoo.base.res.ResUsers;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.OColumn.RelationType;
 import com.odoo.orm.ODataRow;
@@ -26,6 +28,7 @@ import com.odoo.orm.types.OHtml;
 import com.odoo.orm.types.OInteger;
 import com.odoo.orm.types.OText;
 import com.odoo.orm.types.OVarchar;
+import com.odoo.support.provider.OContentProvider;
 import com.odoo.util.ODate;
 import com.openerp.R;
 
@@ -46,8 +49,7 @@ public class MailMessage extends OModel {
 	OColumn parent_id = new OColumn("Parent", MailMessage.class,
 			RelationType.ManyToOne).setDefault(0);
 	OColumn child_ids = new OColumn("Childs", MailMessage.class,
-			RelationType.OneToMany).setRelatedColumn("parent_id")
-			.setLocalColumn();
+			RelationType.OneToMany).setRelatedColumn("parent_id");
 	OColumn model = new OColumn("Model", OVarchar.class, 64)
 			.setDefault("false");
 	OColumn res_id = new OColumn("Resource ID", OInteger.class).setDefault(0);
@@ -85,6 +87,10 @@ public class MailMessage extends OModel {
 	@Odoo.Functional(method = "getPartnersName")
 	OColumn partners_name = new OColumn("Partners", OVarchar.class);
 
+	@Odoo.Functional(method = "getReplies", depends = { "child_ids" }, store = true)
+	OColumn total_childs = new OColumn("Replies", OVarchar.class)
+			.setLocalColumn();
+
 	private List<Integer> mNewCreateIds = new ArrayList<Integer>();
 	private MailNotification notification = null;
 
@@ -93,9 +99,16 @@ public class MailMessage extends OModel {
 		mContext = context;
 		notification = new MailNotification(mContext);
 		write_date.setDefault(false);
-		create_date.setDefault(false);	
+		create_date.setDefault(false);
 		to_read.setLocalColumn(false);
 		starred.setLocalColumn(false);
+	}
+
+	public String getReplies(OValues values) {
+		JSONArray childs = (JSONArray) values.get("child_ids");
+		if (childs.length() > 0)
+			return childs.length() + " replies";
+		return "";
 	}
 
 	public Integer author_id() {
@@ -145,16 +158,26 @@ public class MailMessage extends OModel {
 	}
 
 	public Boolean getToRead(OValues vals) {
-		ODataRow noti = notification.select(vals.getInt(notification_ids
-				.getName()));
-		return (noti.contains("is_read")) ? !noti.getBoolean("is_read") : !noti
-				.getBoolean("read");
+		try {
+			JSONArray ids = (JSONArray) vals.get("notification_ids");
+			ODataRow noti = notification.select(ids.getInt(0));
+			return (noti.contains("is_read")) ? !noti.getBoolean("is_read")
+					: !noti.getBoolean("read");
+		} catch (Exception e) {
+
+		}
+		return vals.getBoolean("to_read");
 	}
 
 	public Boolean getStarred(OValues vals) {
-		ODataRow noti = notification.select(vals.getInt(notification_ids
-				.getName()));
-		return noti.getBoolean("starred");
+		try {
+			JSONArray ids = (JSONArray) vals.get("notification_ids");
+			ODataRow noti = notification.select(ids.getInt(0));
+			return noti.getBoolean("starred");
+		} catch (Exception e) {
+
+		}
+		return vals.getBoolean("starred");
 	}
 
 	public boolean markAsTodo(ODataRow row, Boolean todo_state) {
@@ -350,13 +373,8 @@ public class MailMessage extends OModel {
 		return domain;
 	}
 
-	public static class ResUsers extends OModel {
-
-		OColumn name = new OColumn("Name", OVarchar.class, 64);
-
-		public ResUsers(Context context) {
-			super(context, "res.users");
-		}
-
+	@Override
+	public OContentProvider getContentProvider() {
+		return new MailProvider();
 	}
 }
