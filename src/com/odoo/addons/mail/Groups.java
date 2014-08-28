@@ -11,13 +11,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-import android.widgets.SwipeRefreshLayout;
 import android.widgets.SwipeRefreshLayout.OnRefreshListener;
 
 import com.odoo.addons.mail.models.MailGroup;
@@ -41,7 +39,6 @@ public class Groups extends BaseFragment implements
 	private GroupsLoader mGroupsLoader = null;
 	private Boolean mSynced = false;
 	private Integer mLastPosition = -1;
-	private SwipeRefreshLayout mSwipeRefresh = null;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -74,13 +71,7 @@ public class Groups extends BaseFragment implements
 	}
 
 	private void initControls() {
-		mSwipeRefresh = (SwipeRefreshLayout) mView
-				.findViewById(R.id.swipe_container);
-		mSwipeRefresh.setColorScheme(android.R.color.holo_blue_bright,
-				android.R.color.holo_green_light,
-				android.R.color.holo_orange_light,
-				android.R.color.holo_red_light);
-		mSwipeRefresh.setOnRefreshListener(this);
+		setHasSwipeRefreshView(mView, R.id.swipe_container, this);
 		mListGroup = (OList) mView.findViewById(R.id.listGroups);
 		mListGroup.setBeforeListRowCreateListener(this);
 		mListGroup.setOnRowClickListener(this);
@@ -194,14 +185,5 @@ public class Groups extends BaseFragment implements
 					Toast.LENGTH_LONG).show();
 		}
 
-	}
-
-	private void hideRefreshingProgress() {
-		new Handler().postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				mSwipeRefresh.setRefreshing(false);
-			}
-		}, 1000);
 	}
 }

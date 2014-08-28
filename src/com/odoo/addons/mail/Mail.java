@@ -16,7 +16,6 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,7 +26,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.Toast;
-import android.widgets.SwipeRefreshLayout;
 import android.widgets.SwipeRefreshLayout.OnRefreshListener;
 
 import com.odoo.addons.mail.models.MailMessage;
@@ -58,7 +56,6 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 	private Integer mLastSelectPosition = -1;
 	private Integer mLimit = 20;
 	private MailMessage db = null;
-	private SwipeRefreshLayout mSwipeRefresh = null;
 
 	public enum Type {
 		Inbox, ToMe, ToDo, Archives, Outbox, Group
@@ -93,13 +90,7 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 	}
 
 	private void init() {
-		mSwipeRefresh = (SwipeRefreshLayout) mView
-				.findViewById(R.id.swipe_container);
-		mSwipeRefresh.setOnRefreshListener(this);
-		mSwipeRefresh.setColorScheme(android.R.color.holo_blue_bright,
-				android.R.color.holo_green_light,
-				android.R.color.holo_orange_light,
-				android.R.color.holo_red_light);
+		setHasSwipeRefreshView(mView, R.id.swipe_container, this);
 		mListControl = (OList) mView.findViewById(R.id.lstMeesages);
 		mListControl
 				.setOnListRowViewClickListener(R.id.img_starred_mlist, this);
@@ -219,7 +210,7 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 						View.GONE);
 			if (db().isEmptyTable() && !mSynced) {
 				scope.main().requestSync(MailProvider.AUTHORITY);
-				mSwipeRefresh.setRefreshing(true);
+				setSwipeRefreshing(true);
 				mSyncing = true;
 			}
 		}
@@ -489,15 +480,6 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 	@Override
 	public Boolean showLoader() {
 		return true;
-	}
-
-	private void hideRefreshingProgress() {
-		new Handler().postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				mSwipeRefresh.setRefreshing(false);
-			}
-		}, 1000);
 	}
 
 	@Override
