@@ -92,8 +92,8 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 	private void init() {
 		setHasSwipeRefreshView(mView, R.id.swipe_container, this);
 		mListControl = (OList) mView.findViewById(R.id.lstMeesages);
-		mListControl
-				.setOnListRowViewClickListener(R.id.img_starred_mlist, this);
+		/*mListControl
+				.setOnListRowViewClickListener(R.id.img_starred_mlist, this);*/
 		mListControl.setOnListBottomReachedListener(this);
 		mListControl.setBeforeListRowCreateListener(this);
 		mListControl.setOnRowClickListener(this);
@@ -371,7 +371,7 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 
 	@Override
 	public void beforeListRowCreate(int position, ODataRow row, View view) {
-		ImageView imgStarred = (ImageView) view
+		/*ImageView imgStarred = (ImageView) view
 				.findViewById(R.id.img_starred_mlist);
 		boolean is_fav = row.getBoolean("starred");
 		imgStarred.setColorFilter((is_fav) ? Color.parseColor("#FF8800")
@@ -379,13 +379,13 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 
 		// Check for to_read selector
 		boolean to_read = row.getBoolean("to_read");
-		view.setBackgroundResource(background_resources[(to_read) ? 1 : 0]);
+		view.setBackgroundResource(background_resources[(to_read) ? 1 : 0]);*/
 	}
 
 	@Override
 	public void onRowViewClick(ViewGroup view_group, View view, int position,
 			ODataRow row) {
-		if (view.getId() == R.id.img_starred_mlist) {
+		/*if (view.getId() == R.id.img_starred_mlist) {
 			if (inNetwork()) {
 				boolean starred = new MailNotification(getActivity())
 						.getStarred(row.getInt(OColumn.ROW_ID));
@@ -398,7 +398,7 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 						Toast.LENGTH_SHORT).show();
 			}
 
-		}
+		}*/
 	}
 
 	public static class MarkAsTodo extends AsyncTask<Void, Void, Boolean> {

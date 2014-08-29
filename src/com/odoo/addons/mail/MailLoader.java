@@ -1,6 +1,7 @@
 package com.odoo.addons.mail;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import android.content.Context;
@@ -21,7 +22,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 import android.widgets.SwipeRefreshLayout.OnRefreshListener;
 
-import com.odoo.addons.mail.Mail.Type;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
@@ -46,6 +46,13 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 	private ListView mailList = null;
 	private OCursorListAdapter mAdapter;
 	private String mCurFilter = null;
+	private Type mType = Type.Inbox;
+	private String selection = null;
+	private String[] args;
+
+	private enum Type {
+		Inbox, ToMe, ToDo, Archives, Outbox, Group
+	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -53,7 +60,16 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 		setHasOptionsMenu(true);
 		setHasSyncStatusObserver(TAG, this, db());
 		scope = new AppScope(this);
+		initType();
 		return inflater.inflate(R.layout.mail_list, container, false);
+	}
+
+	private void initType() {
+		Bundle bundle = getArguments();
+		if (bundle.containsKey(KEY)) {
+			mType = Type.valueOf(bundle.getString(KEY));
+			createSelection();
+		}
 	}
 
 	@Override
@@ -66,6 +82,7 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 				R.layout.mail_list_item);
 		mailList.setAdapter(mAdapter);
 		mailList.setOnItemClickListener(this);
+		mailList.setEmptyView(mView.findViewById(R.id.loadingProgress));
 		getLoaderManager().initLoader(0, null, this);
 	}
 
@@ -95,8 +112,42 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 		if (db == null)
 			db = new MailMessage(context);
 		OQuery q = db.browse().columns("id");
-		// q = setSelection(context, q, key);
+		q = setSelection(context, q, key);
 		return q.fetch().size();
+	}
+
+	private OQuery setSelection(Context context, OQuery query, Type type) {
+		MailMessage db = new MailMessage(context);
+		switch (type) {
+		case Inbox:
+			query.addWhere("to_read", "=", 1);
+			query.addWhere("starred", "=", 0);
+			query.addWhere("id", "!=", 0);
+			break;
+		case ToMe:
+			query.addWhere("to_read", "=", 1);
+			query.addWhere("starred", "=", 0);
+			query.addWhere("partner_ids.res_partner_id", "=", db.author_id());
+			break;
+		case ToDo:
+			query.addWhere("to_read", "=", 1);
+			query.addWhere("starred", "=", 1);
+			break;
+		case Outbox:
+			query.addWhere("id", "=", 0);
+			break;
+		case Group:
+			Integer group_id = getArguments().getInt(Groups.KEY);
+			query.addWhere("res_id", "=", group_id);
+			query.addWhere("model", "=", "mail.group");
+			break;
+		case Archives:
+			query.addWhere("id", "!=", 0);
+			break;
+		default:
+			break;
+		}
+		return query;
 	}
 
 	private Fragment object(Type type) {
@@ -118,22 +169,59 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 		}
 	}
 
+	private void createSelection() {
+		selection = "parent_id = ? or parent_id = ?";
+		List<String> argsList = new ArrayList<String>();
+		argsList.add("false");
+		argsList.add("0");
+
+		switch (mType) {
+		case Inbox:
+			selection += " and to_read = ? and starred = ? and id != ?";
+			argsList.add("1");
+			argsList.add("0");
+			argsList.add("0");
+			break;
+		case ToMe:
+			selection += " and to_read = ? and starred = ?";
+			argsList.add("1");
+			argsList.add("0");
+			break;
+		case ToDo:
+			selection += " and to_read = ? and starred = ?";
+			argsList.add("1");
+			argsList.add("1");
+			break;
+		case Outbox:
+			selection += " and id = ?";
+			argsList.add("0");
+			break;
+		case Archives:
+			// Load all mails expect out box
+			selection += " and id != ?";
+			argsList.add("0");
+			break;
+		}
+		args = argsList.toArray(new String[argsList.size()]);
+	}
+
 	@Override
 	public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
 		if (db().isEmptyTable()) {
 			scope.main().requestSync(MailProvider.AUTHORITY);
 			setSwipeRefreshing(true);
 		}
-		String selection = "parent_id = ? or parent_id = ?";
-		String[] args = new String[] { "false", "0" };
+		List<String> argsList = new ArrayList<String>();
 		if (mCurFilter != null) {
-			selection += " and message_title like ? or body like ?";
-			args = new String[] { "false", "0", "%" + mCurFilter + "%",
-					"%" + mCurFilter + "%" };
+			argsList.addAll(Arrays.asList(args));
+			selection += " and message_title like ? or body like ? ";
+			argsList.add("%" + mCurFilter + "%");
+			argsList.add("%" + mCurFilter + "%");
+			args = argsList.toArray(new String[argsList.size()]);
 		}
 		return new CursorLoader(getActivity(), db().uri(), new String[] {
-				"message_title", "author_id.name", "author_id.image_small",
-				"total_childs", "date", "to_read", "body", "starred" },
+				"message_title", "author_name", "author_id.image_small",
+				"total_childs", "date", "to_read", "short_body", "starred" },
 				selection, args, "date DESC");
 	}
 

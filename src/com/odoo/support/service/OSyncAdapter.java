@@ -59,6 +59,7 @@ public class OSyncAdapter extends AbstractThreadedSyncAdapter {
 	/** The sync data limit. */
 	private Integer mSyncDataLimit = 0;
 	private PreferenceManager mPref = null;
+	private OSyncFinishListener mOSyncFinishListener = null;
 
 	public OSyncAdapter(Context context, OModel model, boolean autoInitialize) {
 		super(context, autoInitialize);
@@ -66,7 +67,6 @@ public class OSyncAdapter extends AbstractThreadedSyncAdapter {
 		mModel = model;
 		mContentResolver = context.getContentResolver();
 		mApp = (App) mContext.getApplicationContext();
-		mOdoo = mApp.getOdoo();
 		init();
 	}
 
@@ -189,23 +189,24 @@ public class OSyncAdapter extends AbstractThreadedSyncAdapter {
 			// Creating record on server if model allows true
 			if (model.canCreateOnServer())
 				createRecordOnserver(account, model, syncResult);
-			// Updating dirty record on server if model allows true
-			if (model.canUpdateToServer())
-				updateToServer(account, model, syncResult);
 			// Deleting record from server if model allows true
 			if (model.canDeleteFromServer())
 				deleteRecordFromServer(account, model, syncResult);
 			// Deleting record from local if model allows true
 			if (model.canDeleteFromLocal())
 				deleteRecordInLocal(model, syncResult);
-			syncFinish(model, syncResult);
+			// Updating dirty record on server if model allows true
+			if (model.canUpdateToServer())
+				updateToServer(account, model, syncResult);
+			syncFinish(account, model, syncResult);
 			mContentResolver.notifyChange(model.uri(), null, false);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	private boolean syncFinish(OModel model, SyncResult syncResult) {
+	private boolean syncFinish(Account account, OModel model,
+			SyncResult syncResult) {
 		String finish_date_time = ODate.getDate();
 		Log.v(TAG, model.getModelName() + " sync finished at "
 				+ finish_date_time + " (UTC)");
@@ -215,7 +216,22 @@ public class OSyncAdapter extends AbstractThreadedSyncAdapter {
 		irmodel.update(values, "model = ?",
 				new Object[] { model.getModelName() });
 		mApp.setSyncUser(null);
+		if (mOSyncFinishListener != null) {
+			OSyncAdapter adapter = mOSyncFinishListener.performSync();
+			if (adapter != null) {
+				SyncResult result = new SyncResult();
+				OModel sync_model = adapter.getModel();
+				ContentProviderClient client = mContentResolver
+						.acquireContentProviderClient(sync_model.authority());
+				adapter.onPerformSync(account, null, sync_model.authority(),
+						client, result);
+			}
+		}
 		return true;
+	}
+
+	public OModel getModel() {
+		return mModel;
 	}
 
 	private void updateRelationRecords(Account account, SyncResult syncResult) {
@@ -606,5 +622,10 @@ public class OSyncAdapter extends AbstractThreadedSyncAdapter {
 		batch.withValue("local_write_date", ODate.getDate());
 		batch.withValue("odoo_name", account.name);
 		return batch.build();
+	}
+
+	public OSyncAdapter onSyncFinish(OSyncFinishListener syncFinish) {
+		mOSyncFinishListener = syncFinish;
+		return this;
 	}
 }

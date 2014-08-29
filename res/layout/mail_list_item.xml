@@ -78,7 +78,7 @@
                     android:layout_height="wrap_content"
                     odoo:fieldTextStyle="bold"
                     odoo:field_color="#414141"
-                    odoo:field_name="author_id_name"
+                    odoo:field_name="author_name"
                     odoo:field_textAppearance="?android:attr/textAppearanceSmall"
                     odoo:with_label="false" >
                 </odoo.controls.OField>
@@ -135,7 +135,7 @@
                     android:layout_height="wrap_content"
                     odoo:fieldTextStyle="bold"
                     odoo:field_color="@color/gray_text"
-                    odoo:field_name="body"
+                    odoo:field_name="short_body"
                     odoo:field_textAppearance="?android:attr/textAppearanceSmall"
                     odoo:showAsText="true"
                     odoo:singleLine="true"

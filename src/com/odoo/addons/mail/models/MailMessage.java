@@ -1,6 +1,7 @@
 package com.odoo.addons.mail.models;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import odoo.OArguments;
@@ -30,6 +31,7 @@ import com.odoo.orm.types.OText;
 import com.odoo.orm.types.OVarchar;
 import com.odoo.support.provider.OContentProvider;
 import com.odoo.util.ODate;
+import com.odoo.util.StringUtils;
 import com.openerp.R;
 
 public class MailMessage extends OModel {
@@ -73,13 +75,19 @@ public class MailMessage extends OModel {
 	@Odoo.Functional(method = "getStarred", store = true, depends = { "notification_ids" })
 	OColumn starred = new OColumn("Starred", OBoolean.class).setDefault(false);
 
+	@Odoo.Functional(method = "storeAuthorName", store = true, depends = {
+			"author_id", "email_from" })
+	OColumn author_name = new OColumn("Author Name", OVarchar.class)
+			.setLocalColumn();
+
+	@Odoo.Functional(method = "storeShortBody", store = true, depends = { "body" })
+	OColumn short_body = new OColumn("Short Body", OVarchar.class)
+			.setLocalColumn();
 	// Functional Fields
 	@Odoo.Functional(method = "setMessageTitle", store = true, depends = {
 			"record_name", "subject" }, checkRowId = false)
 	OColumn message_title = new OColumn("Title", OVarchar.class)
 			.setLocalColumn();
-	@Odoo.Functional(method = "getAuthorName")
-	OColumn author_name = new OColumn("Author", OVarchar.class);
 	@Odoo.Functional(method = "hasVoted")
 	OColumn has_voted = new OColumn("Has voted", OVarchar.class);
 	@Odoo.Functional(method = "getVoteCounter")
@@ -353,11 +361,22 @@ public class MailMessage extends OModel {
 		return (childs > 0) ? childs + " replies" : " ";
 	}
 
-	public String getAuthorName(ODataRow row) {
-		String author_name = row.getM2ORecord("author_id").getName();
-		if (author_name.equals("false"))
-			author_name = row.getString("email_from");
-		return author_name;
+	public String storeAuthorName(OValues row) {
+		try {
+			if (row.getString("author_id").equals("false"))
+				return row.getString("email_from");
+			JSONArray author_id = (JSONArray) row.get("author_id");
+			return author_id.getString(1);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return row.getString("email_from");
+	}
+
+	public String storeShortBody(OValues row) {
+		String body = StringUtils.htmlToString(row.getString("body"));
+		int end = (body.length() > 100) ? 100 : body.length();
+		return body.substring(0, end);
 	}
 
 	@Override

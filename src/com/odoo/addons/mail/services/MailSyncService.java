@@ -11,7 +11,7 @@ public class MailSyncService extends OSyncService {
 
 	@Override
 	public OSyncAdapter getSyncAdapter() {
-		return new OSyncAdapter(getApplicationContext(), new MailMessage(getApplicationContext()), true).syncDataLimit(10);
+		return new OSyncAdapter(getApplicationContext(), new MailMessage(getApplicationContext()), true).syncDataLimit(30);
 	}
 //	public static final String TAG = MailSyncService.class.getSimpleName();
 //	Context mContext = null;
