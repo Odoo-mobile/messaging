@@ -11,6 +11,7 @@ import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
@@ -97,7 +98,6 @@ public class MailDetailLoader extends BaseFragment implements
 		selection += " or parent_id = ?";
 		argsList.add(mMailId + "");
 		argsList.add(mMailId + "");
-
 		args = argsList.toArray(new String[argsList.size()]);
 		return new CursorLoader(getActivity(), db().uri(), new String[] {
 				"message_title", "author_name", "author_id.image_small",
@@ -109,6 +109,8 @@ public class MailDetailLoader extends BaseFragment implements
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.menu_mail_detail, menu);
+		MenuItem item = menu.findItem(R.id.menu_mail_read);
+		item.setVisible(false);
 	}
 
 	@Override
