@@ -250,7 +250,8 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 		Cursor cr = (Cursor) mAdapter.getItem(position);
 		int _id = cr.getInt(cr.getColumnIndex(OColumn.ROW_ID));
 		int record_id = cr.getInt(cr.getColumnIndex("id"));
-		MailDetail mDetail = new MailDetail();
+		// MailDetail mDetail = new MailDetail();
+		MailDetailLoader mDetail = new MailDetailLoader();
 		Bundle bundle = new Bundle();
 		bundle.putInt(OColumn.ROW_ID, _id);
 		bundle.putInt("id", record_id);

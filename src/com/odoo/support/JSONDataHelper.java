@@ -42,7 +42,6 @@ public class JSONDataHelper {
 			try {
 				list.add(array.getString(i));
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -80,6 +79,7 @@ public class JSONDataHelper {
 				try {
 					newIds[i] = ids.getInt(i);
 				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 		}

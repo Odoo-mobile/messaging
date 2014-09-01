@@ -13,7 +13,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -23,13 +22,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.Toast;
 import android.widgets.SwipeRefreshLayout.OnRefreshListener;
 
 import com.odoo.addons.mail.models.MailMessage;
-import com.odoo.addons.mail.models.MailNotification;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
@@ -92,8 +89,10 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 	private void init() {
 		setHasSwipeRefreshView(mView, R.id.swipe_container, this);
 		mListControl = (OList) mView.findViewById(R.id.lstMeesages);
-		/*mListControl
-				.setOnListRowViewClickListener(R.id.img_starred_mlist, this);*/
+		/*
+		 * mListControl .setOnListRowViewClickListener(R.id.img_starred_mlist,
+		 * this);
+		 */
 		mListControl.setOnListBottomReachedListener(this);
 		mListControl.setBeforeListRowCreateListener(this);
 		mListControl.setOnRowClickListener(this);
@@ -371,34 +370,33 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 
 	@Override
 	public void beforeListRowCreate(int position, ODataRow row, View view) {
-		/*ImageView imgStarred = (ImageView) view
-				.findViewById(R.id.img_starred_mlist);
-		boolean is_fav = row.getBoolean("starred");
-		imgStarred.setColorFilter((is_fav) ? Color.parseColor("#FF8800")
-				: Color.parseColor("#aaaaaa"));
-
-		// Check for to_read selector
-		boolean to_read = row.getBoolean("to_read");
-		view.setBackgroundResource(background_resources[(to_read) ? 1 : 0]);*/
+		/*
+		 * ImageView imgStarred = (ImageView) view
+		 * .findViewById(R.id.img_starred_mlist); boolean is_fav =
+		 * row.getBoolean("starred"); imgStarred.setColorFilter((is_fav) ?
+		 * Color.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
+		 * 
+		 * // Check for to_read selector boolean to_read =
+		 * row.getBoolean("to_read");
+		 * view.setBackgroundResource(background_resources[(to_read) ? 1 : 0]);
+		 */
 	}
 
 	@Override
 	public void onRowViewClick(ViewGroup view_group, View view, int position,
 			ODataRow row) {
-		/*if (view.getId() == R.id.img_starred_mlist) {
-			if (inNetwork()) {
-				boolean starred = new MailNotification(getActivity())
-						.getStarred(row.getInt(OColumn.ROW_ID));
-				ImageView imgStarred = (ImageView) view;
-				imgStarred.setColorFilter((!starred) ? Color
-						.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
-				new MarkAsTodo(getActivity(), row, !starred).execute();
-			} else {
-				Toast.makeText(getActivity(), _s(R.string.no_connection),
-						Toast.LENGTH_SHORT).show();
-			}
-
-		}*/
+		/*
+		 * if (view.getId() == R.id.img_starred_mlist) { if (inNetwork()) {
+		 * boolean starred = new MailNotification(getActivity())
+		 * .getStarred(row.getInt(OColumn.ROW_ID)); ImageView imgStarred =
+		 * (ImageView) view; imgStarred.setColorFilter((!starred) ? Color
+		 * .parseColor("#FF8800") : Color.parseColor("#aaaaaa")); new
+		 * MarkAsTodo(getActivity(), row, !starred).execute(); } else {
+		 * Toast.makeText(getActivity(), _s(R.string.no_connection),
+		 * Toast.LENGTH_SHORT).show(); }
+		 * 
+		 * }
+		 */
 	}
 
 	public static class MarkAsTodo extends AsyncTask<Void, Void, Boolean> {

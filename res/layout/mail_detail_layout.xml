@@ -30,6 +30,13 @@
             android:layout_height="match_parent"
             android:orientation="vertical" >
 
+            <ListView
+                android:id="@+id/lstMessageDetail"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" >
+            </ListView>
+            <!--
             <odoo.controls.OList
                 android:id="@+id/lstMessageDetail"
                 android:layout_width="match_parent"
@@ -37,6 +44,7 @@
                 android:layout_weight="1"
                 odoo:custom_layout="@layout/mail_detail_list_item" >
             </odoo.controls.OList>
+            -->
 
             <LinearLayout
                 android:id="@+id/quickReplyBox"

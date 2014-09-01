@@ -1,7 +1,6 @@
 package com.odoo.addons.mail.models;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import odoo.OArguments;

@@ -2,12 +2,15 @@ package com.odoo.addons.mail;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import odoo.OArguments;
 import odoo.controls.OField;
 import odoo.controls.OList;
 import odoo.controls.OList.BeforeListRowCreateListener;
 import odoo.controls.OList.OnListRowViewClickListener;
+
 import org.json.JSONArray;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -25,6 +28,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
 import com.odoo.addons.mail.Mail.MarkAsTodo;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.models.MailNotification;
@@ -37,7 +41,6 @@ import com.odoo.support.AppScope;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
-import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailDetail extends BaseFragment implements
@@ -87,7 +90,8 @@ public class MailDetail extends BaseFragment implements
 		mListMessages = (OList) mView.findViewById(R.id.lstMessageDetail);
 		mListMessages.setOnListRowViewClickListener(R.id.imgBtnStar, this);
 		mListMessages.setOnListRowViewClickListener(R.id.imgVotenb, this);
-		mListMessages.setOnListRowViewClickListener(R.id.msg_attachment, this);
+		// mListMessages.setOnListRowViewClickListener(R.id.msg_attachment,
+		// this);
 		mListMessages.setBeforeListRowCreateListener(this);
 		mView.findViewById(R.id.btnSendQuickReply).setOnClickListener(this);
 
@@ -182,9 +186,9 @@ public class MailDetail extends BaseFragment implements
 						Toast.LENGTH_LONG).show();
 			}
 			break;
-		case R.id.msg_attachment:
-			mAttachment.downloadAttachment(row.getInt(OColumn.ROW_ID));
-			break;
+		// case R.id.msg_attachment:
+		// mAttachment.downloadAttachment(row.getInt(OColumn.ROW_ID));
+		// break;
 		}
 	}
 
@@ -201,10 +205,10 @@ public class MailDetail extends BaseFragment implements
 				: Color.parseColor("#aaaaaa"));
 		imgHasVoted.setColorFilter((has_voted) ? getActivity().getResources()
 				.getColor(R.color.odoo_purple) : Color.parseColor("#aaaaaa"));
-		if (mail.hasAttachment(row) == true)
-			OControls.setVisible(view, R.id.msg_attachment);
-		else
-			OControls.setGone(view, R.id.msg_attachment);
+		// if (mail.hasAttachment(row) == true)
+		// OControls.setVisible(view, R.id.msg_attachment);
+		// else
+		// OControls.setGone(view, R.id.msg_attachment);
 		// ImageView imgattachment = (ImageView) view
 		// .findViewById(R.id.attachment_test);
 		// File external_storage = new File(

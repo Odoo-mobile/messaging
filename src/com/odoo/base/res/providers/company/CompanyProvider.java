@@ -8,7 +8,7 @@ import com.odoo.orm.OModel;
 import com.odoo.support.provider.OContentProvider;
 
 public class CompanyProvider extends OContentProvider {
-	public static final String AUTHORITY = "com.odoo.mail.base.res.providers.company";
+	public static final String AUTHORITY = "com.odoo.base.res.providers.company";
 	public static final String PATH = "res_company";
 	public static final Uri CONTENT_URI = OContentProvider.buildURI(AUTHORITY,
 			PATH);

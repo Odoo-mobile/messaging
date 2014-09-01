@@ -32,7 +32,6 @@ public class Groups extends BaseFragment implements
 		BeforeListRowCreateListener, OnRowClickListener, OnRefreshListener {
 	public static final String TAG = "com.odoo.addons.mail.MailGroup";
 	public static final String KEY = "group_id";
-
 	private View mView = null;
 	private List<ODataRow> mGroupListItems = new ArrayList<ODataRow>();
 	private OList mListGroup;
@@ -92,11 +91,11 @@ public class Groups extends BaseFragment implements
 	}
 
 	private Fragment object(String value) {
-		Groups mail = new Groups();
+		Groups group = new Groups();
 		Bundle bundle = new Bundle();
 		bundle.putString("group", value);
-		mail.setArguments(bundle);
-		return mail;
+		group.setArguments(bundle);
+		return group;
 	}
 
 	class GroupsLoader extends AsyncTask<Void, Void, Void> {
