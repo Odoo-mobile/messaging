@@ -774,6 +774,11 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 	}
 
 	public List<ODataRow> query(String sql, String[] args) {
+		return query(sql, args, true);
+	}
+
+	public List<ODataRow> query(String sql, String[] args,
+			Boolean closeConnection) {
 		List<ODataRow> records = new ArrayList<ODataRow>();
 		SQLiteDatabase db = getReadableDatabase();
 		Cursor cr = db.rawQuery(sql, args);
@@ -792,7 +797,8 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 			} while (cr.moveToNext());
 		}
 		cr.close();
-		db.close();
+		if (closeConnection)
+			db.close();
 		return records;
 	}
 

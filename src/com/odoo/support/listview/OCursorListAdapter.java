@@ -14,6 +14,7 @@ public class OCursorListAdapter extends CursorAdapter {
 
 	private Integer mLayout = null;
 	private LayoutInflater mInflater = null;
+	private OnViewCreateListener mOnViewCreateListener = null;
 
 	public OCursorListAdapter(Context context, Cursor c, int layout) {
 		super(context, c, false);
@@ -27,6 +28,10 @@ public class OCursorListAdapter extends CursorAdapter {
 		final ODataRow row = new ODataRow();
 		for (String col : cursor.getColumnNames()) {
 			row.put(col, getValue(cursor, col));
+		}
+		if (mOnViewCreateListener != null) {
+			mOnViewCreateListener.onViewCreated(form, cursor,
+					cursor.getPosition());
 		}
 		form.initForm(row);
 	}
@@ -57,4 +62,11 @@ public class OCursorListAdapter extends CursorAdapter {
 		return mInflater.inflate(mLayout, viewGroup, false);
 	}
 
+	public void setOnViewCreateListener(OnViewCreateListener viewCreateListener) {
+		mOnViewCreateListener = viewCreateListener;
+	}
+
+	public interface OnViewCreateListener {
+		public void onViewCreated(View view, Cursor cr, int position);
+	}
 }

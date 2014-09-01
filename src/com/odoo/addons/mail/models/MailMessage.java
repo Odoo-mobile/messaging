@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.net.Uri;
 import android.text.TextUtils;
 
 import com.odoo.addons.mail.providers.mail.MailProvider;
@@ -394,5 +395,13 @@ public class MailMessage extends OModel {
 	@Override
 	public OContentProvider getContentProvider() {
 		return new MailProvider();
+	}
+
+	public Uri mailUri() {
+		Uri.Builder uriBuilder = new Uri.Builder();
+		uriBuilder.authority(authority());
+		uriBuilder.path(path() + "/inbox");
+		uriBuilder.scheme("content");
+		return uriBuilder.build();
 	}
 }

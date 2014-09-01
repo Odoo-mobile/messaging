@@ -461,6 +461,10 @@ public class OQuery {
 		return model.query(getQuery(), null);
 	}
 
+	public List<ODataRow> fetch(boolean closeConnection) {
+		return model.query(getQuery(), null, closeConnection);
+	}
+
 	/**
 	 * Sets the offset.
 	 * 
@@ -532,4 +536,5 @@ public class OQuery {
 		model.withFunctionalColumns(withFunctionalColumns);
 		return this;
 	}
+
 }

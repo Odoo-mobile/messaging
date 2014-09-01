@@ -6,6 +6,8 @@ import java.util.List;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -18,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 import android.widgets.SwipeRefreshLayout.OnRefreshListener;
@@ -31,13 +34,14 @@ import com.odoo.support.fragment.BaseFragment;
 import com.odoo.support.fragment.OnSearchViewChangeListener;
 import com.odoo.support.fragment.SyncStatusObserverListener;
 import com.odoo.support.listview.OCursorListAdapter;
+import com.odoo.support.listview.OCursorListAdapter.OnViewCreateListener;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
 import com.openerp.R;
 
 public class MailLoader extends BaseFragment implements OnRefreshListener,
 		LoaderManager.LoaderCallbacks<Cursor>, SyncStatusObserverListener,
-		OnItemClickListener, OnSearchViewChangeListener {
+		OnItemClickListener, OnSearchViewChangeListener, OnViewCreateListener {
 
 	public static final String TAG = MailLoader.class.getSimpleName();
 	public static final String KEY = "fragment_mail";
@@ -53,6 +57,10 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 	private enum Type {
 		Inbox, ToMe, ToDo, Archives, Outbox, Group
 	}
+
+	private int[] background_resources = new int[] {
+			R.drawable.message_listview_bg_toread_selector,
+			R.drawable.message_listview_bg_tonotread_selector };
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -80,6 +88,7 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 		mailList = (ListView) view.findViewById(R.id.mail_list_view);
 		mAdapter = new OCursorListAdapter(getActivity(), null,
 				R.layout.mail_list_item);
+		mAdapter.setOnViewCreateListener(this);
 		mailList.setAdapter(mAdapter);
 		mailList.setOnItemClickListener(this);
 		mailList.setEmptyView(mView.findViewById(R.id.loadingProgress));
@@ -170,35 +179,33 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 	}
 
 	private void createSelection() {
-		selection = "parent_id = ? or parent_id = ?";
+		selection = "";
 		List<String> argsList = new ArrayList<String>();
-		argsList.add("false");
-		argsList.add("0");
 
 		switch (mType) {
 		case Inbox:
-			selection += " and to_read = ? and starred = ? and id != ?";
+			selection += " to_read = ? and starred = ? and id != ?";
 			argsList.add("1");
 			argsList.add("0");
 			argsList.add("0");
 			break;
 		case ToMe:
-			selection += " and to_read = ? and starred = ?";
+			selection += " to_read = ? and starred = ?";
 			argsList.add("1");
 			argsList.add("0");
 			break;
 		case ToDo:
-			selection += " and to_read = ? and starred = ?";
+			selection += " to_read = ? and starred = ?";
 			argsList.add("1");
 			argsList.add("1");
 			break;
 		case Outbox:
-			selection += " and id = ?";
+			selection += " id = ?";
 			argsList.add("0");
 			break;
 		case Archives:
 			// Load all mails expect out box
-			selection += " and id != ?";
+			selection += " id != ?";
 			argsList.add("0");
 			break;
 		}
@@ -214,15 +221,19 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 		List<String> argsList = new ArrayList<String>();
 		if (mCurFilter != null) {
 			argsList.addAll(Arrays.asList(args));
-			selection += " and message_title like ? or body like ? ";
+			selection += " and author_name like ? or message_title like ? or body like ?";
+			argsList.add("%" + mCurFilter + "%");
 			argsList.add("%" + mCurFilter + "%");
 			argsList.add("%" + mCurFilter + "%");
 			args = argsList.toArray(new String[argsList.size()]);
+		} else {
+			createSelection();
 		}
-		return new CursorLoader(getActivity(), db().uri(), new String[] {
-				"message_title", "author_name", "author_id.image_small",
-				"total_childs", "date", "to_read", "short_body", "starred" },
-				selection, args, "date DESC");
+		Uri uri = ((MailMessage) db()).mailUri();
+		return new CursorLoader(getActivity(), uri, new String[] {
+				"message_title", "author_name", "parent_id",
+				"author_id.image_small", "total_childs", "date", "to_read",
+				"short_body", "starred" }, selection, args, "date DESC");
 	}
 
 	@Override
@@ -281,5 +292,18 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 	@Override
 	public void onSearchViewClose() {
 		// Do Nothing...
+	}
+
+	@Override
+	public void onViewCreated(View view, Cursor cr, int position) {
+		// Setting background as per to_read
+		int to_read = cr.getInt(cr.getColumnIndex("to_read"));
+		view.setBackgroundResource(background_resources[to_read]);
+		// Setting starred color
+		ImageView imgStarred = (ImageView) view
+				.findViewById(R.id.img_starred_mlist);
+		int is_fav = cr.getInt(cr.getColumnIndex("starred"));
+		imgStarred.setColorFilter((is_fav == 1) ? Color.parseColor("#FF8800")
+				: Color.parseColor("#aaaaaa"));
 	}
 }
