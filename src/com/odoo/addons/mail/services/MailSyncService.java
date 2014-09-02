@@ -1,14 +1,67 @@
 package com.odoo.addons.mail.services;
 
-import com.odoo.addons.mail.models.MailMessage;
-import com.odoo.support.service.OSyncAdapter;
-import com.odoo.support.service.OSyncService;
+import odoo.ODomain;
 
-public class MailSyncService extends OSyncService {
+import org.json.JSONArray;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.SyncResult;
+import android.os.Bundle;
+
+import com.odoo.App;
+import com.odoo.MainActivity;
+import com.odoo.addons.mail.models.MailMessage;
+import com.odoo.addons.mail.providers.mail.MailProvider;
+import com.odoo.support.OUser;
+import com.odoo.support.service.OSyncAdapter;
+import com.odoo.support.service.OSyncFinishListener;
+import com.odoo.support.service.OSyncService;
+import com.odoo.util.ONotificationHelper;
+import com.odoo.util.logger.OLog;
+import com.openerp.R;
+
+public class MailSyncService extends OSyncService implements OSyncFinishListener {
 	public static final String TAG = MailSyncService.class.getSimpleName();
 	@Override
 	public OSyncAdapter getSyncAdapter() {
-		return new OSyncAdapter(getApplicationContext(), new MailMessage(getApplicationContext()), true).syncDataLimit(30);
+		return new OSyncAdapter(getApplicationContext(), new MailMessage(getApplicationContext()), this,true);
+	}
+	@Override
+	public void performDataSync(OSyncAdapter adapter, Bundle extras, OUser user) {
+		ODomain domain = new ODomain();
+		if (extras.containsKey(MailGroupSyncService.KEY_GROUP_IDS)) {
+			try{
+			JSONArray group_ids = new JSONArray(
+					extras.getString(MailGroupSyncService.KEY_GROUP_IDS));
+			domain.add("res_id", "in", group_ids);
+			domain.add("model", "=", "mail.group");
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		adapter.syncDataLimit(30).onSyncFinish(this).setDomain(domain);
+	}
+	@Override
+	public OSyncAdapter performSync(SyncResult syncResult) {
+		App app = (App) getApplicationContext();
+		OLog.log(syncResult.stats.numEntries  + " numEntries");
+		OLog.log(syncResult.stats.numDeletes  + " numDeletes");
+		OLog.log(syncResult.stats.numInserts  + " numInserts");
+		OLog.log(syncResult.stats.numUpdates  + " numUpdates");
+		if (!app.appOnTop() && syncResult.stats.numInserts > 0) {
+			int newTotal = (int) syncResult.stats.numInserts;
+			ONotificationHelper mNotification = new ONotificationHelper();
+			Context context = getApplicationContext();
+			Intent mainActiivty = new Intent(context,
+					MainActivity.class);
+			mNotification.setResultIntent(mainActiivty, context);
+			mNotification.showNotification(context, newTotal
+					+ " unread messages", newTotal
+					+ " new message received (Odoo)", MailProvider.AUTHORITY,
+					R.drawable.ic_odoo_o);
+		}
+		return null;
 	}
 //	public void performSync(Context context, OUser user, Account account,
 //			Bundle extras, String authority, ContentProviderClient provider,
