@@ -58,10 +58,10 @@ public class GroupsLoader extends BaseFragment implements
 				super.bindView(view, context, cursor);
 				switch (view.getId()) {
 				case R.id.btnJoinGroup:
-					OLog.log("join group cliked....");
+					OLog.log("join Button cliked....");
 					break;
 				case R.id.btnUnJoinGroup:
-					OLog.log("Un ____ join group cliked....");
+					OLog.log("Un_join Button cliked....");
 				default:
 					break;
 				}

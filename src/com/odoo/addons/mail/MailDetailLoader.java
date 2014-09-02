@@ -109,8 +109,8 @@ public class MailDetailLoader extends BaseFragment implements
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.menu_mail_detail, menu);
-		MenuItem item = menu.findItem(R.id.menu_mail_read);
-		item.setVisible(false);
+		// MenuItem item = menu.findItem(R.id.menu_mail_read);
+		// item.setVisible(false);
 	}
 
 	@Override

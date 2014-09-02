@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
@@ -16,6 +17,7 @@ import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -45,6 +47,8 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 
 	public static final String TAG = MailLoader.class.getSimpleName();
 	public static final String KEY = "fragment_mail";
+	public static final String KEY_MESSAGE_ID = "mail_id";
+	public static final Integer REQUEST_COMPOSE_MAIL = 234;
 	private View mView = null;
 	private MailMessage db = null;
 	private ListView mailList = null;
@@ -275,6 +279,18 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 		menu.clear();
 		inflater.inflate(R.menu.menu_mail, menu);
 		setHasSearchView(this, menu, R.id.menu_mail_search);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_mail_create:
+			Intent i = new Intent(getActivity(), ComposeMailLoader.class);
+			startActivityForResult(i, REQUEST_COMPOSE_MAIL);
+		default:
+			break;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	@Override
