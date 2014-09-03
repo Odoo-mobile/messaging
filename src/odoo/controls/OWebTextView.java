@@ -24,6 +24,8 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.widget.TextView;
 
+import com.odoo.util.StringUtils;
+
 public class OWebTextView extends TextView {
 
 	private Context mContext;
@@ -32,6 +34,9 @@ public class OWebTextView extends TextView {
 
 	/** The scale factor. */
 	private Float mScaleFactor = 0F;
+	private Spanned htmlSpan = null;
+	private String originalContent = null;
+	private Boolean trimedContent = false;
 
 	public OWebTextView(Context context) {
 		this(context, null, 0);
@@ -57,8 +62,29 @@ public class OWebTextView extends TextView {
 
 	public void setHtmlContent(String content) {
 		URLImageParser p = new URLImageParser(mContext, this);
-		Spanned htmlSpan = Html.fromHtml(content, p, null);
+		originalContent = content;
+		htmlSpan = Html.fromHtml(content, p, null);
 		setText(htmlSpan);
+	}
+
+	public void trimContent(int lines) {
+		if (lines > 0) {
+			StringBuffer newContent = new StringBuffer();
+			int start = 0;
+			int end = (originalContent.length() > 200) ? 200 : originalContent
+					.length();
+			newContent.append(StringUtils.htmlToString(originalContent)
+					.substring(start, end));
+			newContent.append("...");
+			trimedContent = true;
+			setHtmlContent(newContent.toString());
+		} else {
+			trimedContent = false;
+		}
+	}
+
+	public boolean trimedContent() {
+		return trimedContent;
 	}
 
 	@SuppressWarnings("deprecation")
