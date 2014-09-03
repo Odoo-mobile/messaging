@@ -26,12 +26,13 @@ import com.odoo.support.AppScope;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.support.listview.OCursorListAdapter;
 import com.odoo.support.listview.OCursorListAdapter.OnRowViewClickListener;
+import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
 import com.openerp.R;
 
 public class MailDetailLoader extends BaseFragment implements
-		LoaderCallbacks<Cursor>, OnRowViewClickListener {
+		LoaderCallbacks<Cursor>, OnRowViewClickListener, OnViewBindListener {
 	private Integer mMailId = null;
 	private String selection = null;
 	private String[] args;
@@ -69,6 +70,7 @@ public class MailDetailLoader extends BaseFragment implements
 			}
 
 		});
+		mAdapter.setOnViewBindListener(this);
 		mAdapter.allowCacheView(true);
 		mailList.setAdapter(mAdapter);
 		getLoaderManager().initLoader(0, null, this);
@@ -117,8 +119,8 @@ public class MailDetailLoader extends BaseFragment implements
 		Uri uri = ((MailMessage) db()).mailDetailUri();
 		return new CursorLoader(getActivity(), uri, new String[] {
 				"message_title", "author_name", "author_id.image_small",
-				"parent_id", "date", "to_read", "body", "starred" }, selection,
-				args, "date DESC");
+				"total_childs", "parent_id", "date", "to_read", "body",
+				"starred" }, selection, args, "date DESC");
 
 	}
 
@@ -148,6 +150,14 @@ public class MailDetailLoader extends BaseFragment implements
 			ImageView starred = (ImageView) view;
 			starred.setColorFilter(Color.BLUE);
 			break;
+		}
+	}
+
+	@Override
+	public void onViewBind(View view, Cursor cursor) {
+		if (view.findViewById(R.id.txvTotalChilds) != null) {
+			OControls.setText(view, R.id.txvTotalChilds,
+					cursor.getString(cursor.getColumnIndex("total_childs")));
 		}
 	}
 }

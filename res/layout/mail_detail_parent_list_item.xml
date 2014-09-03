@@ -2,15 +2,15 @@
     xmlns:odoo="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/transparent"
+    android:background="#f3f3f3"
     android:orientation="vertical"
     odoo:model="mail.message" >
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="10dp" >
+        android:background="@drawable/card"
+        android:orientation="vertical" >
 
         <!-- Author Image, Author name, Partners, Reply, starred buttons -->
 
@@ -18,7 +18,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="top"
-            android:orientation="horizontal" >
+            android:orientation="horizontal"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="10dp" >
 
             <odoo.controls.OField
                 android:layout_width="50dp"
@@ -60,68 +63,14 @@
                     odoo:singleLine="true"
                     odoo:with_label="false" />
             </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone" >
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal" >
-
-                    <!-- Image controls -->
-
-                    <LinearLayout
-                        android:id="@+id/imgVotenb"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/oe_background_selector"
-                        android:clickable="true"
-                        android:gravity="center"
-                        android:orientation="horizontal"
-                        android:padding="5dp" >
-
-                        <odoo.controls.OField
-                            android:id="@+id/voteCounter"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            odoo:fieldTextStyle="bold"
-                            odoo:field_color="#838383"
-                            odoo:field_name="vote_counter"
-                            odoo:field_textAppearance="?android:attr/textAppearanceMedium"
-                            odoo:with_label="false" >
-                        </odoo.controls.OField>
-
-                        <ImageView
-                            android:id="@+id/imgHasVoted"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/ic_action_rating_good"
-                            android:tint="#aaaaaa" />
-                    </LinearLayout>
-
-                    <ImageView
-                        android:id="@+id/imgBtnStar"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="right"
-                        android:background="@drawable/oe_background_selector"
-                        android:contentDescription="Starred"
-                        android:paddingLeft="5dp"
-                        android:paddingRight="5dp"
-                        android:src="@drawable/ic_action_starred" />
-                </LinearLayout>
-            </LinearLayout>
         </LinearLayout>
 
         <odoo.controls.OField
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="10dp"
             odoo:field_name="body"
             odoo:readMoreButton="true"
             odoo:with_label="false" >
@@ -135,34 +84,19 @@
             android:orientation="horizontal"
             android:showDividers="middle" >
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/txvTotalChilds"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
-                android:background="@drawable/oe_background_selector"
-                android:clickable="true"
+                android:fontFamily="@string/font_fontFamily_condensed"
                 android:gravity="center"
-                android:orientation="horizontal" >
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:fontFamily="@string/font_fontFamily_light"
-                    android:gravity="right"
-                    android:padding="5dp"
-                    android:text="15"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="#838383"
-                    android:textStyle="bold" />
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="5dp"
-                    android:src="@drawable/ic_action_rating_good"
-                    android:tint="#aaaaaa" />
-            </LinearLayout>
+                android:padding="10dp"
+                android:text="Dummy"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="#838383"
+                android:textStyle="bold" />
 
             <ImageView
                 android:id="@+id/imgBtnMailDetailStarred"
@@ -171,19 +105,38 @@
                 android:layout_weight="1"
                 android:background="@drawable/oe_background_selector"
                 android:clickable="true"
-                android:padding="5dp"
+                android:padding="8dp"
                 android:src="@drawable/ic_action_starred"
                 android:tint="#aaaaaa" />
 
-            <ImageView
+            <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@drawable/oe_background_selector"
                 android:clickable="true"
-                android:padding="5dp"
-                android:src="@drawable/ic_action_reply"
-                android:tint="#aaaaaa" />
+                android:gravity="center_vertical|center_horizontal"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:fontFamily="@string/font_fontFamily_condensed"
+                    android:gravity="right"
+                    android:text="15"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="#838383" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="5dp"
+                    android:paddingRight="5dp"
+                    android:paddingTop="5dp"
+                    android:src="@drawable/ic_action_rating_good"
+                    android:tint="#aaaaaa" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
