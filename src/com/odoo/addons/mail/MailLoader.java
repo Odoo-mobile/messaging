@@ -285,7 +285,7 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_mail_create:
-			Intent i = new Intent(getActivity(), ComposeMailLoader.class);
+			Intent i = new Intent(getActivity(), ComposeMail.class);
 			startActivityForResult(i, REQUEST_COMPOSE_MAIL);
 		default:
 			break;

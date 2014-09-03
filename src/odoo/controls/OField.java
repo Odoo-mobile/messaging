@@ -41,12 +41,11 @@ import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
-import android.widget.ImageView.ScaleType;
 import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -66,7 +65,6 @@ import com.odoo.support.listview.OListAdapter;
 import com.odoo.util.Base64Helper;
 import com.odoo.util.ODate;
 import com.odoo.util.StringUtils;
-import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 /**
@@ -266,7 +264,7 @@ public class OField extends LinearLayout implements
 	private Switch mSwitch = null;
 
 	/** The web view. */
-	private WebView mWebView = null;
+	private OWebTextView mWebView = null;
 
 	/** The display metrics. */
 	private DisplayMetrics mMetrics = null;
@@ -623,14 +621,11 @@ public class OField extends LinearLayout implements
 				if (!showAsText) {
 					String content = mControlRecord
 							.getString(mColumn.getName());
-					content = content.replaceAll("(\r\n|\n)", "<br />");
 					mLayoutParams = new LayoutParams(LayoutParams.MATCH_PARENT,
 							LayoutParams.WRAP_CONTENT);
-					mWebView = new WebView(mContext);
+					mWebView = new OWebTextView(mContext);
 					mWebView.setLayoutParams(mLayoutParams);
-					mWebView.loadData(content, "text/html; charset=UTF-8",
-							"UTF-8");
-					mWebView.getSettings().setTextZoom(90);
+					mWebView.setHtmlContent(content);
 					mWebView.setBackgroundColor(Color.TRANSPARENT);
 					addView(mWebView);
 				} else {

@@ -24,16 +24,24 @@ public class OCursorListAdapter extends CursorAdapter {
 
 	@Override
 	public void bindView(View view, Context context, Cursor cursor) {
-		OForm form = (OForm) view;
 		final ODataRow row = new ODataRow();
 		for (String col : cursor.getColumnNames()) {
 			row.put(col, getValue(cursor, col));
 		}
 		if (mOnViewCreateListener != null) {
-			mOnViewCreateListener.onViewCreated(form, cursor,
+			mOnViewCreateListener.onViewCreated(view, cursor,
 					cursor.getPosition());
 		}
+		OForm form = (OForm) view;
 		form.initForm(row);
+	}
+
+	@Override
+	public View getView(int position, View view, ViewGroup viewGroup) {
+		getCursor().moveToPosition(position);
+		Cursor cursor = getCursor();
+		view = newView(mContext, cursor, (ViewGroup) view);
+		return super.getView(position, view, viewGroup);
 	}
 
 	private Object getValue(Cursor c, String column) {
@@ -60,6 +68,14 @@ public class OCursorListAdapter extends CursorAdapter {
 	@Override
 	public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
 		return mInflater.inflate(mLayout, viewGroup, false);
+	}
+
+	public int getResource() {
+		return mLayout;
+	}
+
+	public View inflate(int resource, ViewGroup viewGroup) {
+		return mInflater.inflate(resource, viewGroup, false);
 	}
 
 	public void setOnViewCreateListener(OnViewCreateListener viewCreateListener) {

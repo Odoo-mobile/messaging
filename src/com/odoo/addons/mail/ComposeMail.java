@@ -72,7 +72,7 @@ public class ComposeMail extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == RESULT_OK) {
-			
+
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
@@ -126,7 +126,12 @@ public class ComposeMail extends Activity {
 				values.put("body", values.getString("body")
 						+ getResources().getString(R.string.mail_watermark));
 				values.put("author_id", mail.author_id());
+				values.put("author_name", mail.user().getName());
+				values.put("short_body", mail.storeShortBody(values));
+				values.put("message_title", values.getString("subject"));
 				values.put("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
+				values.put("to_read", 0);
+				values.put("starred", 0);
 				Integer mailId = mail.create(values);
 				Intent data = new Intent();
 				data.putExtra(Mail.KEY_MESSAGE_ID, mailId);

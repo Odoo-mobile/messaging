@@ -1,47 +1,52 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:odoo="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#DCE1E3"
-    android:clipToPadding="false"
-    android:fillViewport="true"
-    android:paddingTop="?android:attr/actionBarSize" >
+    android:background="@color/odoo_purple"
+    android:fitsSystemWindows="@bool/fit_to_window_height"
+    android:paddingTop="@dimen/window_title_bar_height" >
 
-    <odoo.controls.OForm
-        android:id="@+id/mComposeMailForm"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="10dp"
-        odoo:model="mail.message" >
+        android:layout_height="match_parent"
+        android:background="#DCE1E3"
+        android:fillViewport="true" >
 
-        <odoo.controls.OField
-            android:id="@+id/fieldPartners"
+        <odoo.controls.OForm
+            android:id="@+id/mComposeMailForm"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
-            odoo:customLayout="@layout/partners_contacts"
-            odoo:field_name="partner_ids"
-            odoo:with_label="false" />
+            android:orientation="vertical"
+            android:padding="10dp"
+            odoo:model="mail.message" >
 
-        <odoo.controls.OField
-            android:id="@+id/fieldSubject"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
-            odoo:field_name="subject"
-            odoo:singleLine="true"
-            odoo:with_label="false" />
+            <odoo.controls.OField
+                android:id="@+id/fieldPartners"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                odoo:customLayout="@layout/partners_contacts"
+                odoo:field_name="partner_ids"
+                odoo:with_label="false" />
 
-        <odoo.controls.OField
-            android:id="@+id/fieldBody"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            odoo:field_name="body"
-            odoo:textLines="5"
-            odoo:with_label="false" />
+            <odoo.controls.OField
+                android:id="@+id/fieldSubject"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                odoo:field_name="subject"
+                odoo:singleLine="true"
+                odoo:with_label="false" />
 
-        <!--
+            <odoo.controls.OField
+                android:id="@+id/fieldBody"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                odoo:field_name="body"
+                odoo:textLines="5"
+                odoo:with_label="false" />
+
+            <!--
         <odoo.controls.OList
         	android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -50,7 +55,8 @@
             odoo:emptyListMessage="No Attachment Available"
             odoo:showDivider="true" >
         </odoo.controls.OList>
-        -->
-    </odoo.controls.OForm>
+            -->
+        </odoo.controls.OForm>
+    </ScrollView>
 
-</ScrollView>
+</FrameLayout>

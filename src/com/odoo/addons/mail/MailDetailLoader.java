@@ -2,8 +2,10 @@ package com.odoo.addons.mail;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.CursorLoader;
@@ -11,10 +13,10 @@ import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
@@ -27,8 +29,6 @@ import com.openerp.R;
 
 public class MailDetailLoader extends BaseFragment implements
 		LoaderCallbacks<Cursor> {
-	private Context mContext = null;
-	private MailMessage mail = null;
 	private Integer mMailId = null;
 	private String selection = null;
 	private String[] args;
@@ -41,7 +41,6 @@ public class MailDetailLoader extends BaseFragment implements
 			Bundle savedInstanceState) {
 		setHasOptionsMenu(true);
 		scope = new AppScope(this);
-		mContext = getActivity();
 		initArgs();
 		return inflater.inflate(R.layout.mail_detail_layout, container, false);
 	}
@@ -53,14 +52,23 @@ public class MailDetailLoader extends BaseFragment implements
 		init();
 		mailList = (ListView) view.findViewById(R.id.lstMessageDetail);
 		mAdapter = new OCursorListAdapter(getActivity(), null,
-				R.layout.mail_detail_list_item);
+				R.layout.mail_detail_parent_list_item) {
+			@Override
+			public View newView(Context context, Cursor cursor,
+					ViewGroup viewGroup) {
+				int parent_id = cursor.getInt(cursor
+						.getColumnIndex("parent_id"));
+				int resource = (parent_id == 0) ? getResource()
+						: R.layout.mail_detail_reply_list_item;
+				return inflate(resource, viewGroup);
+			}
+		};
 		mailList.setAdapter(mAdapter);
 		getLoaderManager().initLoader(0, null, this);
 	}
 
 	private void initArgs() {
 		Bundle args = getArguments();
-		mail = (MailMessage) db();
 		if (args.containsKey(OColumn.ROW_ID)) {
 			mMailId = args.getInt(OColumn.ROW_ID);
 		}
@@ -99,10 +107,11 @@ public class MailDetailLoader extends BaseFragment implements
 		argsList.add(mMailId + "");
 		argsList.add(mMailId + "");
 		args = argsList.toArray(new String[argsList.size()]);
-		return new CursorLoader(getActivity(), db().uri(), new String[] {
+		Uri uri = ((MailMessage) db()).mailDetailUri();
+		return new CursorLoader(getActivity(), uri, new String[] {
 				"message_title", "author_name", "author_id.image_small",
-				"date", "to_read", "body", "starred" }, selection, args,
-				"date DESC");
+				"parent_id", "date", "to_read", "body", "starred" }, selection,
+				args, "date DESC");
 
 	}
 

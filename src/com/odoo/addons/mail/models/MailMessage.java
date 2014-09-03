@@ -404,4 +404,12 @@ public class MailMessage extends OModel {
 		uriBuilder.scheme("content");
 		return uriBuilder.build();
 	}
+
+	public Uri mailDetailUri() {
+		Uri.Builder uriBuilder = new Uri.Builder();
+		uriBuilder.authority(authority());
+		uriBuilder.path(path() + "/details");
+		uriBuilder.scheme("content");
+		return uriBuilder.build();
+	}
 }

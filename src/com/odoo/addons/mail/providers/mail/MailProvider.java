@@ -6,6 +6,7 @@ import java.util.List;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.MatrixCursor;
+import android.database.MergeCursor;
 import android.net.Uri;
 
 import com.odoo.addons.mail.models.MailMessage;
@@ -21,11 +22,13 @@ public class MailProvider extends OContentProvider {
 	public static Uri CONTENT_URI = OContentProvider.buildURI(AUTHORITY, PATH);
 
 	public static final int MAIL_INBOX = 12;
+	public static final int MAIL_DETAIL_LIST = 13;
 
 	@Override
 	public boolean onCreate() {
 		boolean state = super.onCreate();
 		addURI(AUTHORITY, PATH + "/inbox", MAIL_INBOX);
+		addURI(AUTHORITY, PATH + "/details", MAIL_DETAIL_LIST);
 		return state;
 	}
 
@@ -33,11 +36,48 @@ public class MailProvider extends OContentProvider {
 	public Cursor query(Uri uri, String[] projection, String selection,
 			String[] selectionArgs, String sort) {
 		int code = matchURI(uri);
-		if (code == MAIL_INBOX) {
+		if (code == MAIL_DETAIL_LIST) {
 			uri = getModel().uri();
-			List<String> parent_list = new ArrayList<String>();
 			Cursor cr = super.query(uri, projection, selection, selectionArgs,
 					sort);
+			OModel model = getModel();
+			MatrixCursor parents = new MatrixCursor(cr.getColumnNames());
+			MatrixCursor childs = new MatrixCursor(cr.getColumnNames());
+			if (cr.moveToFirst()) {
+				do {
+					int parent_id = cr.getInt(cr.getColumnIndex("parent_id"));
+					if (parent_id == 0) {
+						// add to parent
+						List<Object> values = new ArrayList<Object>();
+						for (String col : cr.getColumnNames()) {
+							OColumn c = new OColumn("");
+							c.setName(col);
+							values.add(model.createRecordRow(c, cr));
+						}
+						parents.addRow(values.toArray(new Object[values.size()]));
+					} else {
+						// add to child
+						List<Object> values = new ArrayList<Object>();
+						for (String col : cr.getColumnNames()) {
+							OColumn c = new OColumn("");
+							c.setName(col);
+							values.add(model.createRecordRow(c, cr));
+						}
+						childs.addRow(values.toArray(new Object[values.size()]));
+					}
+				} while (cr.moveToNext());
+				MergeCursor mergedData = new MergeCursor(new Cursor[] {
+						parents, childs });
+				return mergedData;
+			}
+			parents.close();
+			childs.close();
+		}
+		if (code == MAIL_INBOX) {
+			uri = getModel().uri();
+			Cursor cr = super.query(uri, projection, selection, selectionArgs,
+					sort);
+			List<String> parent_list = new ArrayList<String>();
 			OModel model = getModel();
 			MatrixCursor newCr = null;
 			if (cr.moveToFirst()) {
@@ -78,7 +118,8 @@ public class MailProvider extends OContentProvider {
 						newCr.addRow(values.toArray(new Object[values.size()]));
 						parent_list.add("parent_" + parent_id);
 					} else {
-						if (!parent_list.contains("parent_" + _id)) {
+						if (!parent_list.contains("parent_" + _id)
+								&& parent_id == 0) {
 							// Its parent. adding row
 							for (String col : newCr.getColumnNames()) {
 								OColumn c = new OColumn("");
