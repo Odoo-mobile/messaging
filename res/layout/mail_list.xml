@@ -18,8 +18,7 @@
         <ListView
             android:id="@+id/mail_list_view"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:animateLayoutChanges="true" >
+            android:layout_height="fill_parent" >
         </ListView>
     </android.widgets.SwipeRefreshLayout>
 

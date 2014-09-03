@@ -36,6 +36,7 @@ import com.odoo.support.fragment.BaseFragment;
 import com.odoo.support.fragment.OnSearchViewChangeListener;
 import com.odoo.support.fragment.SyncStatusObserverListener;
 import com.odoo.support.listview.OCursorListAdapter;
+import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.support.listview.OCursorListAdapter.OnViewCreateListener;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
@@ -43,7 +44,7 @@ import com.openerp.R;
 
 public class MailLoader extends BaseFragment implements OnRefreshListener,
 		LoaderManager.LoaderCallbacks<Cursor>, SyncStatusObserverListener,
-		OnItemClickListener, OnSearchViewChangeListener, OnViewCreateListener {
+		OnItemClickListener, OnSearchViewChangeListener, OnViewBindListener {
 
 	public static final String TAG = MailLoader.class.getSimpleName();
 	public static final String KEY = "fragment_mail";
@@ -92,7 +93,8 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 		mailList = (ListView) view.findViewById(R.id.mail_list_view);
 		mAdapter = new OCursorListAdapter(getActivity(), null,
 				R.layout.mail_list_item);
-		mAdapter.setOnViewCreateListener(this);
+		mAdapter.setOnViewBindListener(this);
+		mAdapter.allowCacheView(true);
 		mailList.setAdapter(mAdapter);
 		mailList.setOnItemClickListener(this);
 		mailList.setEmptyView(mView.findViewById(R.id.loadingProgress));
@@ -311,15 +313,16 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 	}
 
 	@Override
-	public void onViewCreated(View view, Cursor cr, int position) {
-		// Setting background as per to_read
-		int to_read = cr.getInt(cr.getColumnIndex("to_read"));
+	public void onViewBind(View view, Cursor cursor) {
+		int to_read = cursor.getInt(cursor.getColumnIndex("to_read"));
 		view.setBackgroundResource(background_resources[to_read]);
 		// Setting starred color
 		ImageView imgStarred = (ImageView) view
 				.findViewById(R.id.img_starred_mlist);
-		int is_fav = cr.getInt(cr.getColumnIndex("starred"));
+		int is_fav = cursor.getInt(cursor.getColumnIndex("starred"));
 		imgStarred.setColorFilter((is_fav == 1) ? Color.parseColor("#FF8800")
 				: Color.parseColor("#aaaaaa"));
+
 	}
+
 }

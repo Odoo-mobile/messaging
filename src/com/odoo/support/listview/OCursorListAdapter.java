@@ -140,20 +140,12 @@ public class OCursorListAdapter extends CursorAdapter {
 		return view;
 	}
 
-	public int getResource() {
-		return mLayout;
-	}
-
 	public View inflate(int resource, ViewGroup viewGroup) {
 		return mInflater.inflate(resource, viewGroup, false);
 	}
 
 	public int getResource() {
 		return mLayout;
-	}
-
-	public View inflate(int resource, ViewGroup viewGroup) {
-		return mInflater.inflate(resource, viewGroup, false);
 	}
 
 	public void setOnRowViewClickListener(int view_id,

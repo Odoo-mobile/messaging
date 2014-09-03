@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
@@ -15,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.odoo.addons.mail.models.MailMessage;
@@ -23,12 +25,13 @@ import com.odoo.orm.ODataRow;
 import com.odoo.support.AppScope;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.support.listview.OCursorListAdapter;
+import com.odoo.support.listview.OCursorListAdapter.OnRowViewClickListener;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
 import com.openerp.R;
 
 public class MailDetailLoader extends BaseFragment implements
-		LoaderCallbacks<Cursor> {
+		LoaderCallbacks<Cursor>, OnRowViewClickListener {
 	private Integer mMailId = null;
 	private String selection = null;
 	private String[] args;
@@ -52,17 +55,21 @@ public class MailDetailLoader extends BaseFragment implements
 		init();
 		mailList = (ListView) view.findViewById(R.id.lstMessageDetail);
 		mAdapter = new OCursorListAdapter(getActivity(), null,
-				R.layout.mail_detail_parent_list_item) {
+				R.layout.mail_detail_parent_list_item);
+		mAdapter.setOnRowViewClickListener(R.id.imgBtnMailDetailStarred, this);
+		mAdapter.setOnViewCreateListener(new OCursorListAdapter.OnViewCreateListener() {
+
 			@Override
-			public View newView(Context context, Cursor cursor,
-					ViewGroup viewGroup) {
-				int parent_id = cursor.getInt(cursor
-						.getColumnIndex("parent_id"));
-				int resource = (parent_id == 0) ? getResource()
+			public View onViewCreated(Context context, ViewGroup view,
+					Cursor cr, int position) {
+				int parent_id = cr.getInt(cr.getColumnIndex("parent_id"));
+				int resource = (parent_id == 0) ? mAdapter.getResource()
 						: R.layout.mail_detail_reply_list_item;
-				return inflate(resource, viewGroup);
+				return mAdapter.inflate(resource, view);
 			}
-		};
+
+		});
+		mAdapter.allowCacheView(true);
 		mailList.setAdapter(mAdapter);
 		getLoaderManager().initLoader(0, null, this);
 	}
@@ -133,4 +140,14 @@ public class MailDetailLoader extends BaseFragment implements
 
 	}
 
+	@Override
+	public void onRowViewClick(int position, Cursor cursor, View view,
+			View parent) {
+		switch (view.getId()) {
+		case R.id.imgBtnMailDetailStarred:
+			ImageView starred = (ImageView) view;
+			starred.setColorFilter(Color.BLUE);
+			break;
+		}
+	}
 }
