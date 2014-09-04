@@ -137,7 +137,7 @@ public class MailDetail extends BaseFragment implements
 				ImageView imgStarred = (ImageView) view;
 				imgStarred.setColorFilter((!starred) ? Color
 						.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
-				new MarkAsTodo(getActivity(), row, !starred).execute();
+//				new MarkAsTodo(getActivity(), row, !starred).execute();
 			} else {
 				Toast.makeText(getActivity(), _s(R.string.no_connection),
 						Toast.LENGTH_SHORT).show();

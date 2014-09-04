@@ -338,7 +338,7 @@ public class OField extends LinearLayout implements
 			mTypedArray.recycle();
 		}
 		if (mAttributes.size() > 0)
-			initControls();
+			setTag("field_tag_" + mAttributes.getString(KEY_FIELD_NAME, ""));
 	}
 
 	/**
@@ -354,7 +354,6 @@ public class OField extends LinearLayout implements
 	private void initControls() {
 		removeAllViews();
 		setOrientation(LinearLayout.VERTICAL);
-		setTag("field_tag_" + mAttributes.getString(KEY_FIELD_NAME, ""));
 		createLabel();
 		if (mFieldWidget == null) {
 			createTextViewControl();
@@ -798,13 +797,16 @@ public class OField extends LinearLayout implements
 		}
 		final int default_image = mAttributes.getResource(KEY_DEFAULT_IMAGE,
 				R.drawable.attachment);
-		final Bitmap binary_image = BitmapFactory.decodeResource(mContext
-				.getResources(), (default_image < 0) ? R.drawable.attachment
+		imgBinary.setImageResource((default_image < 0) ? R.drawable.attachment
 				: default_image);
 		new Handler().postDelayed(new Runnable() {
 
 			@Override
 			public void run() {
+				final Bitmap binary_image = BitmapFactory.decodeResource(
+						mContext.getResources(),
+						(default_image < 0) ? R.drawable.attachment
+								: default_image);
 				ODataRow record = null;
 				String column_name = getRefColumn();
 				if (mControlRecord != null) {
@@ -848,7 +850,7 @@ public class OField extends LinearLayout implements
 					break;
 				}
 			}
-		}, 250);
+		}, 300);
 		addView(imgBinary);
 	}
 

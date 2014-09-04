@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import odoo.controls.OCollectionView;
 import odoo.controls.fab.FloatingActionButton;
 import android.content.Context;
 import android.content.Intent;
@@ -26,6 +25,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.Toast;
 import android.widgets.SwipeRefreshLayout.OnRefreshListener;
 
@@ -41,6 +41,7 @@ import com.odoo.support.listview.OCursorListAdapter;
 import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
+import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailLoader extends BaseFragment implements OnRefreshListener,
@@ -54,7 +55,7 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 	public static final Integer REQUEST_COMPOSE_MAIL = 234;
 	private View mView = null;
 	private MailMessage db = null;
-	private OCollectionView mailList = null;
+	private ListView mailList = null;
 	private OCursorListAdapter mAdapter;
 	private String mCurFilter = null;
 	private Type mType = Type.Inbox;
@@ -94,11 +95,9 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 		setHasSwipeRefreshView(view, R.id.swipe_container, this);
 		FloatingActionButton mFab = (FloatingActionButton) view
 				.findViewById(R.id.fabbutton);
-		mailList = (OCollectionView) view.findViewById(R.id.mail_list_view);
+		mailList = (ListView) view.findViewById(R.id.mail_list_view);
 		mAdapter = new OCursorListAdapter(getActivity(), null,
 				R.layout.mail_list_item);
-		mAdapter.setOnViewBindListener(this);
-		mAdapter.allowCacheView(true);
 		mailList.setAdapter(mAdapter);
 		mailList.setOnItemClickListener(this);
 		mailList.setEmptyView(mView.findViewById(R.id.loadingProgress));
@@ -265,9 +264,9 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 
 	@Override
 	public void onStatusChange(Boolean refreshing) {
-		if (!refreshing)
+		if (!refreshing) {
 			hideRefreshingProgress();
-		else
+		} else
 			setSwipeRefreshing(true);
 	}
 
@@ -323,13 +322,15 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 	}
 
 	@Override
-	public void onViewBind(View view, Cursor cursor) {
-		int to_read = cursor.getInt(cursor.getColumnIndex("to_read"));
+	public void onViewBind(View view, Cursor cr) {
+		OLog.log("On Bind Called in Mail Loader");
+		// Setting background as per to_read
+		int to_read = cr.getInt(cr.getColumnIndex("to_read"));
 		view.setBackgroundResource(background_resources[to_read]);
 		// Setting starred color
 		ImageView imgStarred = (ImageView) view
 				.findViewById(R.id.img_starred_mlist);
-		int is_fav = cursor.getInt(cursor.getColumnIndex("starred"));
+		int is_fav = cr.getInt(cr.getColumnIndex("starred"));
 		imgStarred.setColorFilter((is_fav == 1) ? Color.parseColor("#FF8800")
 				: Color.parseColor("#aaaaaa"));
 	}

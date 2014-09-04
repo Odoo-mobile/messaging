@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.text.TextUtils;
 
@@ -29,9 +30,11 @@ import com.odoo.orm.types.OHtml;
 import com.odoo.orm.types.OInteger;
 import com.odoo.orm.types.OText;
 import com.odoo.orm.types.OVarchar;
+import com.odoo.support.listview.OCursorListAdapter;
 import com.odoo.support.provider.OContentProvider;
 import com.odoo.util.ODate;
 import com.odoo.util.StringUtils;
+import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailMessage extends OModel {
@@ -188,34 +191,59 @@ public class MailMessage extends OModel {
 		return vals.getBoolean("starred");
 	}
 
-	public boolean markAsTodo(ODataRow row, Boolean todo_state) {
+	public boolean markAsTodo(Cursor c, Boolean todo_state) {
 		try {
+			OLog.log("To-do state = " + todo_state);
+			OLog.log("mail id = " + c.getInt(c.getColumnIndex("id")));
 			OArguments args = new OArguments();
-			args.add(new JSONArray().put(row.getInt("id")));
+			args.add(new JSONArray().put(c.getInt(c.getColumnIndex("id"))));
 			args.add(todo_state);
 			args.add(true);
 			getSyncHelper().callMethod("set_message_starred", args, null);
 			OValues values = new OValues();
-			values.put("starred", todo_state);
 			// updating local record
-			update(values, row.getInt(OColumn.ROW_ID));
-			// updating mail notification
-			String where = "message_id = ?";
-			Object[] selection_args = new Object[] { row.getInt(OColumn.ROW_ID) };
-			if (notification.count(where, selection_args) > 0) {
-				notification.update(values, where, selection_args);
+			if (todo_state == true) {
+				values.put("starred", "1");
+				update(values, c.getInt(c.getColumnIndex(OColumn.ROW_ID)));
 			} else {
-				OValues vals = new OValues();
-				vals.put("message_id", row.getInt(OColumn.ROW_ID));
-				vals.put("partner_id", author_id());
-				notification.create(vals);
+				values.put("starred", "0");
+				update(values, c.getInt(c.getColumnIndex(OColumn.ROW_ID)));
 			}
-			return true;
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return false;
+		return true;
 	}
+
+	// public boolean markAsTodo(ODataRow row, Boolean todo_state) {
+	// try {
+	// OArguments args = new OArguments();
+	// args.add(new JSONArray().put(row.getInt("id")));
+	// args.add(todo_state);
+	// args.add(true);
+	// getSyncHelper().callMethod("set_message_starred", args, null);
+	// OValues values = new OValues();
+	// values.put("starred", todo_state);
+	// // updating local record
+	// update(values, row.getInt(OColumn.ROW_ID));
+	// // updating mail notification
+	// String where = "message_id = ?";
+	// Object[] selection_args = new Object[] { row.getInt(OColumn.ROW_ID) };
+	// if (notification.count(where, selection_args) > 0) {
+	// notification.update(values, where, selection_args);
+	// } else {
+	// OValues vals = new OValues();
+	// vals.put("message_id", row.getInt(OColumn.ROW_ID));
+	// vals.put("partner_id", author_id());
+	// notification.create(vals);
+	// }
+	// return true;
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	// return false;
+	// }
 
 	@Override
 	public int create(OValues values) {

@@ -21,11 +21,11 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" >
 
-            <odoo.controls.OCollectionView
+            <ListView
                 android:id="@+id/mail_list_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" >
-            </odoo.controls.OCollectionView>
+            </ListView>
         </android.widgets.SwipeRefreshLayout>
     </LinearLayout>
 
