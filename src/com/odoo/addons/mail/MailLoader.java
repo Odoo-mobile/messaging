@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import odoo.controls.OCollectionView;
+import odoo.controls.fab.FloatingActionButton;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -19,11 +21,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.Toast;
 import android.widgets.SwipeRefreshLayout.OnRefreshListener;
 
@@ -37,14 +39,14 @@ import com.odoo.support.fragment.OnSearchViewChangeListener;
 import com.odoo.support.fragment.SyncStatusObserverListener;
 import com.odoo.support.listview.OCursorListAdapter;
 import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
-import com.odoo.support.listview.OCursorListAdapter.OnViewCreateListener;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
 import com.openerp.R;
 
 public class MailLoader extends BaseFragment implements OnRefreshListener,
 		LoaderManager.LoaderCallbacks<Cursor>, SyncStatusObserverListener,
-		OnItemClickListener, OnSearchViewChangeListener, OnViewBindListener {
+		OnItemClickListener, OnSearchViewChangeListener, OnViewBindListener,
+		OnClickListener {
 
 	public static final String TAG = MailLoader.class.getSimpleName();
 	public static final String KEY = "fragment_mail";
@@ -52,7 +54,7 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 	public static final Integer REQUEST_COMPOSE_MAIL = 234;
 	private View mView = null;
 	private MailMessage db = null;
-	private ListView mailList = null;
+	private OCollectionView mailList = null;
 	private OCursorListAdapter mAdapter;
 	private String mCurFilter = null;
 	private Type mType = Type.Inbox;
@@ -88,9 +90,11 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		setHasSwipeRefreshView(view, R.id.swipe_container, this);
 		mView = view;
-		mailList = (ListView) view.findViewById(R.id.mail_list_view);
+		setHasSwipeRefreshView(view, R.id.swipe_container, this);
+		FloatingActionButton mFab = (FloatingActionButton) view
+				.findViewById(R.id.fabbutton);
+		mailList = (OCollectionView) view.findViewById(R.id.mail_list_view);
 		mAdapter = new OCursorListAdapter(getActivity(), null,
 				R.layout.mail_list_item);
 		mAdapter.setOnViewBindListener(this);
@@ -98,6 +102,10 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 		mailList.setAdapter(mAdapter);
 		mailList.setOnItemClickListener(this);
 		mailList.setEmptyView(mView.findViewById(R.id.loadingProgress));
+		mFab.listenTo(mailList);
+		mFab.setOnClickListener(this);
+		OControls.setVisible(view, R.id.loadingProgress);
+		OControls.setGone(view, R.id.emptyView);
 		getLoaderManager().initLoader(0, null, this);
 	}
 
@@ -187,7 +195,6 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 	private void createSelection() {
 		selection = "";
 		List<String> argsList = new ArrayList<String>();
-
 		switch (mType) {
 		case Inbox:
 			selection += " to_read = ? and starred = ? and id != ?";
@@ -213,6 +220,8 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 			// Load all mails expect out box
 			selection += " id != ?";
 			argsList.add("0");
+			break;
+		case Group:
 			break;
 		}
 		args = argsList.toArray(new String[argsList.size()]);
@@ -245,6 +254,7 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 	@Override
 	public void onLoadFinished(Loader<Cursor> arg0, Cursor cursor) {
 		mAdapter.changeCursor(cursor);
+		toggleEmptyView((cursor.getCount() == 0));
 		OControls.setGone(mView, R.id.loadingProgress);
 	}
 
@@ -322,7 +332,51 @@ public class MailLoader extends BaseFragment implements OnRefreshListener,
 		int is_fav = cursor.getInt(cursor.getColumnIndex("starred"));
 		imgStarred.setColorFilter((is_fav == 1) ? Color.parseColor("#FF8800")
 				: Color.parseColor("#aaaaaa"));
-
 	}
 
+	@Override
+	public void onClick(View v) {
+		if (v.getId() == R.id.fabbutton) {
+			Intent i = new Intent(getActivity(), ComposeMail.class);
+			startActivityForResult(i, REQUEST_COMPOSE_MAIL);
+		}
+	}
+
+	public void toggleEmptyView(boolean show) {
+		OControls.toggleViewVisibility(mView, R.id.emptyView, show);
+		if (show)
+			setEmptyMessage();
+	}
+
+	private void setEmptyMessage() {
+		int icon = 0;
+		int str = R.string.label_no_records_found;
+		switch (mType) {
+		case Inbox:
+			icon = R.drawable.ic_action_inbox;
+			str = R.string.message_inbox_all_read;
+			break;
+		case ToMe:
+			icon = R.drawable.ic_action_user;
+			str = R.string.message_tome_all_read;
+			break;
+		case ToDo:
+			icon = R.drawable.ic_action_clipboard;
+			str = R.string.message_todo_all_read;
+			break;
+		case Outbox:
+			icon = R.drawable.ic_action_unsent_mail;
+			str = R.string.message_no_outbox_message;
+			break;
+		case Archives:
+			icon = R.drawable.ic_action_briefcase;
+			break;
+		case Group:
+			icon = R.drawable.ic_action_social_group;
+			str = R.string.message_no_group_message;
+			break;
+		}
+		OControls.setImage(mView, R.id.emptyListIcon, icon);
+		OControls.setText(mView, R.id.emptyListMessage, _s(str));
+	}
 }

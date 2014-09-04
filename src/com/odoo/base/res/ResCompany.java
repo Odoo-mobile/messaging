@@ -41,4 +41,9 @@ public class ResCompany extends OModel {
 	public OContentProvider getContentProvider() {
 		return new CompanyProvider();
 	}
+
+	@Override
+	public Boolean canUpdateToServer() {
+		return false;
+	}
 }

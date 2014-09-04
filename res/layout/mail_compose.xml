@@ -2,7 +2,7 @@
     xmlns:odoo="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/odoo_purple"
+    android:background="@color/translucent_status_bg_color"
     android:fitsSystemWindows="@bool/fit_to_window_height"
     android:paddingTop="@dimen/window_title_bar_height" >
 
