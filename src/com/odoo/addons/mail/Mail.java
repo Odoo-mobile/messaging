@@ -401,21 +401,27 @@ public class Mail extends BaseFragment implements BeforeListRowCreateListener,
 
 	public static class MarkAsTodo extends AsyncTask<Void, Void, Boolean> {
 
-		private ODataRow mRecord = null;
-		private Boolean mTodoState = false;
-		private Context mContext = null;
-
-		public MarkAsTodo(Context context, ODataRow record, Boolean todo_state) {
-			mContext = context;
-			mRecord = record;
-			mTodoState = todo_state;
-		}
-
 		@Override
 		protected Boolean doInBackground(Void... params) {
-			MailMessage mail = new MailMessage(mContext);
-			return mail.markAsTodo(mRecord, mTodoState);
+			return null;
 		}
+
+		// private ODataRow mRecord = null;
+		// private Boolean mTodoState = false;
+		// private Context mContext = null;
+		//
+		// public MarkAsTodo(Context context, ODataRow record, Boolean
+		// todo_state) {
+		// mContext = context;
+		// mRecord = record;
+		// mTodoState = todo_state;
+		// }
+		//
+		// @Override
+		// protected Boolean doInBackground(Void... params) {
+		// MailMessage mail = new MailMessage(mContext);
+		// return mail.markAsTodo(mRecord, mTodoState);
+		// }
 
 	}
 

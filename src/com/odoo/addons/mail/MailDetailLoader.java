@@ -3,6 +3,11 @@ package com.odoo.addons.mail;
 import java.util.ArrayList;
 import java.util.List;
 
+import odoo.OArguments;
+import odoo.controls.OField;
+
+import org.json.JSONArray;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -16,28 +21,36 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
+import com.odoo.orm.OSyncHelper;
 import com.odoo.support.AppScope;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.support.listview.OCursorListAdapter;
 import com.odoo.support.listview.OCursorListAdapter.OnRowViewClickListener;
+import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
+import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailDetailLoader extends BaseFragment implements
-		LoaderCallbacks<Cursor>, OnRowViewClickListener {
+		LoaderCallbacks<Cursor>, OnRowViewClickListener, OnViewBindListener {
 	private Integer mMailId = null;
 	private String selection = null;
 	private String[] args;
 	private View mView = null;
 	private ListView mailList = null;
 	private OCursorListAdapter mAdapter;
+	private int[] background_resources = new int[] {
+			R.drawable.message_listview_bg_toread_selector,
+			R.drawable.message_listview_bg_tonotread_selector };
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -56,9 +69,7 @@ public class MailDetailLoader extends BaseFragment implements
 		mailList = (ListView) view.findViewById(R.id.lstMessageDetail);
 		mAdapter = new OCursorListAdapter(getActivity(), null,
 				R.layout.mail_detail_parent_list_item);
-		mAdapter.setOnRowViewClickListener(R.id.imgBtnMailDetailStarred, this);
 		mAdapter.setOnViewCreateListener(new OCursorListAdapter.OnViewCreateListener() {
-
 			@Override
 			public View onViewCreated(Context context, ViewGroup view,
 					Cursor cr, int position) {
@@ -66,10 +77,13 @@ public class MailDetailLoader extends BaseFragment implements
 				int resource = (parent_id == 0) ? mAdapter.getResource()
 						: R.layout.mail_detail_reply_list_item;
 				return mAdapter.inflate(resource, view);
-			}
 
+			}
 		});
-		mAdapter.allowCacheView(true);
+		mAdapter.setOnRowViewClickListener(R.id.imgBtn_mail_detail_starred,
+				this);
+		mAdapter.setOnRowViewClickListener(R.id.imgBtn_mail_detail_reply, this);
+		mAdapter.setOnRowViewClickListener(R.id.imgBtn_mail_detail_rate, this);
 		mailList.setAdapter(mAdapter);
 		getLoaderManager().initLoader(0, null, this);
 	}
@@ -125,6 +139,7 @@ public class MailDetailLoader extends BaseFragment implements
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.menu_mail_detail, menu);
+		// Fix me (check if mail is read or unread) then hide menu alternativly
 		// MenuItem item = menu.findItem(R.id.menu_mail_read);
 		// item.setVisible(false);
 	}
@@ -143,11 +158,104 @@ public class MailDetailLoader extends BaseFragment implements
 	@Override
 	public void onRowViewClick(int position, Cursor cursor, View view,
 			View parent) {
+		MailMessage mail = new MailMessage(getActivity());
+		Cursor c = cursor;
+		boolean is_fav = false;
+
 		switch (view.getId()) {
-		case R.id.imgBtnMailDetailStarred:
-			ImageView starred = (ImageView) view;
-			starred.setColorFilter(Color.BLUE);
+		case R.id.imgBtn_mail_detail_rate:
+			// if (inNetwork()) {
+			// try {
+			// int mail_id = c.getInt(c.getColumnIndex("id"));
+			// OSyncHelper helper = db().getSyncHelper();
+			// OArguments args = new OArguments();
+			// args.add(new JSONArray().put(mail_id));
+			// Boolean response = (Boolean) helper.callMethod(
+			// "vote_toggle", args);
+			// ImageView imgVote = (ImageView) view
+			// .findViewById(R.id.imgHasVoted);
+			// OField voteCounter = (OField) view
+			// .findViewById(R.id.voteCounter);
+			// int votes = (!voteCounter.getText().equals("")) ? Integer
+			// .parseInt(voteCounter.getText()) : 0;
+			// boolean has_voted = false;
+			// if (response) {
+			// // Vote up
+			// mail.addManyToManyRecord("vote_user_ids",
+			// c.getInt(c.getColumnIndex(OColumn.ROW_ID)),
+			// mail.author_id());
+			// // mListMessages.initListControl(mRecords);
+			// has_voted = true;
+			// votes++;
+			// } else {
+			// // Vote down
+			// mail.deleteManyToManyRecord("vote_user_ids",
+			// c.getInt(c.getColumnIndex(OColumn.ROW_ID)),
+			// mail.author_id());
+			// // mListMessages.initListControl(mRecords);
+			// votes--;
+			// }
+			// voteCounter.setText((votes > 0) ? votes + "" : "");
+			// imgVote.setColorFilter((has_voted) ? getActivity()
+			// .getResources().getColor(R.color.odoo_purple)
+			// : Color.parseColor("#aaaaaa"));
+			// } catch (Exception e) {
+			// e.printStackTrace();
+			// }
+			// } else {
+			// Toast.makeText(getActivity(), _s(R.string.no_connection),
+			// Toast.LENGTH_LONG).show();
+			// }
+			break;
+		case R.id.imgBtn_mail_detail_reply:
+			OLog.log("clicked");
+			InputMethodManager imm = (InputMethodManager) getActivity()
+					.getSystemService(Context.INPUT_METHOD_SERVICE);
+			imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+			// imm.toggleSoftInput(R.id.btnSendQuickReply,
+			// InputMethodManager.SHOW_IMPLICIT);
+			break;
+		case R.id.imgBtn_mail_detail_starred:
+			String starred = "";
+			starred = c.getString(c.getColumnIndex("starred"));
+			if (starred.equals("1")) {
+				is_fav = true;
+				OLog.log("is_fav from DB = " + is_fav);
+			} else {
+				is_fav = false;
+				OLog.log("is_fav from DB = " + is_fav);
+			}
+
+			if (inNetwork()) {
+				ImageView imgStarred = (ImageView) view;
+				imgStarred.setColorFilter((!is_fav) ? Color
+						.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
+				// markAsTodo
+				mail.markAsTodo(c, !is_fav);
+			} else {
+				Toast.makeText(getActivity(), _s(R.string.no_connection),
+						Toast.LENGTH_SHORT).show();
+			}
+			break;
+		default:
 			break;
 		}
+	}
+
+	@Override
+	public void onViewBind(View view, Cursor cr) {
+		OLog.log("On Bind Called in Mail Detail Loader");
+		// Setting background as per to_read
+		int to_read = cr.getInt(cr.getColumnIndex("to_read"));
+		view.setBackgroundResource(background_resources[to_read]);
+		// Setting starred color
+		ImageView imgStarred = (ImageView) view
+				.findViewById(R.id.img_starred_mlist);
+
+		String is_fav = cr.getString(cr.getColumnIndex("starred"));
+
+		imgStarred.setColorFilter((is_fav.equals("1")) ? Color
+				.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
+
 	}
 }

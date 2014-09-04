@@ -61,62 +61,7 @@
                     odoo:with_label="false" />
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone" >
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal" >
-
-                    <!-- Image controls -->
-
-                    <LinearLayout
-                        android:id="@+id/imgVotenb"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/oe_background_selector"
-                        android:clickable="true"
-                        android:gravity="center"
-                        android:orientation="horizontal"
-                        android:padding="5dp" >
-
-                        <odoo.controls.OField
-                            android:id="@+id/voteCounter"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            odoo:fieldTextStyle="bold"
-                            odoo:field_color="#838383"
-                            odoo:field_name="vote_counter"
-                            odoo:field_textAppearance="?android:attr/textAppearanceMedium"
-                            odoo:with_label="false" >
-                        </odoo.controls.OField>
-
-                        <ImageView
-                            android:id="@+id/imgHasVoted"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/ic_action_rating_good"
-                            android:tint="#aaaaaa" />
-                    </LinearLayout>
-
-                    <ImageView
-                        android:id="@+id/imgBtnStar"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="right"
-                        android:background="@drawable/oe_background_selector"
-                        android:contentDescription="Starred"
-                        android:paddingLeft="5dp"
-                        android:paddingRight="5dp"
-                        android:src="@drawable/ic_action_starred" />
-                </LinearLayout>
-            </LinearLayout>
+           
         </LinearLayout>
 
         <odoo.controls.OField
@@ -157,6 +102,7 @@
                     android:textStyle="bold" />
 
                 <ImageView
+                    android:id="@+id/imgBtn_mail_detail_rate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="5dp"
@@ -165,7 +111,7 @@
             </LinearLayout>
 
             <ImageView
-                android:id="@+id/imgBtnMailDetailStarred"
+                android:id="@+id/imgBtn_mail_detail_starred"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -176,6 +122,7 @@
                 android:tint="#aaaaaa" />
 
             <ImageView
+                android:id="@+id/imgBtn_mail_detail_reply"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
