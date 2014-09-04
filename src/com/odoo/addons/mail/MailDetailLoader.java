@@ -84,6 +84,8 @@ public class MailDetailLoader extends BaseFragment implements
 				this);
 		mAdapter.setOnRowViewClickListener(R.id.imgBtn_mail_detail_reply, this);
 		mAdapter.setOnRowViewClickListener(R.id.imgBtn_mail_detail_rate, this);
+		mAdapter.setOnViewBindListener(this);
+		mAdapter.allowCacheView(true);
 		mailList.setAdapter(mAdapter);
 		getLoaderManager().initLoader(0, null, this);
 	}
@@ -131,8 +133,8 @@ public class MailDetailLoader extends BaseFragment implements
 		Uri uri = ((MailMessage) db()).mailDetailUri();
 		return new CursorLoader(getActivity(), uri, new String[] {
 				"message_title", "author_name", "author_id.image_small",
-				"parent_id", "date", "to_read", "body", "starred" }, selection,
-				args, "date DESC");
+				"total_childs", "parent_id", "date", "to_read", "body",
+				"starred" }, selection, args, "date DESC");
 
 	}
 
@@ -257,5 +259,9 @@ public class MailDetailLoader extends BaseFragment implements
 		imgStarred.setColorFilter((is_fav.equals("1")) ? Color
 				.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
 
+		// if (view.findViewById(R.id.txvTotalChilds) != null) {
+		// OControls.setText(view, R.id.txvTotalChilds,
+		// cr.getString(cr.getColumnIndex("total_childs")));
+		// }
 	}
 }

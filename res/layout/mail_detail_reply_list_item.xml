@@ -9,13 +9,12 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginBottom="3dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="3dp"
         android:background="@drawable/card"
-        android:orientation="vertical"
-        android:padding="10dp" >
+        android:orientation="vertical" >
 
         <!-- Author Image, Author name, Partners, Reply, starred buttons -->
 
@@ -23,7 +22,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="top"
-            android:orientation="horizontal" >
+            android:orientation="horizontal"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:paddingTop="5dp" >
 
             <odoo.controls.OField
                 android:layout_width="35dp"
@@ -68,6 +70,9 @@
         <odoo.controls.OField
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:paddingTop="5dp"
             odoo:field_name="body"
             odoo:readMoreButton="true"
             odoo:with_label="false" >
@@ -76,14 +81,26 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/mail_detail_control_bg"
             android:divider="?android:dividerVertical"
             android:dividerPadding="8dp"
             android:orientation="horizontal"
             android:showDividers="middle" >
 
-            <LinearLayout
+            <ImageView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/oe_background_selector"
+                android:clickable="true"
+                android:padding="8dp"
+                android:src="@drawable/ic_action_starred"
+                android:tint="#aaaaaa" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@drawable/oe_background_selector"
                 android:clickable="true"
@@ -96,7 +113,6 @@
                     android:layout_gravity="center_vertical"
                     android:fontFamily="@string/font_fontFamily_light"
                     android:gravity="right"
-                    android:padding="5dp"
                     android:text="15"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="#838383"
@@ -106,7 +122,9 @@
                     android:id="@+id/imgBtn_mail_detail_rate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="5dp"
+                    android:paddingBottom="5dp"
+                    android:paddingRight="5dp"
+                    android:paddingTop="5dp"
                     android:src="@drawable/ic_action_rating_good"
                     android:tint="#aaaaaa" />
             </LinearLayout>
@@ -132,6 +150,8 @@
                 android:padding="5dp"
                 android:src="@drawable/ic_action_reply"
                 android:tint="#aaaaaa" />
+=======
+>>>>>>> 9361429d9e715cb985c520a4137b2ca08132949a
         </LinearLayout>
     </LinearLayout>
 
