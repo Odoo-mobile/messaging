@@ -330,7 +330,5 @@ public class MailDetailLoader extends BaseFragment implements
 		default:
 			break;
 		}
-
 	}
-
 }

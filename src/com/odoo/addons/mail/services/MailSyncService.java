@@ -2,13 +2,10 @@ package com.odoo.addons.mail.services;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import odoo.OArguments;
 import odoo.ODomain;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.ContentProviderOperation;
@@ -17,7 +14,6 @@ import android.content.Intent;
 import android.content.SyncResult;
 import android.os.Bundle;
 import android.util.Log;
-
 import com.odoo.App;
 import com.odoo.MainActivity;
 import com.odoo.addons.mail.models.MailMessage;
@@ -288,5 +284,4 @@ public class MailSyncService extends OSyncService implements
 		}
 		return null;
 	}
-
 }
