@@ -88,13 +88,37 @@
             android:orientation="horizontal"
             android:showDividers="middle" >
 
-            <ImageView
+            <!--
+                 <ImageView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@drawable/oe_background_selector"
                 android:clickable="true"
                 android:padding="8dp"
+                android:src="@drawable/ic_action_starred"
+                android:tint="#aaaaaa" />
+            -->
+
+            <ImageView
+                android:id="@+id/imgBtn_mail_detail_reply"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/oe_background_selector"
+                android:clickable="true"
+                android:padding="5dp"
+                android:src="@drawable/ic_action_reply"
+                android:tint="#aaaaaa" />
+
+            <ImageView
+                android:id="@+id/imgBtn_mail_detail_starred"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/oe_background_selector"
+                android:clickable="true"
+                android:padding="5dp"
                 android:src="@drawable/ic_action_starred"
                 android:tint="#aaaaaa" />
 
@@ -128,30 +152,6 @@
                     android:src="@drawable/ic_action_rating_good"
                     android:tint="#aaaaaa" />
             </LinearLayout>
-
-            <ImageView
-                android:id="@+id/imgBtn_mail_detail_starred"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/oe_background_selector"
-                android:clickable="true"
-                android:padding="5dp"
-                android:src="@drawable/ic_action_starred"
-                android:tint="#aaaaaa" />
-
-            <ImageView
-                android:id="@+id/imgBtn_mail_detail_reply"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/oe_background_selector"
-                android:clickable="true"
-                android:padding="5dp"
-                android:src="@drawable/ic_action_reply"
-                android:tint="#aaaaaa" />
-=======
->>>>>>> 9361429d9e715cb985c520a4137b2ca08132949a
         </LinearLayout>
     </LinearLayout>
 

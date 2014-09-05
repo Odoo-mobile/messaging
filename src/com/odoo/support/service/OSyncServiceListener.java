@@ -22,8 +22,8 @@ import android.os.Bundle;
 
 import com.odoo.support.OUser;
 
-
 public interface OSyncServiceListener {
 	public OSyncAdapter getSyncAdapter();
+
 	public void performDataSync(OSyncAdapter adapter, Bundle extras, OUser user);
 }

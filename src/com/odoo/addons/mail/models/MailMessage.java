@@ -9,6 +9,7 @@ import odoo.ODomain;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import android.content.ContentProviderOperation;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -30,11 +31,9 @@ import com.odoo.orm.types.OHtml;
 import com.odoo.orm.types.OInteger;
 import com.odoo.orm.types.OText;
 import com.odoo.orm.types.OVarchar;
-import com.odoo.support.listview.OCursorListAdapter;
 import com.odoo.support.provider.OContentProvider;
 import com.odoo.util.ODate;
 import com.odoo.util.StringUtils;
-import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailMessage extends OModel {
@@ -193,8 +192,6 @@ public class MailMessage extends OModel {
 
 	public boolean markAsTodo(Cursor c, Boolean todo_state) {
 		try {
-			OLog.log("To-do state = " + todo_state);
-			OLog.log("mail id = " + c.getInt(c.getColumnIndex("id")));
 			OArguments args = new OArguments();
 			args.add(new JSONArray().put(c.getInt(c.getColumnIndex("id"))));
 			args.add(todo_state);
@@ -209,41 +206,14 @@ public class MailMessage extends OModel {
 				values.put("starred", "0");
 				update(values, c.getInt(c.getColumnIndex(OColumn.ROW_ID)));
 			}
+			// Fix me
+			// update Notification
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return true;
 	}
-
-	// public boolean markAsTodo(ODataRow row, Boolean todo_state) {
-	// try {
-	// OArguments args = new OArguments();
-	// args.add(new JSONArray().put(row.getInt("id")));
-	// args.add(todo_state);
-	// args.add(true);
-	// getSyncHelper().callMethod("set_message_starred", args, null);
-	// OValues values = new OValues();
-	// values.put("starred", todo_state);
-	// // updating local record
-	// update(values, row.getInt(OColumn.ROW_ID));
-	// // updating mail notification
-	// String where = "message_id = ?";
-	// Object[] selection_args = new Object[] { row.getInt(OColumn.ROW_ID) };
-	// if (notification.count(where, selection_args) > 0) {
-	// notification.update(values, where, selection_args);
-	// } else {
-	// OValues vals = new OValues();
-	// vals.put("message_id", row.getInt(OColumn.ROW_ID));
-	// vals.put("partner_id", author_id());
-	// notification.create(vals);
-	// }
-	// return true;
-	// } catch (Exception e) {
-	// e.printStackTrace();
-	// }
-	// return false;
-	// }
 
 	@Override
 	public int create(OValues values) {
@@ -259,25 +229,27 @@ public class MailMessage extends OModel {
 
 	public Integer sendQuickReply(String subject, String body, Integer parent_id) {
 		body += mContext.getResources().getString(R.string.mail_watermark);
-		OValues vals = new OValues();
-		vals.put("subject", subject);
-		vals.put("body", body);
-		vals.put("parent_id", parent_id);
-		vals.put("author_id", author_id());
-		vals.put("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
+		ContentProviderOperation.Builder batch = ContentProviderOperation
+				.newInsert(uri());
+		ArrayList<ContentProviderOperation> batches = new ArrayList<ContentProviderOperation>();
+		batch.withValue("subject", subject);
+		batch.withValue("body", body);
+		batch.withValue("parent_id", parent_id);
+		batch.withValue("author_id", author_id());
+		batch.withValue("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
 		List<Integer> p_ids = new ArrayList<Integer>();
 		for (ODataRow partner : select(parent_id).getM2MRecord("partner_ids")
 				.browseEach()) {
 			p_ids.add(partner.getInt(OColumn.ROW_ID));
 		}
-		vals.put("partner_ids", p_ids);
-		Integer replyId = create(vals);
-		// Creating notification for record
-		OValues nVals = new OValues();
-		nVals.put("partner_id", author_id());
-		nVals.put("message_id", replyId);
-		notification.create(nVals);
-		return replyId;
+		batch.withValue("partner_ids", p_ids.toString());
+		batches.add(batch.build());
+		try {
+			mContext.getContentResolver().applyBatch(authority(), batches);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return 0;
 	}
 
 	public boolean markAsRead(ODataRow row, Boolean is_read) {
