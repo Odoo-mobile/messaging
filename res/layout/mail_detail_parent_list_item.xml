@@ -2,13 +2,16 @@
     xmlns:odoo="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#f3f3f3"
+    android:background="#cccccc"
     android:orientation="vertical"
     odoo:model="mail.message" >
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="3dp"
+        android:layout_marginRight="3dp"
+        android:layout_marginTop="5dp"
         android:background="@drawable/card"
         android:orientation="vertical" >
 
@@ -93,25 +96,23 @@
                 android:fontFamily="@string/font_fontFamily_condensed"
                 android:gravity="center"
                 android:padding="10dp"
-                android:text="Dummy"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="#838383"
                 android:textStyle="bold" />
 
-            <!--
-                 <ImageView
-                android:id="@+id/imgBtnMailDetailStarred"
+            <ImageView
+                android:id="@+id/imgBtn_mail_detail_starred"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@drawable/oe_background_selector"
                 android:clickable="true"
-                android:padding="8dp"
+                android:padding="5dp"
                 android:src="@drawable/ic_action_starred"
                 android:tint="#aaaaaa" />
-            -->
 
             <LinearLayout
+                android:id="@+id/voteCounter"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -140,29 +141,6 @@
                     android:src="@drawable/ic_action_rating_good"
                     android:tint="#aaaaaa" />
             </LinearLayout>
-
-            <ImageView
-                android:id="@+id/imgBtn_mail_detail_starred"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/oe_background_selector"
-                android:clickable="true"
-                android:padding="5dp"
-                android:src="@drawable/ic_action_starred"
-                android:tint="#aaaaaa" />
-
-            <ImageView
-                android:id="@+id/imgBtn_mail_detail_reply"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/oe_background_selector"
-                android:clickable="true"
-                android:contentDescription="Reply"
-                android:padding="5dp"
-                android:src="@drawable/ic_action_reply"
-                android:tint="#aaaaaa" />
         </LinearLayout>
     </LinearLayout>
 

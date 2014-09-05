@@ -5,18 +5,18 @@ import java.util.List;
 
 import odoo.OArguments;
 import odoo.controls.OField;
-import odoo.controls.OList;
-import odoo.controls.OList.BeforeListRowCreateListener;
-import odoo.controls.OList.OnListRowViewClickListener;
 
 import org.json.JSONArray;
 
-import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
-import android.os.AsyncTask;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,38 +27,43 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.odoo.addons.mail.Mail.MarkAsTodo;
 import com.odoo.addons.mail.models.MailMessage;
-import com.odoo.addons.mail.models.MailNotification;
 import com.odoo.addons.mail.providers.mail.MailProvider;
-import com.odoo.base.ir.Attachments;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OSyncHelper;
 import com.odoo.support.AppScope;
+import com.odoo.support.fragment.AsyncTaskListener;
 import com.odoo.support.fragment.BaseFragment;
+import com.odoo.support.listview.OCursorListAdapter;
+import com.odoo.support.listview.OCursorListAdapter.OnRowViewClickListener;
+import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
 import com.openerp.R;
 
 public class MailDetail extends BaseFragment implements
-		OnListRowViewClickListener, BeforeListRowCreateListener,
+		LoaderCallbacks<Cursor>, OnRowViewClickListener, OnViewBindListener,
 		OnClickListener {
-	public static final String TAG = "com.odoo.addons.mail.MailDetail";
-	public static final String KEY_MESSAGE_REPLY_ID = "message_reply_id";
-	public static final String KEY_MESSAGE_ID = "message_id";
-	public static final String KEY_SUBJECT = "subject";
-	public static final String KEY_BODY = "body";
-	public static final Integer REQUEST_REPLY = 125;
-	private View mView = null;
-	private Integer mMailId = null;
-	private OList mListMessages = null;
-	private List<ODataRow> mRecords = new ArrayList<ODataRow>();
+	public static final String KEY_MESSAGE_ID = "mail_id";
+	public static final String KEY_SUBJECT = "mail_subject";
+	public static final String KEY_BODY = "mail_body";
+	public static final String KEY_MESSAGE_REPLY_ID = "mail_reply_id";
 	private Context mContext = null;
-	private MailMessage mail = null;
-	private Attachments mAttachment = null;
+	private Integer mMailId = null;
+	private String selection = null;
+	private String[] args;
+	private View mView = null;
+	private ListView mailList = null;
+	private OCursorListAdapter mAdapter;
+	private int[] background_resources = new int[] {
+			R.drawable.message_listview_bg_toread_selector,
+			R.drawable.message_listview_bg_tonotread_selector };
+	private ImageView imgBtn_send_reply;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -66,54 +71,75 @@ public class MailDetail extends BaseFragment implements
 		setHasOptionsMenu(true);
 		scope = new AppScope(this);
 		mContext = getActivity();
-		mAttachment = new Attachments(getActivity());
 		initArgs();
 		return inflater.inflate(R.layout.mail_detail_layout, container, false);
 	}
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 		mView = view;
 		init();
+		imgBtn_send_reply.setOnClickListener(this);
+		mailList = (ListView) view.findViewById(R.id.lstMessageDetail);
+		mAdapter = new OCursorListAdapter(mContext, null,
+				R.layout.mail_detail_parent_list_item);
+		mAdapter.setOnViewCreateListener(new OCursorListAdapter.OnViewCreateListener() {
+			@Override
+			public View onViewCreated(Context context, ViewGroup view,
+					Cursor cr, int position) {
+				int parent_id = cr.getInt(cr.getColumnIndex("parent_id"));
+				int resource = (parent_id == 0) ? mAdapter.getResource()
+						: R.layout.mail_detail_reply_list_item;
+				return mAdapter.inflate(resource, view);
 
+			}
+		});
+		mAdapter.setOnRowViewClickListener(R.id.imgBtn_mail_detail_starred,
+				this);
+		mAdapter.setOnRowViewClickListener(R.id.imgBtn_mail_detail_rate, this);
+		mAdapter.setOnViewBindListener(this);
+		mailList.setAdapter(mAdapter);
+		getLoaderManager().initLoader(0, null, this);
 	}
 
 	private void initArgs() {
 		Bundle args = getArguments();
-		mail = (MailMessage) db();
 		if (args.containsKey(OColumn.ROW_ID)) {
 			mMailId = args.getInt(OColumn.ROW_ID);
 		}
 	}
 
-	private void init() {
-		mListMessages = (OList) mView.findViewById(R.id.lstMessageDetail);
-		mListMessages.setOnListRowViewClickListener(R.id.imgBtnStar, this);
-		mListMessages.setOnListRowViewClickListener(R.id.imgVotenb, this);
-		// mListMessages.setOnListRowViewClickListener(R.id.msg_attachment,
-		// this);
-		mListMessages.setBeforeListRowCreateListener(this);
-		mView.findViewById(R.id.btnSendQuickReply).setOnClickListener(this);
-
+	public void init() {
+		imgBtn_send_reply = (ImageView) mView
+				.findViewById(R.id.btnSendQuickReply);
 		if (mMailId != null) {
 			ODataRow parent = db().select(mMailId);
 			if (parent.getInt("id") == 0) {
 				OControls.setInvisible(mView, R.id.quickReplyBox);
 			}
-			OControls.setText(mView, R.id.txvDetailSubject,
-					parent.getString("message_title"));
-			mRecords.add(0, parent);
-			mRecords.addAll(parent.getO2MRecord("child_ids")
-					.setOrder("date DESC").browseEach());
-			mListMessages.initListControl(mRecords);
+			if (parent.getString("message_title") != null
+					&& parent.getString("message_title") != "false")
+				OControls.setText(mView, R.id.txvDetailSubject,
+						parent.getString("message_title"));
+
 		}
-		mView.findViewById(R.id.btnStartFullComposeMode).setOnClickListener(
-				this);
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.menu_mail_detail, menu);
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_mail_read:
+			// new MailMessage(mContext).markAsRead(row, is_read);
+			break;
+		case R.id.menu_mail_unread:
+			// new MailMessage(mContext).markAsRead(row, !is_read);
+			break;
+
+		default:
+			break;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	@Override
@@ -127,34 +153,58 @@ public class MailDetail extends BaseFragment implements
 	}
 
 	@Override
-	public void onRowViewClick(ViewGroup view_group, View view, int position,
-			ODataRow row) {
+	public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
+		List<String> argsList = new ArrayList<String>();
+		selection = "_id = ?";
+		selection += " or parent_id = ?";
+		argsList.add(mMailId + "");
+		argsList.add(mMailId + "");
+		args = argsList.toArray(new String[argsList.size()]);
+		Uri uri = ((MailMessage) db()).mailDetailUri();
+		return new CursorLoader(mContext, uri, new String[] { "message_title",
+				"author_name", "author_id.image_small", "total_childs",
+				"parent_id", "date", "to_read", "body", "starred" }, selection,
+				args, "date DESC");
+
+	}
+
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		inflater.inflate(R.menu.menu_mail_detail, menu);
+		// Fix me (check if mail is read or unread) then hide menu alternativly
+		// MenuItem item = menu.findItem(R.id.menu_mail_read);
+		// item.setVisible(false);
+	}
+
+	@Override
+	public void onLoadFinished(Loader<Cursor> arg0, Cursor cursor) {
+		mAdapter.changeCursor(cursor);
+
+	}
+
+	@Override
+	public void onLoaderReset(Loader<Cursor> arg0) {
+		mAdapter.changeCursor(null);
+	}
+
+	@Override
+	public void onRowViewClick(int position, Cursor cursor, View view,
+			View parent) {
+		MailMessage mail = new MailMessage(mContext);
+		final Cursor c = cursor;
+
 		switch (view.getId()) {
-		case R.id.imgBtnStar:
-			if (inNetwork()) {
-				boolean starred = new MailNotification(getActivity())
-						.getStarred(row.getInt(OColumn.ROW_ID));
-				ImageView imgStarred = (ImageView) view;
-				imgStarred.setColorFilter((!starred) ? Color
-						.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
-//				new MarkAsTodo(getActivity(), row, !starred).execute();
-			} else {
-				Toast.makeText(getActivity(), _s(R.string.no_connection),
-						Toast.LENGTH_SHORT).show();
-			}
-			break;
-		case R.id.imgVotenb:
+		case R.id.imgBtn_mail_detail_rate:
 			if (inNetwork()) {
 				try {
-					MailMessage mail = new MailMessage(mContext);
-					int mail_id = row.getInt("id");
+					int mail_id = c.getInt(c.getColumnIndex("id"));
 					OSyncHelper helper = db().getSyncHelper();
 					OArguments args = new OArguments();
 					args.add(new JSONArray().put(mail_id));
 					Boolean response = (Boolean) helper.callMethod(
 							"vote_toggle", args);
 					ImageView imgVote = (ImageView) view
-							.findViewById(R.id.imgHasVoted);
+							.findViewById(R.id.imgBtn_mail_detail_rate);
 					OField voteCounter = (OField) view
 							.findViewById(R.id.voteCounter);
 					int votes = (!voteCounter.getText().equals("")) ? Integer
@@ -163,190 +213,131 @@ public class MailDetail extends BaseFragment implements
 					if (response) {
 						// Vote up
 						mail.addManyToManyRecord("vote_user_ids",
-								row.getInt("local_id"), mail.author_id());
-						mListMessages.initListControl(mRecords);
+								c.getInt(c.getColumnIndex(OColumn.ROW_ID)),
+								mail.author_id());
+						// mListMessages.initListControl(mRecords);
 						has_voted = true;
 						votes++;
 					} else {
 						// Vote down
 						mail.deleteManyToManyRecord("vote_user_ids",
-								row.getInt("local_id"), mail.author_id());
-						mListMessages.initListControl(mRecords);
+								c.getInt(c.getColumnIndex(OColumn.ROW_ID)),
+								mail.author_id());
+						// mListMessages.initListControl(mRecords);
 						votes--;
 					}
 					voteCounter.setText((votes > 0) ? votes + "" : "");
-					imgVote.setColorFilter((has_voted) ? getActivity()
+					imgVote.setColorFilter((has_voted) ? mContext
 							.getResources().getColor(R.color.odoo_purple)
 							: Color.parseColor("#aaaaaa"));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			} else {
-				Toast.makeText(getActivity(), _s(R.string.no_connection),
+				Toast.makeText(mContext, _s(R.string.no_connection),
 						Toast.LENGTH_LONG).show();
 			}
 			break;
-		// case R.id.msg_attachment:
-		// mAttachment.downloadAttachment(row.getInt(OColumn.ROW_ID));
-		// break;
+		case R.id.imgBtn_mail_detail_starred:
+			String starred = "";
+			starred = c.getString(c.getColumnIndex("starred"));
+			final boolean is_fav = !starred.equals("1");
+			if (inNetwork()) {
+				ImageView imgStarred = (ImageView) view;
+				imgStarred.setColorFilter((is_fav) ? Color
+						.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
+				// markAsTodo
+				newBackgroundTask(new AsyncTaskListener() {
+
+					@Override
+					public Object onPerformTask() {
+						MailMessage mail = (MailMessage) db();
+						mail.markAsTodo(c, is_fav);
+						return null;
+					}
+
+					@Override
+					public void onFinish(Object result) {
+						getActivity().runOnUiThread(new Runnable() {
+
+							@Override
+							public void run() {
+								restartLoader();
+							}
+						});
+					}
+				}).execute();
+			} else {
+				Toast.makeText(mContext, _s(R.string.no_connection),
+						Toast.LENGTH_SHORT).show();
+			}
+			break;
+		default:
+			break;
 		}
 	}
 
-	@Override
-	public void beforeListRowCreate(int position, ODataRow row, View view) {
-		mListMessages.showAsCard((position != 0));
-		view.setBackgroundColor((position == 0) ? Color.parseColor("#e5e5e5")
-				: Color.TRANSPARENT);
-		ImageView imgstar = (ImageView) view.findViewById(R.id.imgBtnStar);
-		ImageView imgHasVoted = (ImageView) view.findViewById(R.id.imgHasVoted);
-		boolean has_voted = row.getBoolean("has_voted");
-		boolean is_favorite = row.getBoolean("starred");
-		imgstar.setColorFilter((is_favorite) ? Color.parseColor("#FF8800")
-				: Color.parseColor("#aaaaaa"));
-		imgHasVoted.setColorFilter((has_voted) ? getActivity().getResources()
-				.getColor(R.color.odoo_purple) : Color.parseColor("#aaaaaa"));
-		// if (mail.hasAttachment(row) == true)
-		// OControls.setVisible(view, R.id.msg_attachment);
-		// else
-		// OControls.setGone(view, R.id.msg_attachment);
-		// ImageView imgattachment = (ImageView) view
-		// .findViewById(R.id.attachment_test);
-		// File external_storage = new File(
-		// Environment.getExternalStorageDirectory() + "/Pictures");
-		// File[] files = external_storage.listFiles();
-		// for (File f : files) {
-		// OLog.log("Name of files = " + f.getName());
-		// Uri uri = Uri.parse(external_storage + "" + f.getName());
-		// OLog.log("Image Uri ==" + uri);
-		// imgattachment.setImageURI(uri);
-		// }
-
-		// String basepath = external_storage.getAbsolutePath() + "/Pictures";
-		// Uri uri = Uri.parse(basepath); // pass URI which store in the DB
-		// Table.
-		// OLog.log("Uri == " + uri);
-		// imgattachment.setImageURI(uri);
-
+	private void restartLoader() {
+		getLoaderManager().restartLoader(0, null, this);
 	}
 
-	public void set_attachment_image() {
+	@Override
+	public void onViewBind(View view, Cursor cr) {
+		// Setting starred color
+		ImageView imgStarred = (ImageView) view
+				.findViewById(R.id.imgBtn_mail_detail_starred);
 
+		String is_fav = cr.getString(cr.getColumnIndex("starred"));
+		imgStarred.setColorFilter((is_fav.equals("1")) ? Color
+				.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
+
+		if (view.findViewById(R.id.txvTotalChilds) != null) {
+			TextView totalChilds = (TextView) view
+					.findViewById(R.id.txvTotalChilds);
+			int replies = Integer.parseInt(cr.getString(cr
+					.getColumnIndex("total_childs")));
+			String childs = "No replies";
+			if (replies > 0) {
+				childs = replies + " replies";
+			}
+			totalChilds.setText(childs);
+		}
 	}
 
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.btnStartFullComposeMode:
-			Bundle bundle = new Bundle();
-			bundle.putInt(KEY_MESSAGE_ID, mMailId);
-			bundle.putString(KEY_SUBJECT,
-					"Re: " + OControls.getText(mView, R.id.txvDetailSubject));
-			bundle.putString(KEY_BODY,
-					OControls.getText(mView, R.id.edtQuickReplyMessage));
-			Intent intent = new Intent(getActivity(), ComposeMail.class);
-			intent.putExtras(bundle);
-			startActivityForResult(intent, REQUEST_REPLY);
-			break;
 		case R.id.btnSendQuickReply:
+			ODataRow parent = db().select(mMailId);
+			MailMessage mail = new MailMessage(mContext);
 			EditText edt = (EditText) mView
 					.findViewById(R.id.edtQuickReplyMessage);
 			edt.setError(null);
 			if (TextUtils.isEmpty(edt.getText())) {
 				edt.setError("Message required");
 			} else {
-				MailMessage mail = new MailMessage(getActivity());
-				String subject = mRecords.get(0).getString("message_title");
+				String subject = parent.getString("message_title");
 				String mail_body = OControls.getText(mView,
 						R.id.edtQuickReplyMessage);
-				Integer replyId = mail.sendQuickReply(subject, mail_body,
-						mMailId);
-				if (replyId != null) {
-					List<ODataRow> newRecord = new ArrayList<ODataRow>();
-					newRecord.add(db().select(replyId));
-					mListMessages.appendRecords(1, newRecord);
-					if (inNetwork()) {
-						scope.main().requestSync(MailProvider.AUTHORITY);
-						Toast.makeText(getActivity(), _s(R.string.reply_sent),
-								Toast.LENGTH_LONG).show();
-					} else {
-						Toast.makeText(getActivity(),
-								_s(R.string.reply_cant_sent), Toast.LENGTH_LONG)
-								.show();
-					}
-					OControls.setText(mView, R.id.edtQuickReplyMessage, "");
+				ContentValues values = new ContentValues();
+				values.put("message_title", subject);
+				values.put("body", mail_body);
+				mail.sendQuickReply(subject, mail_body, mMailId,
+						parent.getInt("total_childs"));
+				getLoaderManager().restartLoader(0, null, this);
+				if (inNetwork()) {
+					scope.main().requestSync(MailProvider.AUTHORITY);
+					Toast.makeText(mContext, _s(R.string.reply_sent),
+							Toast.LENGTH_LONG).show();
+				} else {
+					Toast.makeText(mContext, _s(R.string.reply_cant_sent),
+							Toast.LENGTH_LONG).show();
 				}
+				OControls.setText(mView, R.id.edtQuickReplyMessage, "");
 			}
 			break;
-		}
-
-	}
-
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == REQUEST_REPLY && resultCode == Activity.RESULT_OK) {
-			int replyId = data.getExtras().getInt(
-					MailDetail.KEY_MESSAGE_REPLY_ID);
-			List<ODataRow> newRecord = new ArrayList<ODataRow>();
-			newRecord.add(db().select(replyId));
-			mListMessages.appendRecords(1, newRecord);
-			OControls.setText(mView, R.id.edtQuickReplyMessage, "");
-			if (inNetwork()) {
-				scope.main().requestSync(MailProvider.AUTHORITY);
-				Toast.makeText(getActivity(), _s(R.string.reply_sent),
-						Toast.LENGTH_LONG).show();
-			} else {
-				Toast.makeText(getActivity(), _s(R.string.reply_cant_sent),
-						Toast.LENGTH_LONG).show();
-			}
-		}
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.menu_mail_read:
-			if (inNetwork())
-				new MarkAsReadUnread(getActivity(), db().select(mMailId), true)
-						.execute();
-			else
-				Toast.makeText(getActivity(), _s(R.string.no_connection),
-						Toast.LENGTH_SHORT).show();
-
-			break;
-		case R.id.menu_mail_unread:
-			if (inNetwork())
-				new MarkAsReadUnread(getActivity(), db().select(mMailId), false)
-						.execute();
-			else
-				Toast.makeText(getActivity(), _s(R.string.no_connection),
-						Toast.LENGTH_SHORT).show();
-
-			break;
-
 		default:
 			break;
 		}
-		return super.onOptionsItemSelected(item);
 	}
-
-	public static class MarkAsReadUnread extends AsyncTask<Void, Void, Boolean> {
-		private ODataRow mRecord = null;
-		private Context mContext = null;
-		private Boolean mIsRead = null;
-
-		public MarkAsReadUnread(Context context, ODataRow row, Boolean is_read) {
-			mContext = context;
-			mRecord = row;
-			mIsRead = is_read;
-		}
-
-		@Override
-		protected Boolean doInBackground(Void... params) {
-			MailMessage mail = new MailMessage(mContext);
-			return mail.markAsRead(mRecord, mIsRead);
-		}
-
-	}
-
 }

@@ -9,7 +9,6 @@ import odoo.ODomain;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import android.content.ContentProviderOperation;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -117,8 +116,8 @@ public class MailMessage extends OModel {
 	public String getReplies(OValues values) {
 		JSONArray childs = (JSONArray) values.get("child_ids");
 		if (childs.length() > 0)
-			return childs.length() + " replies";
-		return "";
+			return childs.length() + "";
+		return "0";
 	}
 
 	public Integer author_id() {
@@ -198,17 +197,10 @@ public class MailMessage extends OModel {
 			args.add(true);
 			getSyncHelper().callMethod("set_message_starred", args, null);
 			OValues values = new OValues();
-			// updating local record
-			if (todo_state == true) {
-				values.put("starred", "1");
-				update(values, c.getInt(c.getColumnIndex(OColumn.ROW_ID)));
-			} else {
-				values.put("starred", "0");
-				update(values, c.getInt(c.getColumnIndex(OColumn.ROW_ID)));
-			}
-			// Fix me
-			// update Notification
-
+			values.put("starred", (todo_state) ? 1 : 0);
+			values.put("to_read", 1);
+			resolver().update(c.getInt(c.getColumnIndex(OColumn.ROW_ID)),
+					values);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -227,29 +219,31 @@ public class MailMessage extends OModel {
 		return mNewCreateIds;
 	}
 
-	public Integer sendQuickReply(String subject, String body, Integer parent_id) {
+	public Integer sendQuickReply(String subject, String body,
+			Integer parent_id, Integer parent_childs) {
 		body += mContext.getResources().getString(R.string.mail_watermark);
-		ContentProviderOperation.Builder batch = ContentProviderOperation
-				.newInsert(uri());
-		ArrayList<ContentProviderOperation> batches = new ArrayList<ContentProviderOperation>();
-		batch.withValue("subject", subject);
-		batch.withValue("body", body);
-		batch.withValue("parent_id", parent_id);
-		batch.withValue("author_id", author_id());
-		batch.withValue("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
+		OValues vals = new OValues();
+		vals.put("author_name", getUser().getName());
+		vals.put("subject", subject);
+		vals.put("body", body);
+		vals.put("short_body", storeShortBody(vals));
+		vals.put("parent_id", parent_id);
+		vals.put("author_id", author_id());
+		vals.put("to_read", 0);
+		vals.put("starred", 0);
+		vals.put("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
 		List<Integer> p_ids = new ArrayList<Integer>();
 		for (ODataRow partner : select(parent_id).getM2MRecord("partner_ids")
 				.browseEach()) {
 			p_ids.add(partner.getInt(OColumn.ROW_ID));
 		}
-		batch.withValue("partner_ids", p_ids.toString());
-		batches.add(batch.build());
-		try {
-			mContext.getContentResolver().applyBatch(authority(), batches);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return 0;
+		vals.put("partner_ids", p_ids.toString());
+
+		// Updating parent childs
+		OValues parent_vals = new OValues();
+		parent_vals.put("total_childs", (parent_childs + 1));
+		resolver().update(parent_id, parent_vals);
+		return resolver().insert(vals);
 	}
 
 	public boolean markAsRead(ODataRow row, Boolean is_read) {

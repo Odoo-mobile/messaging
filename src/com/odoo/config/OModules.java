@@ -19,7 +19,7 @@
 package com.odoo.config;
 
 import com.odoo.addons.mail.GroupsLoader;
-import com.odoo.addons.mail.MailLoader;
+import com.odoo.addons.mail.Mail;
 import com.odoo.support.OModule;
 import com.odoo.support.OModulesHelper;
 
@@ -28,6 +28,6 @@ import com.odoo.support.OModulesHelper;
  */
 public class OModules extends OModulesHelper {
 
-	OModule mail = new OModule(MailLoader.class).setDefault();
+	OModule mail = new OModule(Mail.class).setDefault();
 	OModule mailgroup = new OModule(GroupsLoader.class);
 }

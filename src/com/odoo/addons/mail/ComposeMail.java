@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.base.ir.Attachments;
 import com.odoo.orm.ODataRow;
+import com.odoo.orm.ORelIds;
 import com.odoo.orm.OValues;
 import com.odoo.util.ODate;
 import com.openerp.R;
@@ -117,12 +118,15 @@ public class ComposeMail extends Activity {
 			if (mMailId != null) {
 				Integer replyId = mail.sendQuickReply(
 						values.getString("subject"), values.getString("body"),
-						mMailId);
+						mMailId, mParentMail.getInt("total_childs"));
 				Intent data = new Intent();
 				data.putExtra(MailDetail.KEY_MESSAGE_REPLY_ID, replyId);
 				setResult(RESULT_OK, data);
 				finish();
 			} else {
+				ORelIds partner_ids = (ORelIds) values.get("partner_ids");
+				values.put("partner_ids", partner_ids.get("KEY_Add").getIds()
+						.toString());
 				values.put("body", values.getString("body")
 						+ getResources().getString(R.string.mail_watermark));
 				values.put("author_id", mail.author_id());
@@ -132,7 +136,8 @@ public class ComposeMail extends Activity {
 				values.put("date", ODate.getUTCDate(ODate.DEFAULT_FORMAT));
 				values.put("to_read", 0);
 				values.put("starred", 0);
-				Integer mailId = mail.create(values);
+				values.put("total_childs", 0);
+				Integer mailId = mail.resolver().insert(values);
 				Intent data = new Intent();
 				data.putExtra(Mail.KEY_MESSAGE_ID, mailId);
 				setResult(RESULT_OK, data);

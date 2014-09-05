@@ -1,19 +1,19 @@
 package com.odoo.addons.mail.services;
 
-import java.util.ArrayList;
 import java.util.List;
+
 import odoo.OArguments;
 import odoo.ODomain;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
-import android.app.ActivityManager;
-import android.content.ComponentName;
-import android.content.ContentProviderOperation;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SyncResult;
 import android.os.Bundle;
 import android.util.Log;
+
 import com.odoo.App;
 import com.odoo.MainActivity;
 import com.odoo.addons.mail.models.MailMessage;
@@ -23,13 +23,11 @@ import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OSyncHelper;
 import com.odoo.orm.OValues;
-import com.odoo.receivers.SyncFinishReceiver;
 import com.odoo.support.OUser;
 import com.odoo.support.service.OSyncAdapter;
 import com.odoo.support.service.OSyncFinishListener;
 import com.odoo.support.service.OSyncService;
 import com.odoo.util.ONotificationHelper;
-import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailSyncService extends OSyncService implements
@@ -45,49 +43,23 @@ public class MailSyncService extends OSyncService implements
 	@Override
 	public void performDataSync(OSyncAdapter adapter, Bundle extras, OUser user) {
 		Context mContext = getApplicationContext();
-		Intent intent = new Intent();
-		intent.setAction(SyncFinishReceiver.SYNC_FINISH);
 		try {
 			MailMessage mdb = new MailMessage(mContext);
 			mdb.setUser(user);
+			if (sendMails(mContext, user, mdb, mdb.getSyncHelper())) {
+				
+				// if (updateOldMessages(mContext, user, mdb.ids())) {
+				// // if (user.getAndroidName().equals(user.getName())) {
+				// // mContext.sendBroadcast(intent);
+				// }
+				// }
+			}
 			ODomain domain = new ODomain();
 			if (extras.containsKey(MailGroupSyncService.KEY_GROUP_IDS)) {
 				JSONArray group_ids = new JSONArray(
 						extras.getString(MailGroupSyncService.KEY_GROUP_IDS));
 				domain.add("res_id", "in", group_ids);
 				domain.add("model", "=", "mail.group");
-			}
-
-			boolean showNotification = true;
-			ActivityManager am = (ActivityManager) mContext
-					.getSystemService(ACTIVITY_SERVICE);
-			List<ActivityManager.RunningTaskInfo> taskInfo = am
-					.getRunningTasks(1);
-			ComponentName componentInfo = taskInfo.get(0).topActivity;
-			if (componentInfo.getPackageName().equalsIgnoreCase("com.openerp")) {
-				showNotification = false;
-			}
-			if (sendMails(mContext, user, mdb, mdb.getSyncHelper())) {
-				if (mdb.getSyncHelper().syncDataLimit(30)
-						.syncWithServer(domain, true)) {
-					if (showNotification && mdb.newMessageIds().size() > 0) {
-						int newTotal = mdb.newMessageIds().size();
-						ONotificationHelper mNotification = new ONotificationHelper();
-						Intent mainActiivty = new Intent(mContext,
-								MainActivity.class);
-						mNotification.setResultIntent(mainActiivty, mContext);
-						mNotification.showNotification(mContext, newTotal
-								+ " unread messages", newTotal
-								+ " new message received (Odoo)",
-								mdb.authority(), R.drawable.ic_odoo_o);
-						if (updateOldMessages(mContext, user, mdb.ids())) {
-							if (user.getAndroidName().equals(user.getName())) {
-								mContext.sendBroadcast(intent);
-							}
-						}
-					}
-
-				}
 			}
 			adapter.syncDataLimit(30).onSyncFinish(this).setDomain(domain);
 		} catch (Exception e) {
@@ -153,7 +125,7 @@ public class MailSyncService extends OSyncService implements
 			args.add(new JSONArray().put(message_id));
 			args.add(helper.getContext(null));
 			helper.callMethod(model, "send_mail", args, null, null);
-			mails.delete(mail.getInt(OColumn.ROW_ID));
+			mails.resolver().delete(mail.getInt(OColumn.ROW_ID));
 		} catch (Exception e) {
 			Log.e(TAG, "_sendMail() : " + e.getMessage());
 		}
@@ -189,25 +161,10 @@ public class MailSyncService extends OSyncService implements
 			args.add(new JSONArray().put(res_id));
 			Integer messageId = (Integer) helper.callMethod(model, method,
 					args, null, kwargs);
-
-			// ArrayList<ContentProviderOperation> batch = new
-			// ArrayList<ContentProviderOperation>();
-			ContentProviderOperation.Builder batch = ContentProviderOperation
-					.newUpdate(mails
-							.uri()
-							.buildUpon()
-							.appendPath(
-									Integer.toString(mail
-											.getInt(OColumn.ROW_ID))).build());
-			batch.withValue("id", messageId);
-			ArrayList<ContentProviderOperation> batches = new ArrayList<ContentProviderOperation>();
-			batches.add(batch.build());
-			context.getContentResolver().applyBatch(mails.authority(), batches);
-			// OValues vals = new OValues();
-			// vals.put(OColumn.ROW_ID, mail.getInt(OColumn.ROW_ID));
-			// vals.put("id", messageId);
-			// mails.update(vals, mail.getInt(OColumn.ROW_ID));
-
+			OValues vals = new OValues();
+			vals.put(OColumn.ROW_ID, mail.getInt(OColumn.ROW_ID));
+			vals.put("id", messageId);
+			mails.resolver().update(vals.getInt(OColumn.ROW_ID), vals);
 		} catch (Exception e) {
 			Log.e(TAG, "sendReply() : " + e.getMessage());
 		}
@@ -267,10 +224,6 @@ public class MailSyncService extends OSyncService implements
 	@Override
 	public OSyncAdapter performSync(SyncResult syncResult) {
 		App app = (App) getApplicationContext();
-		OLog.log(syncResult.stats.numEntries + " numEntries");
-		OLog.log(syncResult.stats.numDeletes + " numDeletes");
-		OLog.log(syncResult.stats.numInserts + " numInserts");
-		OLog.log(syncResult.stats.numUpdates + " numUpdates");
 		if (!app.appOnTop() && syncResult.stats.numInserts > 0) {
 			int newTotal = (int) syncResult.stats.numInserts;
 			ONotificationHelper mNotification = new ONotificationHelper();
