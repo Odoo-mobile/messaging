@@ -4,10 +4,8 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.ListView;
 
-import com.odoo.util.OControls;
 import com.openerp.R;
 
 public class OCollectionView extends ListView {
@@ -47,7 +45,6 @@ public class OCollectionView extends ListView {
 			mAttr.put(KEY_EMPTY_LIST_MESSAGE, mTypedArray
 					.getString(R.styleable.OCollectionView_emptyMessage));
 			mTypedArray.recycle();
-			showEmptyListView();
 		}
 	}
 
@@ -67,20 +64,5 @@ public class OCollectionView extends ListView {
 	public void setEmptyIconMessage(int icon_resId, int message_resId) {
 		setEmptyIcon(icon_resId);
 		setEmptyMessage(message_resId);
-		showEmptyListView();
 	}
-
-	private void showEmptyListView() {
-		View emptyView = mInflater.inflate(R.layout.mail_empty_view, this,
-				false);
-		OControls.setImage(emptyView, R.id.emptyListIcon, mAttr.getResource(
-				KEY_EMPTY_LIST_ICON, R.drawable.ic_action_exclamation_mark));
-		OControls.setText(
-				emptyView,
-				R.id.emptyListMessage,
-				mAttr.getString(KEY_EMPTY_LIST_MESSAGE,
-						mContext.getString(R.string.label_no_records_found)));
-		setEmptyView(emptyView);
-	}
-
 }

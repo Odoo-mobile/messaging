@@ -345,6 +345,8 @@ public class OField extends LinearLayout implements
 	 * Re init the control.
 	 */
 	public void reInit() {
+		if (getTag() == null)
+			setTag("field_tag_" + mAttributes.getString(KEY_FIELD_NAME, ""));
 		initControls();
 	}
 
@@ -797,8 +799,6 @@ public class OField extends LinearLayout implements
 		}
 		final int default_image = mAttributes.getResource(KEY_DEFAULT_IMAGE,
 				R.drawable.attachment);
-		imgBinary.setImageResource((default_image < 0) ? R.drawable.attachment
-				: default_image);
 		new Handler().postDelayed(new Runnable() {
 
 			@Override
