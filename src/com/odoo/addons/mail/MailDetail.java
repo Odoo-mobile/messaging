@@ -260,13 +260,8 @@ public class MailDetail extends BaseFragment implements
 
 					@Override
 					public void onFinish(Object result) {
-						getActivity().runOnUiThread(new Runnable() {
-
-							@Override
-							public void run() {
-								restartLoader();
-							}
-						});
+						if (getActivity() != null)
+							restartLoader();
 					}
 				}).execute();
 			} else {

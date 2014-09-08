@@ -33,5 +33,6 @@ When you process messages in your inbox, you can mark some as todo. From this me
     <string name="reply_cant_sent">Reply can\'t Sent</string>
     <string name="no_activity_found">No activity found to handle file</string>
     <string name="unable_to_find_attachment">Unable to find attachment!</string>
+    <string name="undo">UNDO</string>
 
 </resources>

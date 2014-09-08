@@ -21,7 +21,10 @@ package com.odoo.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.odoo.addons.mail.providers.group.MailGroupProvider;
+import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.support.SyncValue;
+import com.odoo.support.SyncValue.Type;
 import com.odoo.support.SyncWizardHelper;
 
 public class SyncWizardValues implements SyncWizardHelper {
@@ -29,6 +32,11 @@ public class SyncWizardValues implements SyncWizardHelper {
 	@Override
 	public List<SyncValue> syncValues() {
 		List<SyncValue> list = new ArrayList<SyncValue>();
+		list.add(new SyncValue("Messaging"));
+		list.add(new SyncValue("Messages", MailProvider.AUTHORITY,
+				Type.CHECKBOX));
+		list.add(new SyncValue("Groups", MailGroupProvider.AUTHORITY,
+				Type.CHECKBOX));
 		return list;
 	}
 }

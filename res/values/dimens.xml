@@ -34,5 +34,14 @@
     <dimen name="fab_size">56dp</dimen>
     <dimen name="button_elevation">2dp</dimen>
     <dimen name="button_press_elevation">4dp</dimen>
+    <!-- Undobar -->
+    <dimen name="undo_bar_height">64dp</dimen>
+    <dimen name="undo_bar_padding">16dp</dimen>
+    <dimen name="undo_bar_outer_margin">24dp</dimen>
+    <dimen name="undo_bar_bottom_margin">60dp</dimen>
+    <dimen name="undo_bar_max_width">500dp</dimen>
+    <dimen name="divider_margin">8dp</dimen>
+    <dimen name="button_drawable_padding">12dp</dimen>
+    <dimen name="button_corner_radius">24dp</dimen>
 
 </resources>

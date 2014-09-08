@@ -27,5 +27,10 @@
     <color name="navdrawer_icon_tint_selected">@color/theme_primary</color>
     <color name="actionbar_bg_color">#ebebeb</color>
     <color name="translucent_status_bg_color">@color/odoo_purple</color>
+    <color name="divider">#afafaf</color>
+    <color name="message_text">#ffffff</color>
+    <color name="button_text">#acacac</color>
+    <color name="button_background">#db555555</color>
+    <color name="button_background_pressed">#858585</color>
 
 </resources>

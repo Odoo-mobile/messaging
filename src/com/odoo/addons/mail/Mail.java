@@ -6,13 +6,17 @@ import java.util.List;
 
 import odoo.controls.OField;
 import odoo.controls.fab.FloatingActionButton;
+import odoo.controls.undobar.UndoBar;
+import odoo.controls.undobar.UndoBar.UndoBarListener;
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -31,6 +35,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 import android.widgets.SwipeRefreshLayout.OnRefreshListener;
 
+import com.odoo.OSwipeListener.SwipeCallbacks;
+import com.odoo.OTouchListener;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
@@ -51,7 +57,8 @@ import com.openerp.R;
 public class Mail extends BaseFragment implements OnRefreshListener,
 		LoaderManager.LoaderCallbacks<Cursor>, SyncStatusObserverListener,
 		OnItemClickListener, OnSearchViewChangeListener, OnViewBindListener,
-		OnClickListener, OnRowViewClickListener {
+		OnClickListener, OnRowViewClickListener, SwipeCallbacks,
+		UndoBarListener {
 
 	public static final String TAG = Mail.class.getSimpleName();
 	public static final String KEY = "fragment_mail";
@@ -65,6 +72,9 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	private Type mType = Type.Inbox;
 	private String selection = null;
 	private String[] args;
+	private OTouchListener mTouch;
+	private FloatingActionButton mFab;
+	private int lastSwipedMail = -1;
 
 	public enum Type {
 		Inbox, ToMe, ToDo, Archives, Outbox, Group
@@ -96,9 +106,9 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		mView = view;
+		mTouch = scope.main().getTouchAttacher();
 		setHasSwipeRefreshView(view, R.id.swipe_container, this);
-		FloatingActionButton mFab = (FloatingActionButton) view
-				.findViewById(R.id.fabbutton);
+		mFab = (FloatingActionButton) view.findViewById(R.id.fabbutton);
 		mailList = (ListView) view.findViewById(R.id.mail_list_view);
 		mAdapter = new OCursorListAdapter(getActivity(), null,
 				R.layout.mail_list_item);
@@ -106,6 +116,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		mailList.setAdapter(mAdapter);
 		mailList.setOnItemClickListener(this);
 		mailList.setEmptyView(mView.findViewById(R.id.loadingProgress));
+		mTouch.setSwipeableView(mailList, this);
 		mFab.listenTo(mailList);
 		mFab.setOnClickListener(this);
 		mAdapter.setOnRowViewClickListener(R.id.img_starred_mlist, this);
@@ -155,7 +166,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		case ToMe:
 			query.addWhere("to_read", "=", 1);
 			query.addWhere("starred", "=", 0);
-			query.addWhere("partner_ids.res_partner_id", "=", db.author_id());
+			query.addWhere("res_id", "=", 0);
 			break;
 		case ToDo:
 			query.addWhere("to_read", "=", 1);
@@ -208,8 +219,9 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 			argsList.add("0");
 			break;
 		case ToMe:
-			selection += " to_read = ? and starred = ?";
+			selection += " to_read = ? and starred = ? and res_id = ?";
 			argsList.add("1");
+			argsList.add("0");
 			argsList.add("0");
 			break;
 		case ToDo:
@@ -459,4 +471,96 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 			break;
 		}
 	}
+
+	@Override
+	public boolean canSwipe(int position) {
+		return true;
+	}
+
+	@Override
+	public void onSwipe(View view, int[] positions) {
+		for (int pos : positions) {
+			// View parent = getViewFromListView(pos);
+			Cursor cr = mAdapter.getCursor();
+			cr.moveToPosition(pos);
+			lastSwipedMail = cr.getInt(cr.getColumnIndex(OColumn.ROW_ID));
+			toggleMailToRead(lastSwipedMail, false);
+			showUndoBar();
+			/*
+			 * int current_pos = pos; if (lastSwiped > -1) { int archive_pos =
+			 * lastSwiped; if (lastSwiped < current_pos && lastSwiped != -1) {
+			 * current_pos = pos - 1; } else { if (lastSwiped ==
+			 * mAdapter.getCount()) { archive_pos = lastSwiped - 1; } } //
+			 * makeArchive(archive_pos);
+			 * toggleSwipeView(getViewFromListView(archive_pos), false);
+			 * lastSwiped = -1; } lastSwiped = current_pos;
+			 * toggleSwipeView(getViewFromListView(current_pos), true);
+			 */
+
+		}
+	}
+
+	private void showUndoBar() {
+		UndoBar undoBar = new UndoBar(getActivity());
+		undoBar.setMessage("Mail archived");
+		undoBar.setDuration(15000);
+		undoBar.setListener(this);
+		undoBar.show(true);
+	}
+
+	/*
+	 * private void toggleSwipeView(final View row_view, boolean visible) { if
+	 * (visible) { OControls.setVisible(row_view, R.id.messageArchiveView);
+	 * row_view.findViewById(R.id.undoArchived).setOnClickListener( new
+	 * OnClickListener() {
+	 * 
+	 * @Override public void onClick(View v) { OControls .setGone(row_view,
+	 * R.id.messageArchiveView); lastSwiped = -1; } }); } else {
+	 * row_view.findViewById(R.id.messageArchiveView).setVisibility( View.GONE);
+	 * } }
+	 */
+	/*
+	 * private View getViewFromListView(int position) { final int
+	 * firstListItemPosition = mailList.getFirstVisiblePosition(); final int
+	 * lastListItemPosition = firstListItemPosition + mailList.getChildCount() -
+	 * 1; if (position < firstListItemPosition || position >
+	 * lastListItemPosition) { return mailList.getAdapter().getView(position,
+	 * null, mailList); } else { final int childIndex = position -
+	 * firstListItemPosition; return mailList.getChildAt(childIndex); } }
+	 */
+
+	@Override
+	public void onHide() {
+		// Archive last swiped
+		if (lastSwipedMail != -1) {
+			OLog.log("archive to server if connection available ");
+			lastSwipedMail = -1;
+		}
+	}
+
+	@Override
+	public void onUndo(Parcelable token) {
+		// cancel swipe
+		hideUndoBar();
+		toggleMailToRead(lastSwipedMail, true);
+		lastSwipedMail = -1;
+	}
+
+	private void hideUndoBar() {
+		mFab.hide(false);
+	}
+
+	private void toggleMailToRead(int mailId, boolean to_read) {
+		ContentValues values = new ContentValues();
+		values.put("to_read", to_read);
+		String selection = OColumn.ROW_ID + " = ? or parent_id = ?";
+		String[] args = new String[] { mailId + "", mailId + "" };
+		if (to_read) {
+			selection = OColumn.ROW_ID + " = ?";
+			args = new String[] { mailId + "" };
+		}
+		getActivity().getContentResolver().update(db().uri(), values,
+				selection, args);
+	}
+
 }
