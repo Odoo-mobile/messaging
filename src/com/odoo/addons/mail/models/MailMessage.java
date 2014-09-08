@@ -170,8 +170,9 @@ public class MailMessage extends OModel {
 		try {
 			JSONArray ids = (JSONArray) vals.get("notification_ids");
 			ODataRow noti = notification.select(ids.getInt(0));
-			return (noti.contains("is_read")) ? !noti.getBoolean("is_read")
-					: !noti.getBoolean("read");
+			if (noti != null)
+				return (noti.contains("is_read")) ? !noti.getBoolean("is_read")
+						: !noti.getBoolean("read");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

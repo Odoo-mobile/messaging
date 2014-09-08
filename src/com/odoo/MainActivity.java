@@ -74,6 +74,7 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 		getActionBar().setIcon(R.drawable.ic_odoo_o);
 		mContext = this;
 		mFragment = getSupportFragmentManager();
+		initTouchListener();
 		if (OUser.current(mContext) != null && savedInstanceState == null) {
 			IrModel models = new IrModel(mContext);
 			if (models.count() <= 0) {
@@ -110,7 +111,6 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 	}
 
 	public void onTaskDone(Bundle savedInstanceState) {
-		initTouchListener();
 		initDrawerControls();
 		if (findViewById(R.id.fragment_detail_container) != null) {
 			findViewById(R.id.fragment_detail_container).setVisibility(

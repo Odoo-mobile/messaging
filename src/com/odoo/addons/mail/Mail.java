@@ -480,23 +480,11 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	@Override
 	public void onSwipe(View view, int[] positions) {
 		for (int pos : positions) {
-			// View parent = getViewFromListView(pos);
 			Cursor cr = mAdapter.getCursor();
 			cr.moveToPosition(pos);
 			lastSwipedMail = cr.getInt(cr.getColumnIndex(OColumn.ROW_ID));
 			toggleMailToRead(lastSwipedMail, false);
 			showUndoBar();
-			/*
-			 * int current_pos = pos; if (lastSwiped > -1) { int archive_pos =
-			 * lastSwiped; if (lastSwiped < current_pos && lastSwiped != -1) {
-			 * current_pos = pos - 1; } else { if (lastSwiped ==
-			 * mAdapter.getCount()) { archive_pos = lastSwiped - 1; } } //
-			 * makeArchive(archive_pos);
-			 * toggleSwipeView(getViewFromListView(archive_pos), false);
-			 * lastSwiped = -1; } lastSwiped = current_pos;
-			 * toggleSwipeView(getViewFromListView(current_pos), true);
-			 */
-
 		}
 	}
 
@@ -508,51 +496,26 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		undoBar.show(true);
 	}
 
-	/*
-	 * private void toggleSwipeView(final View row_view, boolean visible) { if
-	 * (visible) { OControls.setVisible(row_view, R.id.messageArchiveView);
-	 * row_view.findViewById(R.id.undoArchived).setOnClickListener( new
-	 * OnClickListener() {
-	 * 
-	 * @Override public void onClick(View v) { OControls .setGone(row_view,
-	 * R.id.messageArchiveView); lastSwiped = -1; } }); } else {
-	 * row_view.findViewById(R.id.messageArchiveView).setVisibility( View.GONE);
-	 * } }
-	 */
-	/*
-	 * private View getViewFromListView(int position) { final int
-	 * firstListItemPosition = mailList.getFirstVisiblePosition(); final int
-	 * lastListItemPosition = firstListItemPosition + mailList.getChildCount() -
-	 * 1; if (position < firstListItemPosition || position >
-	 * lastListItemPosition) { return mailList.getAdapter().getView(position,
-	 * null, mailList); } else { final int childIndex = position -
-	 * firstListItemPosition; return mailList.getChildAt(childIndex); } }
-	 */
-
 	@Override
 	public void onHide() {
-		// Archive last swiped
 		if (lastSwipedMail != -1) {
-			OLog.log("archive to server if connection available ");
+			if (inNetwork()) {
+				OLog.log("TODO: Update mail to server");
+			}
 			lastSwipedMail = -1;
 		}
 	}
 
 	@Override
 	public void onUndo(Parcelable token) {
-		// cancel swipe
-		hideUndoBar();
 		toggleMailToRead(lastSwipedMail, true);
 		lastSwipedMail = -1;
 	}
 
-	private void hideUndoBar() {
-		mFab.hide(false);
-	}
-
 	private void toggleMailToRead(int mailId, boolean to_read) {
 		ContentValues values = new ContentValues();
-		values.put("to_read", to_read);
+		values.put("to_read", (to_read) ? 1 : 0);
+		values.put("is_dirty", 1);
 		String selection = OColumn.ROW_ID + " = ? or parent_id = ?";
 		String[] args = new String[] { mailId + "", mailId + "" };
 		if (to_read) {
