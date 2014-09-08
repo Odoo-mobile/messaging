@@ -116,7 +116,8 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		mailList.setAdapter(mAdapter);
 		mailList.setOnItemClickListener(this);
 		mailList.setEmptyView(mView.findViewById(R.id.loadingProgress));
-		mTouch.setSwipeableView(mailList, this);
+		if (mType != Type.Archives)
+			mTouch.setSwipeableView(mailList, this);
 		mFab.listenTo(mailList);
 		mFab.setOnClickListener(this);
 		mAdapter.setOnRowViewClickListener(R.id.img_starred_mlist, this);
@@ -156,7 +157,6 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	}
 
 	private OQuery setSelection(Context context, OQuery query, Type type) {
-		MailMessage db = new MailMessage(context);
 		switch (type) {
 		case Inbox:
 			query.addWhere("to_read", "=", 1);
@@ -245,7 +245,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	}
 
 	@Override
-	public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
+	public Loader<Cursor> onCreateLoader(int id, Bundle arg1) {
 		if (db().isEmptyTable()) {
 			scope.main().requestSync(MailProvider.AUTHORITY);
 			setSwipeRefreshing(true);
@@ -491,7 +491,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	private void showUndoBar() {
 		UndoBar undoBar = new UndoBar(getActivity());
 		undoBar.setMessage("Mail archived");
-		undoBar.setDuration(15000);
+		undoBar.setDuration(7000);
 		undoBar.setListener(this);
 		undoBar.show(true);
 	}
@@ -500,7 +500,8 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	public void onHide() {
 		if (lastSwipedMail != -1) {
 			if (inNetwork()) {
-				OLog.log("TODO: Update mail to server");
+				MailMessage mail = (MailMessage) db();
+				mail.markMailReadUnread(lastSwipedMail, false);
 			}
 			lastSwipedMail = -1;
 		}
@@ -515,7 +516,8 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	private void toggleMailToRead(int mailId, boolean to_read) {
 		ContentValues values = new ContentValues();
 		values.put("to_read", (to_read) ? 1 : 0);
-		values.put("is_dirty", 1);
+		if (!inNetwork())
+			values.put("is_dirty", 1);
 		String selection = OColumn.ROW_ID + " = ? or parent_id = ?";
 		String[] args = new String[] { mailId + "", mailId + "" };
 		if (to_read) {

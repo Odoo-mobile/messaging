@@ -1,9 +1,11 @@
 package com.odoo.addons.mail.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import odoo.OArguments;
 import odoo.ODomain;
+import odoo.Odoo;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -11,13 +13,13 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SyncResult;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
 
 import com.odoo.App;
 import com.odoo.MainActivity;
 import com.odoo.addons.mail.models.MailMessage;
-import com.odoo.addons.mail.models.MailNotification;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
@@ -27,7 +29,9 @@ import com.odoo.support.OUser;
 import com.odoo.support.service.OSyncAdapter;
 import com.odoo.support.service.OSyncFinishListener;
 import com.odoo.support.service.OSyncService;
+import com.odoo.util.JSONUtils;
 import com.odoo.util.ONotificationHelper;
+import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailSyncService extends OSyncService implements
@@ -47,12 +51,7 @@ public class MailSyncService extends OSyncService implements
 			MailMessage mdb = new MailMessage(mContext);
 			mdb.setUser(user);
 			if (sendMails(mContext, user, mdb, mdb.getSyncHelper())) {
-				
-				// if (updateOldMessages(mContext, user, mdb.ids())) {
-				// // if (user.getAndroidName().equals(user.getName())) {
-				// // mContext.sendBroadcast(intent);
-				// }
-				// }
+				updateMails(user);
 			}
 			ODomain domain = new ODomain();
 			if (extras.containsKey(MailGroupSyncService.KEY_GROUP_IDS)) {
@@ -170,57 +169,72 @@ public class MailSyncService extends OSyncService implements
 		}
 	}
 
-	private Boolean updateOldMessages(Context context, OUser user,
-			List<Integer> ids) {
-		try {
-			JSONArray ids_array = new JSONArray();
-			for (int id : ids)
-				ids_array.put(id);
-			ODomain domain = new ODomain();
-			domain.add("message_id", "in", ids);
-			MailNotification mailNotification = new MailNotification(context);
-			MailMessage message = new MailMessage(context);
-			OSyncHelper helper = message.getSyncHelper();
-			if (mailNotification.getSyncHelper().syncWithServer(domain, false)) {
-				for (Integer id : ids) {
-					int row_id = message.selectRowId(id);
-					List<ODataRow> notifications = mailNotification.select(
-							"message_id = ?", new Object[] { row_id });
-					if (notifications.size() > 0) {
-						OValues vals = new OValues();
-						ODataRow noti = notifications.get(0);
-						vals.put(OColumn.ROW_ID, row_id);
-						vals.put("notification_ids",
-								noti.getInt(OColumn.ROW_ID));
-						message.update(vals, row_id);
-					}
-					// updateMailVotes(message, helper, user, ids_array);
+	private Boolean updateMails(OUser user) {
+		_updateUpStream(user);
+		_updateDownStream(user);
+		return true;
+	}
+
+	private void _updateUpStream(OUser user) {
+		Context context = getApplicationContext();
+		MailMessage mail = new MailMessage(context);
+		Cursor cr = context.getContentResolver().query(mail.uri(),
+				new String[] { "id", OColumn.ROW_ID, "to_read", "parent_id" },
+				"is_dirty = ? or is_dirty = ?", new String[] { "1", "true" },
+				null);
+		List<Integer> finished = new ArrayList<Integer>();
+		if (cr.moveToFirst()) {
+			do {
+				int parent_id = cr.getInt(cr.getColumnIndex("parent_id"));
+				int sync_id = parent_id;
+				if (parent_id == 0) {
+					sync_id = cr.getInt(cr.getColumnIndex(OColumn.ROW_ID));
 				}
-				return true;
+				if (finished.indexOf(sync_id) <= -1) {
+					Boolean to_read = (cr.getInt(cr.getColumnIndex("to_read")) == 1) ? true
+							: false;
+					mail.markMailReadUnread(sync_id, to_read);
+					finished.add(sync_id);
+				}
+			} while (cr.moveToNext());
+		}
+		cr.close();
+	}
+
+	private void _updateDownStream(OUser user) {
+		OLog.log("_updateDownStream()");
+		Context context = getApplicationContext();
+		App app = (App) context;
+		MailMessage mail = new MailMessage(context);
+		try {
+			Odoo odoo = app.getOdoo();
+			ODomain domain = new ODomain();
+			domain.add("id", "in", new JSONArray(mail.ids().toString()));
+			JSONObject fields = new JSONObject();
+			fields.accumulate("fields", "to_read");
+			fields.accumulate("fields", "starred");
+			fields.accumulate("fields", "vote_user_ids");
+			JSONArray result = odoo.search_read(mail.getModelName(), fields,
+					domain.get()).getJSONArray("records");
+			for (int i = 0; i < result.length(); i++) {
+				JSONObject row = result.getJSONObject(i);
+				int id = row.getInt("id");
+				int to_read = (row.getBoolean("to_read")) ? 1 : 0;
+				int starred = (row.getBoolean("starred")) ? 1 : 0;
+				List<Integer> vote_user_ids = JSONUtils.toList(row
+						.getJSONArray("vote_user_ids"));
+				int row_id = mail.selectRowId(id);
+				OValues values = new OValues();
+				values.put("to_read", to_read);
+				values.put("starred", starred);
+				values.put("vote_user_ids", vote_user_ids.toString());
+				mail.resolver().update(row_id, values);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return false;
 	}
 
-	// =====================================================================================================
-	// private void updateMailVotes(MailMessage db, OSyncHelper os, OUser user,
-	// JSONArray ids_array) {
-	// try {
-	//
-	// JSONObject vote_fields = new JSONObject();
-	// vote_fields.accumulate("fields", "vote_user_ids");
-	// Object vote_detail = os.callMethod("mail.message", "search_read",
-	// null, null, vote_fields);
-	// OLog.log("Call Method Result ==" + vote_detail);
-	// os.search_read("mail.message", vote_fields, domain.get(), 0, 0,
-	// null, null);
-	// } catch (Exception e) {
-	// e.printStackTrace();
-	// }
-	// }
-	// =====================================================================================================
 	@Override
 	public OSyncAdapter performSync(SyncResult syncResult) {
 		App app = (App) getApplicationContext();

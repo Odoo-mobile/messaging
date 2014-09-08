@@ -2,8 +2,11 @@ package com.odoo.addons.mail;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import odoo.OArguments;
+
 import org.json.JSONArray;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -24,10 +27,10 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
@@ -57,11 +60,7 @@ public class MailDetail extends BaseFragment implements
 	private View mView = null;
 	private ListView mailList = null;
 	private OCursorListAdapter mAdapter;
-	private int[] background_resources = new int[] {
-			R.drawable.message_listview_bg_toread_selector,
-			R.drawable.message_listview_bg_tonotread_selector };
 	private ImageView imgBtn_send_reply, btnStartFullComposeMode;
-	private LinearLayout voteCounter;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -96,7 +95,7 @@ public class MailDetail extends BaseFragment implements
 		});
 		mAdapter.setOnRowViewClickListener(R.id.imgBtn_mail_detail_starred,
 				this);
-		mAdapter.setOnRowViewClickListener(R.id.imgBtn_mail_detail_rate, this);
+		mAdapter.setOnRowViewClickListener(R.id.voteCounter, this);
 		mAdapter.setOnRowViewClickListener(R.id.voteCounter, this);
 		mAdapter.setOnViewBindListener(this);
 		mailList.setAdapter(mAdapter);
@@ -115,7 +114,6 @@ public class MailDetail extends BaseFragment implements
 				.findViewById(R.id.btnSendQuickReply);
 		btnStartFullComposeMode = (ImageView) mView
 				.findViewById(R.id.btnStartFullComposeMode);
-		voteCounter = (LinearLayout) mView.findViewById(R.id.voteCounter);
 		if (mMailId != null) {
 			ODataRow parent = db().select(mMailId);
 			if (parent.getInt("id") == 0) {
@@ -191,47 +189,66 @@ public class MailDetail extends BaseFragment implements
 	}
 
 	@Override
-	public void onRowViewClick(int position, Cursor cursor, View view,
+	public void onRowViewClick(int position, Cursor cursor, final View view,
 			View parent) {
-		MailMessage mail = new MailMessage(mContext);
+		final MailMessage mail = new MailMessage(mContext);
 		final Cursor c = cursor;
 		switch (view.getId()) {
 		case R.id.voteCounter:
 			if (inNetwork()) {
+				final ImageView imgVote = (ImageView) view
+						.findViewById(R.id.imgBtn_mail_detail_rate);
+				final TextView voteCounter = (TextView) view
+						.findViewById(R.id.txv_voteCounter);
+
 				try {
-					int mail_id = c.getInt(c.getColumnIndex("id"));
-					OSyncHelper helper = db().getSyncHelper();
-					OArguments args = new OArguments();
-					args.add(new JSONArray().put(mail_id));
-					Boolean response = (Boolean) helper.callMethod(
-							"vote_toggle", args);
-					ImageView imgVote = (ImageView) view
-							.findViewById(R.id.imgBtn_mail_detail_rate);
-					TextView voteCounter = (TextView) view
-							.findViewById(R.id.txv_voteCounter);
-					int votes = (!voteCounter.getText().equals("")) ? Integer
-							.parseInt(voteCounter.getText().toString()) : 0;
-					boolean has_voted = false;
-					if (response) {
-						// Vote up
-						mail.addManyToManyRecord("vote_user_ids",
-								c.getInt(c.getColumnIndex(OColumn.ROW_ID)),
-								mail.author_id());
-						// mListMessages.initListControl(mRecords);
-						has_voted = true;
-						votes++;
-					} else {
-						// Vote down
-						mail.deleteManyToManyRecord("vote_user_ids",
-								c.getInt(c.getColumnIndex(OColumn.ROW_ID)),
-								mail.author_id());
-						// mListMessages.initListControl(mRecords);
-						votes--;
-					}
-					voteCounter.setText((votes > 0) ? votes + "" : "");
-					imgVote.setColorFilter((has_voted) ? mContext
-							.getResources().getColor(R.color.odoo_purple)
-							: Color.parseColor("#aaaaaa"));
+					final int mail_id = c.getInt(c.getColumnIndex("id"));
+					newBackgroundTask(new AsyncTaskListener() {
+						boolean has_voted = false;
+
+						@Override
+						public Object onPerformTask() {
+							int votes = (!voteCounter.getText().equals("")) ? Integer
+									.parseInt(voteCounter.getText().toString())
+									: 0;
+							OSyncHelper helper = db().getSyncHelper();
+							OArguments args = new OArguments();
+							args.add(new JSONArray().put(mail_id));
+							Boolean response = (Boolean) helper.callMethod(
+									"vote_toggle", args);
+							if (response) {
+								// Vote up
+								mail.addManyToManyRecord(
+										"vote_user_ids",
+										c.getInt(c
+												.getColumnIndex(OColumn.ROW_ID)),
+										mail.author_id());
+								// mListMessages.initListControl(mRecords);
+								has_voted = true;
+								votes++;
+							} else {
+								// Vote down
+								mail.deleteManyToManyRecord(
+										"vote_user_ids",
+										c.getInt(c
+												.getColumnIndex(OColumn.ROW_ID)),
+										mail.author_id());
+								// mListMessages.initListControl(mRecords);
+								votes--;
+							}
+							return votes;
+						}
+
+						@Override
+						public void onFinish(Object result) {
+							int votes = (Integer) result;
+							voteCounter.setText((votes > 0) ? votes + "" : "");
+							imgVote.setColorFilter((has_voted) ? mContext
+									.getResources().getColor(
+											R.color.odoo_purple) : Color
+									.parseColor("#aaaaaa"));
+						}
+					}).execute();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -287,7 +304,25 @@ public class MailDetail extends BaseFragment implements
 		String is_fav = cr.getString(cr.getColumnIndex("starred"));
 		imgStarred.setColorFilter((is_fav.equals("1")) ? Color
 				.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
-
+		ODataRow row = db()
+				.select(cr.getInt(cr.getColumnIndex(OColumn.ROW_ID)));
+		List<Integer> voters_id = row.getM2MRecord("vote_user_ids").getRelIds();
+		int voters = voters_id.size();
+		if (voters > 0) {
+			int author_id = ((MailMessage) db()).author_id();
+			ImageView selfVoted = (ImageView) view
+					.findViewById(R.id.imgBtn_mail_detail_rate);
+			TextView txvVotes = (TextView) view
+					.findViewById(R.id.txv_voteCounter);
+			if (voters_id.indexOf(author_id) > -1) {
+				selfVoted.setColorFilter(_c(R.color.odoo_purple));
+				txvVotes.setTextColor(_c(R.color.odoo_purple));
+			} else {
+				selfVoted.setColorFilter(Color.parseColor("#aaaaaa"));
+				txvVotes.setTextColor(Color.parseColor("#aaaaaa"));
+			}
+			txvVotes.setText(voters + "");
+		}
 		if (view.findViewById(R.id.txvTotalChilds) != null) {
 			TextView totalChilds = (TextView) view
 					.findViewById(R.id.txvTotalChilds);

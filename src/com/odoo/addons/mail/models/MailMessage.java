@@ -247,14 +247,55 @@ public class MailMessage extends OModel {
 		return resolver().insert(vals);
 	}
 
+	public void markMailReadUnread(int mail_id, Boolean to_read) {
+		try {
+			ODataRow row = select(mail_id);
+			List<Integer> mailIds = new ArrayList<Integer>();
+			int parent_id = row.getM2ORecord("parent_id").getId();
+			if (parent_id != 0) {
+				row = row.getM2ORecord("parent_id").browse();
+			}
+			parent_id = row.getInt("id");
+			for (ODataRow child : row.getO2MRecord("child_ids").browseEach()) {
+				mailIds.add(child.getInt("id"));
+			}
+			mailIds.add(parent_id);
+			Object default_model = false;
+			Object default_res_id = false;
+			default_model = row.get("model");
+			default_res_id = row.get("res_id");
+			JSONObject newContext = new JSONObject();
+			newContext.put("default_parent_id", parent_id);
+			newContext.put("default_model", default_model);
+			newContext.put("default_res_id", default_res_id);
+
+			OArguments args = new OArguments();
+			args.add(new JSONArray(mailIds.toString()));
+			args.add(!to_read);
+			args.add(true);
+			args.add(newContext);
+			Integer updated = (Integer) getSyncHelper().callMethod(
+					"set_message_read", args, null);
+			if (updated > 0) {
+				for (int id : mailIds) {
+					OValues values = new OValues();
+					values.put("is_dirty", 0);
+					resolver().update(selectRowId(id), values);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public boolean markAsRead(ODataRow row, Boolean is_read) {
 		try {
 			List<Integer> mIds = new ArrayList<Integer>();
 			List<ODataRow> childs = new ArrayList<ODataRow>();
-			Object default_model = false;
-			Object default_res_id = false;
 			ODataRow parent = ((Integer) row.getM2ORecord("parent_id").getId() == 0) ? row
 					: row.getM2ORecord("parent_id").browse();
+			Object default_model = false;
+			Object default_res_id = false;
 			default_model = parent.get("model");
 			default_res_id = parent.get("res_id");
 			mIds.add(parent.getInt("id"));
