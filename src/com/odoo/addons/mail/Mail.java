@@ -36,19 +36,22 @@ import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.sql.OQuery;
 import com.odoo.support.AppScope;
+import com.odoo.support.fragment.AsyncTaskListener;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.support.fragment.OnSearchViewChangeListener;
 import com.odoo.support.fragment.SyncStatusObserverListener;
 import com.odoo.support.listview.OCursorListAdapter;
+import com.odoo.support.listview.OCursorListAdapter.OnRowViewClickListener;
 import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
+import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class Mail extends BaseFragment implements OnRefreshListener,
 		LoaderManager.LoaderCallbacks<Cursor>, SyncStatusObserverListener,
 		OnItemClickListener, OnSearchViewChangeListener, OnViewBindListener,
-		OnClickListener {
+		OnClickListener, OnRowViewClickListener {
 
 	public static final String TAG = Mail.class.getSimpleName();
 	public static final String KEY = "fragment_mail";
@@ -105,6 +108,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		mailList.setEmptyView(mView.findViewById(R.id.loadingProgress));
 		mFab.listenTo(mailList);
 		mFab.setOnClickListener(this);
+		mAdapter.setOnRowViewClickListener(R.id.img_starred_mlist, this);
 		OControls.setVisible(view, R.id.loadingProgress);
 		OControls.setGone(view, R.id.emptyView);
 		getLoaderManager().initLoader(0, null, this);
@@ -404,5 +408,55 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		}
 		OControls.setImage(mView, R.id.emptyListIcon, icon);
 		OControls.setText(mView, R.id.emptyListMessage, _s(str));
+	}
+
+	private void restartLoader() {
+		getLoaderManager().restartLoader(0, null, this);
+	}
+
+	@Override
+	public void onRowViewClick(int position, Cursor cursor, View view,
+			View parent) {
+		final Cursor c = cursor;
+		switch (view.getId()) {
+		case R.id.img_starred_mlist:
+			OLog.log("Row Starred Clicked");
+			String starred = "";
+			starred = c.getString(c.getColumnIndex("starred"));
+			final boolean is_fav = !starred.equals("1");
+			if (inNetwork()) {
+				ImageView imgStarred = (ImageView) view;
+				imgStarred.setColorFilter((is_fav) ? Color
+						.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
+				// markAsTodo
+				newBackgroundTask(new AsyncTaskListener() {
+
+					@Override
+					public Object onPerformTask() {
+						MailMessage mail = (MailMessage) db();
+						mail.markAsTodo(c, is_fav);
+						return null;
+					}
+
+					@Override
+					public void onFinish(Object result) {
+						getActivity().runOnUiThread(new Runnable() {
+
+							@Override
+							public void run() {
+								restartLoader();
+							}
+						});
+					}
+				}).execute();
+			} else {
+				Toast.makeText(getActivity(), _s(R.string.no_connection),
+						Toast.LENGTH_SHORT).show();
+			}
+			break;
+
+		default:
+			break;
+		}
 	}
 }

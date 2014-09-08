@@ -8,13 +8,16 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.base.ir.Attachments;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.ORelIds;
 import com.odoo.orm.OValues;
+import com.odoo.util.OControls;
 import com.odoo.util.ODate;
+import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class ComposeMail extends Activity {
@@ -120,7 +123,9 @@ public class ComposeMail extends Activity {
 						values.getString("subject"), values.getString("body"),
 						mMailId, mParentMail.getInt("total_childs"));
 				Intent data = new Intent();
-				data.putExtra(MailDetail.KEY_MESSAGE_REPLY_ID, replyId);
+				data.getExtras().getInt("" + MailDetail.KEY_MESSAGE_REPLY_ID);
+				// data.getExtras().getInt(""+replyId);
+				// data.getExtras(MailDetail.KEY_MESSAGE_REPLY_ID, replyId);
 				setResult(RESULT_OK, data);
 				finish();
 			} else {

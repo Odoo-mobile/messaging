@@ -173,7 +173,7 @@ public class MailMessage extends OModel {
 			return (noti.contains("is_read")) ? !noti.getBoolean("is_read")
 					: !noti.getBoolean("read");
 		} catch (Exception e) {
-
+			e.printStackTrace();
 		}
 		return vals.getBoolean("to_read");
 	}

@@ -2,14 +2,11 @@ package com.odoo.addons.mail;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import odoo.OArguments;
-import odoo.controls.OField;
-
 import org.json.JSONArray;
-
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
@@ -27,10 +24,10 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
@@ -52,7 +49,7 @@ public class MailDetail extends BaseFragment implements
 	public static final String KEY_MESSAGE_ID = "mail_id";
 	public static final String KEY_SUBJECT = "mail_subject";
 	public static final String KEY_BODY = "mail_body";
-	public static final String KEY_MESSAGE_REPLY_ID = "mail_reply_id";
+	public static final int KEY_MESSAGE_REPLY_ID = 125;
 	private Context mContext = null;
 	private Integer mMailId = null;
 	private String selection = null;
@@ -63,7 +60,8 @@ public class MailDetail extends BaseFragment implements
 	private int[] background_resources = new int[] {
 			R.drawable.message_listview_bg_toread_selector,
 			R.drawable.message_listview_bg_tonotread_selector };
-	private ImageView imgBtn_send_reply;
+	private ImageView imgBtn_send_reply, btnStartFullComposeMode;
+	private LinearLayout voteCounter;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -81,6 +79,7 @@ public class MailDetail extends BaseFragment implements
 		mView = view;
 		init();
 		imgBtn_send_reply.setOnClickListener(this);
+		btnStartFullComposeMode.setOnClickListener(this);
 		mailList = (ListView) view.findViewById(R.id.lstMessageDetail);
 		mAdapter = new OCursorListAdapter(mContext, null,
 				R.layout.mail_detail_parent_list_item);
@@ -98,6 +97,7 @@ public class MailDetail extends BaseFragment implements
 		mAdapter.setOnRowViewClickListener(R.id.imgBtn_mail_detail_starred,
 				this);
 		mAdapter.setOnRowViewClickListener(R.id.imgBtn_mail_detail_rate, this);
+		mAdapter.setOnRowViewClickListener(R.id.voteCounter, this);
 		mAdapter.setOnViewBindListener(this);
 		mailList.setAdapter(mAdapter);
 		getLoaderManager().initLoader(0, null, this);
@@ -113,6 +113,9 @@ public class MailDetail extends BaseFragment implements
 	public void init() {
 		imgBtn_send_reply = (ImageView) mView
 				.findViewById(R.id.btnSendQuickReply);
+		btnStartFullComposeMode = (ImageView) mView
+				.findViewById(R.id.btnStartFullComposeMode);
+		voteCounter = (LinearLayout) mView.findViewById(R.id.voteCounter);
 		if (mMailId != null) {
 			ODataRow parent = db().select(mMailId);
 			if (parent.getInt("id") == 0) {
@@ -130,12 +133,12 @@ public class MailDetail extends BaseFragment implements
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_mail_read:
+			// Fix me (Update Notification or MailMessage)
 			// new MailMessage(mContext).markAsRead(row, is_read);
 			break;
 		case R.id.menu_mail_unread:
 			// new MailMessage(mContext).markAsRead(row, !is_read);
 			break;
-
 		default:
 			break;
 		}
@@ -171,7 +174,7 @@ public class MailDetail extends BaseFragment implements
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.menu_mail_detail, menu);
-		// Fix me (check if mail is read or unread) then hide menu alternativly
+		// Fix me (check if mail is read or unread) then hide menu alternatively
 		// MenuItem item = menu.findItem(R.id.menu_mail_read);
 		// item.setVisible(false);
 	}
@@ -192,9 +195,8 @@ public class MailDetail extends BaseFragment implements
 			View parent) {
 		MailMessage mail = new MailMessage(mContext);
 		final Cursor c = cursor;
-
 		switch (view.getId()) {
-		case R.id.imgBtn_mail_detail_rate:
+		case R.id.voteCounter:
 			if (inNetwork()) {
 				try {
 					int mail_id = c.getInt(c.getColumnIndex("id"));
@@ -205,10 +207,10 @@ public class MailDetail extends BaseFragment implements
 							"vote_toggle", args);
 					ImageView imgVote = (ImageView) view
 							.findViewById(R.id.imgBtn_mail_detail_rate);
-					OField voteCounter = (OField) view
-							.findViewById(R.id.voteCounter);
+					TextView voteCounter = (TextView) view
+							.findViewById(R.id.txv_voteCounter);
 					int votes = (!voteCounter.getText().equals("")) ? Integer
-							.parseInt(voteCounter.getText()) : 0;
+							.parseInt(voteCounter.getText().toString()) : 0;
 					boolean has_voted = false;
 					if (response) {
 						// Vote up
@@ -306,12 +308,11 @@ public class MailDetail extends BaseFragment implements
 
 	@Override
 	public void onClick(View v) {
+		EditText edt = (EditText) mView.findViewById(R.id.edtQuickReplyMessage);
 		switch (v.getId()) {
 		case R.id.btnSendQuickReply:
 			ODataRow parent = db().select(mMailId);
 			MailMessage mail = new MailMessage(mContext);
-			EditText edt = (EditText) mView
-					.findViewById(R.id.edtQuickReplyMessage);
 			edt.setError(null);
 			if (TextUtils.isEmpty(edt.getText())) {
 				edt.setError("Message required");
@@ -335,6 +336,17 @@ public class MailDetail extends BaseFragment implements
 				}
 				OControls.setText(mView, R.id.edtQuickReplyMessage, "");
 			}
+			break;
+		case R.id.btnStartFullComposeMode:
+			Bundle bundle = new Bundle();
+			bundle.putInt(KEY_MESSAGE_ID, mMailId);
+			bundle.putString(KEY_SUBJECT,
+					"Re: " + OControls.getText(mView, R.id.txvDetailSubject));
+			bundle.putString(KEY_BODY,
+					OControls.getText(mView, R.id.edtQuickReplyMessage));
+			Intent intent = new Intent(getActivity(), ComposeMail.class);
+			intent.putExtras(bundle);
+			startActivityForResult(intent, KEY_MESSAGE_REPLY_ID);
 			break;
 		default:
 			break;
