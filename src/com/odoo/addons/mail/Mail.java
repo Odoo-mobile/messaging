@@ -51,7 +51,6 @@ import com.odoo.support.listview.OCursorListAdapter.OnRowViewClickListener;
 import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
-import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class Mail extends BaseFragment implements OnRefreshListener,
@@ -432,7 +431,6 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		final Cursor c = cursor;
 		switch (view.getId()) {
 		case R.id.img_starred_mlist:
-			OLog.log("Row Starred Clicked");
 			String starred = "";
 			starred = c.getString(c.getColumnIndex("starred"));
 			final boolean is_fav = !starred.equals("1");

@@ -32,7 +32,6 @@ import com.odoo.support.service.OSyncFinishListener;
 import com.odoo.support.service.OSyncService;
 import com.odoo.util.JSONUtils;
 import com.odoo.util.ONotificationHelper;
-import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailSyncService extends OSyncService implements
@@ -201,7 +200,6 @@ public class MailSyncService extends OSyncService implements
 	}
 
 	private void _updateDownStream(OUser user) {
-		OLog.log("_updateDownStream()");
 		Context context = getApplicationContext();
 		App app = (App) context;
 		MailMessage mail = new MailMessage(context);
@@ -270,7 +268,6 @@ public class MailSyncService extends OSyncService implements
 					JSONArray records = result.getJSONArray("records");
 					if (records.length() > 0) {
 						JSONObject record = records.getJSONObject(0);
-						OLog.log(records + " <<");
 						server_id = record.getInt("id");
 						OValues vals = new OValues();
 						vals.put("id", server_id);
@@ -288,7 +285,6 @@ public class MailSyncService extends OSyncService implements
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		OLog.log(pIds + " <");
 		return pIds;
 	}
 }
