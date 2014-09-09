@@ -155,6 +155,11 @@
             android:authorities="com.odoo.mail.base.res.providers.partners"
             android:exported="false"
             android:multiprocess="true" />
+        <provider
+            android:name="com.odoo.base.mail.provider.MailFollowerProvider"
+            android:authorities="com.odoo.base.mail.provider.mailfollower"
+            android:exported="false"
+            android:multiprocess="true" />
 
         <!-- /Base Providers -->
         <!-- Contact service -->

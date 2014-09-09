@@ -35,5 +35,7 @@ When you process messages in your inbox, you can mark some as todo. From this me
     <string name="unable_to_find_attachment">Unable to find attachment!</string>
     <string name="undo">UNDO</string>
     <string name="label_odoo_mail">Odoo Mail</string>
+    <string name="toast_group_followed">Group Followed</string>
+    <string name="toast_group_unfollowed">Group Unfollowed</string>
 
 </resources>

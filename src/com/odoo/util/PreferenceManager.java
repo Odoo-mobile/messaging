@@ -64,4 +64,8 @@ public class PreferenceManager {
 		return Integer.parseInt(mPref.getString(key, default_value + ""));
 	}
 
+	public Boolean getBoolean(String key, Boolean defValue) {
+		return mPref.getBoolean(key, defValue);
+	}
+
 }

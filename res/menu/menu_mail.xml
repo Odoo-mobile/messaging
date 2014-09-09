@@ -8,11 +8,14 @@
         android:showAsAction="always|collapseActionView"
         android:title="@string/label_search">
     </item>
+    <!--
     <item
         android:id="@+id/menu_mail_create"
         android:icon="@drawable/ic_action_mail_compose"
         android:showAsAction="always"
         android:title="@string/label_mail_compose">
     </item>
+    -->
+
 
 </menu>

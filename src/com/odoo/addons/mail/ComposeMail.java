@@ -6,7 +6,9 @@ import odoo.controls.OField;
 import odoo.controls.OForm;
 import odoo.controls.OTagsView.NewTokenCreateListener;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,6 +23,7 @@ import com.odoo.orm.ODataRow;
 import com.odoo.orm.ORelIds;
 import com.odoo.orm.OValues;
 import com.odoo.util.ODate;
+import com.odoo.util.PreferenceManager;
 import com.openerp.R;
 
 public class ComposeMail extends Activity implements NewTokenCreateListener {
@@ -130,7 +133,24 @@ public class ComposeMail extends Activity implements NewTokenCreateListener {
 			finish();
 			return true;
 		case R.id.menu_mail_compose:
-			mailcompose();
+			if (getPref().getBoolean("confirm_send_mail", false)) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(this);
+				builder.setTitle("Send mail");
+				builder.setMessage("Send mail ?");
+				builder.setPositiveButton("Send",
+						new DialogInterface.OnClickListener() {
+
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								mailcompose();
+							}
+						});
+				builder.setNegativeButton("Cancel", null);
+				builder.show();
+			} else {
+				mailcompose();
+			}
 			return true;
 		case R.id.menu_add_files:
 			// mAttachment.requestAttachment(Attachment.Types.FILE);
@@ -142,6 +162,10 @@ public class ComposeMail extends Activity implements NewTokenCreateListener {
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private PreferenceManager getPref() {
+		return new PreferenceManager(this);
 	}
 
 	private void mailcompose() {

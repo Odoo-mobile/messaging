@@ -105,6 +105,10 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		mView = view;
+		init(mView);
+	}
+
+	private void init(View view) {
 		mTouch = scope.main().getTouchAttacher();
 		setHasSwipeRefreshView(view, R.id.swipe_container, this);
 		mFab = (FloatingActionButton) view.findViewById(R.id.fabbutton);
@@ -115,8 +119,10 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		mailList.setAdapter(mAdapter);
 		mailList.setOnItemClickListener(this);
 		mailList.setEmptyView(mView.findViewById(R.id.loadingProgress));
-		if (mType != Type.Archives)
-			mTouch.setSwipeableView(mailList, this);
+		if (getPref().getBoolean("archive_with_swipe", false)) {
+			if (mType != Type.Archives)
+				mTouch.setSwipeableView(mailList, this);
+		}
 		mFab.listenTo(mailList);
 		mFab.setOnClickListener(this);
 		mAdapter.setOnRowViewClickListener(R.id.img_starred_mlist, this);
@@ -238,6 +244,9 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 			argsList.add("0");
 			break;
 		case Group:
+			selection += " res_id = ? and model = ?";
+			argsList.add(getArguments().getInt(GroupsLoader.KEY) + "");
+			argsList.add("mail.group");
 			break;
 		}
 		args = argsList.toArray(new String[argsList.size()]);
@@ -312,9 +321,9 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.menu_mail_create:
-			Intent i = new Intent(getActivity(), ComposeMail.class);
-			startActivityForResult(i, REQUEST_COMPOSE_MAIL);
+		// case R.id.menu_mail_create:
+		// Intent i = new Intent(getActivity(), ComposeMail.class);
+		// startActivityForResult(i, REQUEST_COMPOSE_MAIL);
 		default:
 			break;
 		}
@@ -487,21 +496,29 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	}
 
 	private void showUndoBar() {
-		UndoBar undoBar = new UndoBar(getActivity());
-		undoBar.setMessage("Mail archived");
-		undoBar.setDuration(7000);
-		undoBar.setListener(this);
-		undoBar.show(true);
+		if (getPref().getBoolean("mail_show_undo_archive", true)) {
+			UndoBar undoBar = new UndoBar(getActivity());
+			undoBar.setMessage("Mail archived");
+			undoBar.setDuration(7000);
+			undoBar.setListener(this);
+			undoBar.show(true);
+		} else {
+			updateArchiveOnServer();
+		}
 	}
 
 	@Override
 	public void onHide() {
 		if (lastSwipedMail != -1) {
-			if (inNetwork()) {
-				MailMessage mail = (MailMessage) db();
-				mail.markMailReadUnread(lastSwipedMail, false);
-			}
+			updateArchiveOnServer();
 			lastSwipedMail = -1;
+		}
+	}
+
+	private void updateArchiveOnServer() {
+		if (inNetwork()) {
+			MailMessage mail = (MailMessage) db();
+			mail.markMailReadUnread(lastSwipedMail, false);
 		}
 	}
 
@@ -516,6 +533,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		values.put("to_read", (to_read) ? 1 : 0);
 		if (!inNetwork())
 			values.put("is_dirty", 1);
+		// values.put("is_dirty", true);
 		String selection = OColumn.ROW_ID + " = ? or parent_id = ?";
 		String[] args = new String[] { mailId + "", mailId + "" };
 		if (to_read) {

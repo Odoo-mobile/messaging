@@ -1,19 +1,31 @@
 package com.odoo.addons.mail.models;
 
+import java.util.List;
+
+import odoo.OArguments;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import android.content.Context;
+import android.net.Uri;
 
 import com.odoo.addons.mail.providers.group.MailGroupProvider;
 import com.odoo.base.mail.MailFollowers;
 import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
+import com.odoo.orm.OColumn.RelationType;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OModel;
+import com.odoo.orm.OSyncHelper;
+import com.odoo.orm.OValues;
 import com.odoo.orm.annotations.Odoo;
 import com.odoo.orm.types.OBlob;
 import com.odoo.orm.types.OBoolean;
 import com.odoo.orm.types.OText;
 import com.odoo.orm.types.OVarchar;
 import com.odoo.support.provider.OContentProvider;
+import com.odoo.util.JSONUtils;
 
 public class MailGroup extends OModel {
 	Context mContext = null;
@@ -25,6 +37,11 @@ public class MailGroup extends OModel {
 	OColumn has_joined = new OColumn("Joined", OBoolean.class);
 	@Odoo.Functional(method = "getUnreadMessageCount")
 	OColumn new_messages = new OColumn("New Messages", OVarchar.class);
+	OColumn message_follower_ids = new OColumn("Followers",
+			MailFollowers.class, RelationType.ManyToMany);
+	@Odoo.Functional(method = "hasFollowed", depends = { "message_follower_ids" }, store = true)
+	OColumn has_followed = new OColumn("Followed", OBoolean.class)
+			.setDefault(0).setLocalColumn();
 
 	public MailGroup(Context context) {
 		super(context, "mail.group");
@@ -40,6 +57,15 @@ public class MailGroup extends OModel {
 		return "";
 	}
 
+	public int hasFollowed(OValues vals) {
+		List<Integer> ids = JSONUtils.toList((JSONArray) vals
+				.get("message_follower_ids"));
+		if (ids.indexOf(user().getPartner_id()) > -1) {
+			return 1;
+		}
+		return 0;
+	}
+
 	public Boolean getJoined(ODataRow row) {
 		MailFollowers followers = new MailFollowers(mContext);
 		ResPartner partners = new ResPartner(mContext);
@@ -47,6 +73,27 @@ public class MailGroup extends OModel {
 				"res_model = ? and res_id = ? and partner_id = ?",
 				new Object[] { getModelName(), row.getInt("id"),
 						partners.selectRowId(user().getPartner_id()) }).size() > 0);
+	}
+
+	public void followUnfollowGroup(int group_id, boolean follow) {
+		try {
+			OSyncHelper sync = getSyncHelper();
+			OValues values = new OValues();
+			OArguments args = new OArguments();
+			args.add(new JSONArray().put(selectServerId(group_id)));
+			if (follow) {
+				// Action Follow
+				sync.callMethod("action_follow", args, new JSONObject());
+				values.put("has_followed", 1);
+			} else {
+				// Action unfollow
+				sync.callMethod("action_unfollow", args, new JSONObject());
+				values.put("has_followed", 0);
+			}
+			resolver().update(group_id, values);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -92,5 +139,13 @@ public class MailGroup extends OModel {
 	@Override
 	public OContentProvider getContentProvider() {
 		return new MailGroupProvider();
+	}
+
+	public Uri groupUri() {
+		Uri.Builder uriBuilder = new Uri.Builder();
+		uriBuilder.authority(authority());
+		uriBuilder.path(path() + "/groups");
+		uriBuilder.scheme("content");
+		return uriBuilder.build();
 	}
 }

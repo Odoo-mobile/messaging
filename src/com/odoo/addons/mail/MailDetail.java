@@ -7,8 +7,10 @@ import odoo.OArguments;
 
 import org.json.JSONArray;
 
+import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -43,6 +45,7 @@ import com.odoo.support.listview.OCursorListAdapter;
 import com.odoo.support.listview.OCursorListAdapter.OnRowViewClickListener;
 import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.util.OControls;
+import com.odoo.util.PreferenceManager;
 import com.odoo.util.drawer.DrawerItem;
 import com.openerp.R;
 
@@ -62,6 +65,7 @@ public class MailDetail extends BaseFragment implements
 	private OCursorListAdapter mAdapter;
 	private ImageView imgBtn_send_reply, btnStartFullComposeMode;
 	private Menu mMenu;
+	private PreferenceManager mPref;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -69,6 +73,7 @@ public class MailDetail extends BaseFragment implements
 		setHasOptionsMenu(true);
 		scope = new AppScope(this);
 		mContext = getActivity();
+		mPref = new PreferenceManager(mContext);
 		initArgs();
 		return inflater.inflate(R.layout.mail_detail_layout, container, false);
 	}
@@ -107,6 +112,10 @@ public class MailDetail extends BaseFragment implements
 		Bundle args = getArguments();
 		if (args.containsKey(OColumn.ROW_ID)) {
 			mMailId = args.getInt(OColumn.ROW_ID);
+			boolean autoArchive = mPref.getBoolean("mail_auto_archive", false);
+			if (autoArchive) {
+				archiveMail(false);
+			}
 		}
 	}
 
@@ -160,7 +169,11 @@ public class MailDetail extends BaseFragment implements
 		default:
 			break;
 		}
-		final boolean is_read = !to_read;
+		archiveMail(to_read);
+		return super.onOptionsItemSelected(item);
+	}
+
+	private void archiveMail(final Boolean to_read) {
 		toggleMailToRead(mMailId, to_read);
 		newBackgroundTask(new AsyncTaskListener() {
 
@@ -168,7 +181,7 @@ public class MailDetail extends BaseFragment implements
 			public Object onPerformTask() {
 				if (inNetwork()) {
 					MailMessage mail = new MailMessage(getActivity());
-					mail.markMailReadUnread(mMailId, !is_read);
+					mail.markMailReadUnread(mMailId, to_read);
 				}
 				return null;
 			}
@@ -178,7 +191,6 @@ public class MailDetail extends BaseFragment implements
 				restartLoader();
 			}
 		}).execute();
-		return super.onOptionsItemSelected(item);
 	}
 
 	@Override
@@ -389,33 +401,26 @@ public class MailDetail extends BaseFragment implements
 
 	@Override
 	public void onClick(View v) {
-		EditText edt = (EditText) mView.findViewById(R.id.edtQuickReplyMessage);
 		switch (v.getId()) {
 		case R.id.btnSendQuickReply:
-			ODataRow parent = db().select(mMailId);
-			MailMessage mail = new MailMessage(mContext);
-			edt.setError(null);
-			if (TextUtils.isEmpty(edt.getText())) {
-				edt.setError("Message required");
+			if (getPref().getBoolean("confirm_send_mail", false)) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						getActivity());
+				builder.setTitle("Send reply");
+				builder.setMessage("Send mail reply ?");
+				builder.setPositiveButton("Send",
+						new DialogInterface.OnClickListener() {
+
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								sendQuickMail();
+							}
+						});
+				builder.setNegativeButton("Cancel", null);
+				builder.show();
 			} else {
-				String subject = parent.getString("message_title");
-				String mail_body = OControls.getText(mView,
-						R.id.edtQuickReplyMessage);
-				ContentValues values = new ContentValues();
-				values.put("message_title", subject);
-				values.put("body", mail_body);
-				mail.sendQuickReply(subject, mail_body, mMailId,
-						parent.getInt("total_childs"));
-				getLoaderManager().restartLoader(0, null, this);
-				if (inNetwork()) {
-					scope.main().requestSync(MailProvider.AUTHORITY);
-					Toast.makeText(mContext, _s(R.string.reply_sent),
-							Toast.LENGTH_LONG).show();
-				} else {
-					Toast.makeText(mContext, _s(R.string.reply_cant_sent),
-							Toast.LENGTH_LONG).show();
-				}
-				OControls.setText(mView, R.id.edtQuickReplyMessage, "");
+				sendQuickMail();
 			}
 			break;
 		case R.id.btnStartFullComposeMode:
@@ -431,6 +436,35 @@ public class MailDetail extends BaseFragment implements
 			break;
 		default:
 			break;
+		}
+	}
+
+	private void sendQuickMail() {
+		EditText edt = (EditText) mView.findViewById(R.id.edtQuickReplyMessage);
+		ODataRow parent = db().select(mMailId);
+		MailMessage mail = new MailMessage(mContext);
+		edt.setError(null);
+		if (TextUtils.isEmpty(edt.getText())) {
+			edt.setError("Message required");
+		} else {
+			String subject = parent.getString("message_title");
+			String mail_body = OControls.getText(mView,
+					R.id.edtQuickReplyMessage);
+			ContentValues values = new ContentValues();
+			values.put("message_title", subject);
+			values.put("body", mail_body);
+			mail.sendQuickReply(subject, mail_body, mMailId,
+					parent.getInt("total_childs"));
+			getLoaderManager().restartLoader(0, null, this);
+			if (inNetwork()) {
+				scope.main().requestSync(MailProvider.AUTHORITY);
+				Toast.makeText(mContext, _s(R.string.reply_sent),
+						Toast.LENGTH_LONG).show();
+			} else {
+				Toast.makeText(mContext, _s(R.string.reply_cant_sent),
+						Toast.LENGTH_LONG).show();
+			}
+			OControls.setText(mView, R.id.edtQuickReplyMessage, "");
 		}
 	}
 }

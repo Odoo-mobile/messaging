@@ -94,7 +94,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@drawable/oe_background_selector"
-                android:clickable="true"
                 android:padding="5dp"
                 android:src="@drawable/ic_action_starred"
                 android:tint="#aaaaaa" />
@@ -105,7 +104,6 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@drawable/oe_background_selector"
-                android:clickable="true"
                 android:gravity="center"
                 android:orientation="horizontal" >
 
