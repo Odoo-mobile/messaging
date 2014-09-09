@@ -40,6 +40,7 @@ import com.odoo.OTouchListener;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
+import com.odoo.orm.ODataRow;
 import com.odoo.orm.sql.OQuery;
 import com.odoo.support.AppScope;
 import com.odoo.support.fragment.AsyncTaskListener;
@@ -363,7 +364,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	}
 
 	@Override
-	public void onViewBind(View view, Cursor cr) {
+	public void onViewBind(View view, Cursor cr, ODataRow row) {
 		// Setting background as per to_read
 		int to_read = cr.getInt(cr.getColumnIndex("to_read"));
 		view.setBackgroundResource(background_resources[to_read]);

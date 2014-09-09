@@ -21,6 +21,7 @@ import android.widgets.SwipeRefreshLayout.OnRefreshListener;
 
 import com.odoo.addons.mail.models.MailGroup;
 import com.odoo.addons.mail.providers.group.MailGroupProvider;
+import com.odoo.orm.ODataRow;
 import com.odoo.support.AppScope;
 import com.odoo.support.fragment.AsyncTaskListener;
 import com.odoo.support.fragment.BaseFragment;
@@ -203,7 +204,7 @@ public class Groups extends BaseFragment implements LoaderCallbacks<Cursor>,
 	}
 
 	@Override
-	public void onViewBind(View view, Cursor cursor) {
+	public void onViewBind(View view, Cursor cursor, ODataRow row) {
 		int followed = cursor.getInt(cursor.getColumnIndex("has_followed"));
 		view.findViewById(R.id.btnJoinGroup).setVisibility(
 				(followed == 1) ? View.GONE : View.VISIBLE);

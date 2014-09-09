@@ -2,7 +2,7 @@
 <odoo.controls.OForm xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res/com.openerp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:background="?android:selectableItemBackground"
     android:orientation="vertical"
     app:model="ir.attachment" >

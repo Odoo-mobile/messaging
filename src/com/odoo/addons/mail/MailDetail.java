@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import odoo.OArguments;
+import odoo.controls.OField;
+import odoo.controls.OForm.OnViewClickListener;
 
 import org.json.JSONArray;
 
@@ -35,6 +37,7 @@ import android.widget.Toast;
 
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
+import com.odoo.base.ir.Attachments;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OSyncHelper;
@@ -42,6 +45,7 @@ import com.odoo.support.AppScope;
 import com.odoo.support.fragment.AsyncTaskListener;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.support.listview.OCursorListAdapter;
+import com.odoo.support.listview.OCursorListAdapter.BeforeBindUpdateData;
 import com.odoo.support.listview.OCursorListAdapter.OnRowViewClickListener;
 import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.util.OControls;
@@ -51,7 +55,7 @@ import com.openerp.R;
 
 public class MailDetail extends BaseFragment implements
 		LoaderCallbacks<Cursor>, OnRowViewClickListener, OnViewBindListener,
-		OnClickListener {
+		OnClickListener, BeforeBindUpdateData, OnViewClickListener {
 	public static final String KEY_MESSAGE_ID = "mail_id";
 	public static final String KEY_SUBJECT = "mail_subject";
 	public static final String KEY_BODY = "mail_body";
@@ -66,6 +70,7 @@ public class MailDetail extends BaseFragment implements
 	private ImageView imgBtn_send_reply, btnStartFullComposeMode;
 	private Menu mMenu;
 	private PreferenceManager mPref;
+	private Attachments mAttachment;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -74,6 +79,7 @@ public class MailDetail extends BaseFragment implements
 		scope = new AppScope(this);
 		mContext = getActivity();
 		mPref = new PreferenceManager(mContext);
+		mAttachment = new Attachments(mContext);
 		initArgs();
 		return inflater.inflate(R.layout.mail_detail_layout, container, false);
 	}
@@ -101,6 +107,7 @@ public class MailDetail extends BaseFragment implements
 		});
 		mAdapter.setOnRowViewClickListener(R.id.imgBtn_mail_detail_starred,
 				this);
+		mAdapter.setBeforeBindUpdateData(this);
 		mAdapter.setOnRowViewClickListener(R.id.voteCounter, this);
 		mAdapter.setOnRowViewClickListener(R.id.voteCounter, this);
 		mAdapter.setOnViewBindListener(this);
@@ -359,7 +366,7 @@ public class MailDetail extends BaseFragment implements
 	}
 
 	@Override
-	public void onViewBind(View view, Cursor cr) {
+	public void onViewBind(View view, Cursor cr, ODataRow row) {
 		// Setting starred color
 		ImageView imgStarred = (ImageView) view
 				.findViewById(R.id.imgBtn_mail_detail_starred);
@@ -367,8 +374,6 @@ public class MailDetail extends BaseFragment implements
 		String is_fav = cr.getString(cr.getColumnIndex("starred"));
 		imgStarred.setColorFilter((is_fav.equals("1")) ? Color
 				.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
-		ODataRow row = db()
-				.select(cr.getInt(cr.getColumnIndex(OColumn.ROW_ID)));
 		List<Integer> voters_id = row.getM2MRecord("vote_user_ids").getRelIds();
 		int voters = voters_id.size();
 		if (voters > 0) {
@@ -396,6 +401,13 @@ public class MailDetail extends BaseFragment implements
 				childs = replies + " replies";
 			}
 			totalChilds.setText(childs);
+		}
+		OField mfield = (OField) view.findViewById(R.id.msgAttachments);
+		if (row.getM2MRecord("attachment_ids").getRelIds().size() > 0) {
+			mfield.setOnItemClickListener(this);
+			mfield.reInit();
+		} else {
+			mfield.setVisibility(View.GONE);
 		}
 	}
 
@@ -466,5 +478,15 @@ public class MailDetail extends BaseFragment implements
 			}
 			OControls.setText(mView, R.id.edtQuickReplyMessage, "");
 		}
+	}
+
+	@Override
+	public ODataRow updateDataRow(Cursor cr) {
+		return db().select(cr.getInt(cr.getColumnIndex(OColumn.ROW_ID)));
+	}
+
+	@Override
+	public void onFormViewClick(View view, ODataRow row) {
+		mAttachment.downloadAttachment(row.getInt(OColumn.ROW_ID));
 	}
 }
