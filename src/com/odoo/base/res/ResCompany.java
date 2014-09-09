@@ -46,4 +46,9 @@ public class ResCompany extends OModel {
 	public Boolean canUpdateToServer() {
 		return false;
 	}
+
+	@Override
+	public Boolean canDeleteFromServer() {
+		return false;
+	}
 }

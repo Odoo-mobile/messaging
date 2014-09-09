@@ -1,26 +1,29 @@
 package com.odoo.addons.mail;
 
+import java.util.List;
+
 import odoo.controls.OField;
 import odoo.controls.OForm;
+import odoo.controls.OTagsView.NewTokenCreateListener;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
 
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.base.ir.Attachments;
+import com.odoo.base.res.ResPartner;
+import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.ORelIds;
 import com.odoo.orm.OValues;
-import com.odoo.util.OControls;
 import com.odoo.util.ODate;
-import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
-public class ComposeMail extends Activity {
+public class ComposeMail extends Activity implements NewTokenCreateListener {
 	public static final String TAG = "com.odoo.addons.mail.ComposeMail";
 	private Context mContext = null;
 	private Attachments mAttachment = null;
@@ -42,24 +45,51 @@ public class ComposeMail extends Activity {
 		init();
 		mForm = (OForm) findViewById(R.id.mComposeMailForm);
 		Bundle bundle = getIntent().getExtras();
+		OField fieldPartners = (OField) mForm.findViewById(R.id.fieldPartners);
 		if (bundle != null && bundle.containsKey(MailDetail.KEY_MESSAGE_ID)) {
 			mMailId = bundle.getInt(MailDetail.KEY_MESSAGE_ID);
 			mParentMail = mail.select(mMailId);
-			OField partners = (OField) mForm.findViewById(R.id.fieldPartners);
-			partners.setObjectEditable(false);
+			fieldPartners.setObjectEditable(false);
 			setTitle(getResources().getString(R.string.title_replay_mail));
 			mForm.initForm(mParentMail, true);
 		}
 		initControls();
-		if (bundle != null && bundle.containsKey(MailDetail.KEY_SUBJECT)) {
+		fieldPartners.setOnNewTokenCreateListener(this);
+		if (bundle != null) {
+			String subject_text = "";
+			if (bundle.containsKey(MailDetail.KEY_SUBJECT)) {
+				subject_text = bundle.getString(MailDetail.KEY_SUBJECT);
+			}
+			if (bundle.containsKey(Intent.EXTRA_SUBJECT)) {
+				subject_text = bundle.getString(Intent.EXTRA_SUBJECT);
+			}
 			OField subject = (OField) mForm.findViewById(R.id.fieldSubject);
-			subject.setText(getIntent().getExtras().getString(
-					MailDetail.KEY_SUBJECT));
+			subject.setText(subject_text);
 		}
-		if (bundle != null && bundle.containsKey(MailDetail.KEY_BODY)) {
+		if (bundle != null) {
+			String body_text = "";
+			if (bundle.containsKey(MailDetail.KEY_BODY)) {
+				body_text = bundle.getString(MailDetail.KEY_BODY);
+			}
+			if (bundle.containsKey(Intent.EXTRA_TEXT)) {
+				body_text = bundle.getString(Intent.EXTRA_TEXT);
+			}
 			OField body = (OField) mForm.findViewById(R.id.fieldBody);
-			body.setText(getIntent().getExtras().getString(MailDetail.KEY_BODY));
+			body.setText(body_text);
 			body.requestFocus();
+		}
+
+		// Check for third party mails
+		String action = getIntent().getAction();
+		if (action != null) {
+			if (action.equals(Intent.ACTION_VIEW)
+					|| action.equals(Intent.ACTION_SENDTO)) {
+				Uri uri = getIntent().getData();
+				if (uri.getScheme().equals("mailto")) {
+					String email = uri.getSchemeSpecificPart();
+					fieldPartners.addTagObject(quickPartnerCreate(email));
+				}
+			}
 		}
 	}
 
@@ -119,13 +149,11 @@ public class ComposeMail extends Activity {
 		values = mForm.getFormValues();
 		if (values != null) {
 			if (mMailId != null) {
-				Integer replyId = mail.sendQuickReply(
-						values.getString("subject"), values.getString("body"),
-						mMailId, mParentMail.getInt("total_childs"));
+				int mailId = mail.sendQuickReply(values.getString("subject"),
+						values.getString("body"), mMailId,
+						mParentMail.getInt("total_childs"));
 				Intent data = new Intent();
-				data.getExtras().getInt("" + MailDetail.KEY_MESSAGE_REPLY_ID);
-				// data.getExtras().getInt(""+replyId);
-				// data.getExtras(MailDetail.KEY_MESSAGE_REPLY_ID, replyId);
+				data.putExtra(Mail.KEY_MESSAGE_ID, mailId);
 				setResult(RESULT_OK, data);
 				finish();
 			} else {
@@ -148,6 +176,31 @@ public class ComposeMail extends Activity {
 				setResult(RESULT_OK, data);
 				finish();
 			}
+		}
+	}
+
+	@Override
+	public Object newTokenAddListener(String token) {
+		return quickPartnerCreate(token);
+	}
+
+	private ODataRow quickPartnerCreate(String email) {
+		ResPartner partner = new ResPartner(this);
+		List<ODataRow> records = partner.select("email = ? ",
+				new Object[] { email });
+		if (records.size() > 0) {
+			return records.get(0);
+		} else {
+			OValues vals = new OValues();
+			vals.put("name", email);
+			vals.put("email", email);
+			int id = partner.resolver().insert(vals);
+			ODataRow row = new ODataRow();
+			row.put(OColumn.ROW_ID, id);
+			row.put("name", email);
+			row.put("email", email);
+			row.put("image_small", false);
+			return row;
 		}
 	}
 }

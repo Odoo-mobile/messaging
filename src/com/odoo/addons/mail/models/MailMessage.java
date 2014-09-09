@@ -169,10 +169,12 @@ public class MailMessage extends OModel {
 	public Boolean getToRead(OValues vals) {
 		try {
 			JSONArray ids = (JSONArray) vals.get("notification_ids");
-			ODataRow noti = notification.select(ids.getInt(0));
-			if (noti != null)
-				return (noti.contains("is_read")) ? !noti.getBoolean("is_read")
-						: !noti.getBoolean("read");
+			if (ids.length() > 0) {
+				ODataRow noti = notification.select(ids.getInt(0));
+				if (noti != null)
+					return (noti.contains("is_read")) ? !noti
+							.getBoolean("is_read") : !noti.getBoolean("read");
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -182,10 +184,13 @@ public class MailMessage extends OModel {
 	public Boolean getStarred(OValues vals) {
 		try {
 			JSONArray ids = (JSONArray) vals.get("notification_ids");
-			ODataRow noti = notification.select(ids.getInt(0));
-			return noti.getBoolean("starred");
+			if (ids.length() > 0) {
+				ODataRow noti = notification.select(ids.getInt(0));
+				if (noti != null)
+					return noti.getBoolean("starred");
+			}
 		} catch (Exception e) {
-
+			e.printStackTrace();
 		}
 		return vals.getBoolean("starred");
 	}
