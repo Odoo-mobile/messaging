@@ -3,7 +3,6 @@ package com.odoo.addons.mail;
 import java.util.ArrayList;
 import java.util.List;
 
-import odoo.Odoo;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -20,7 +19,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 import android.widgets.SwipeRefreshLayout.OnRefreshListener;
 
-import com.odoo.App;
 import com.odoo.addons.mail.models.MailGroup;
 import com.odoo.addons.mail.providers.group.MailGroupProvider;
 import com.odoo.support.AppScope;
@@ -34,18 +32,14 @@ import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
 import com.openerp.R;
 
-public class GroupsLoader extends BaseFragment implements
-		LoaderCallbacks<Cursor>, OnRefreshListener, SyncStatusObserverListener,
-		OnItemClickListener, OnRowViewClickListener, OnViewBindListener {
-	public static final String TAG = "com.odoo.addons.mail.GroupsLoader";
-	private App mApp = null;
+public class Groups extends BaseFragment implements LoaderCallbacks<Cursor>,
+		OnRefreshListener, SyncStatusObserverListener, OnItemClickListener,
+		OnRowViewClickListener, OnViewBindListener {
+	public static final String TAG = Groups.class.getSimpleName();
 	private Context mContext = null;
 	private OCursorListAdapter mAdapter;
 	private ListView groupList = null;
 	public static final String KEY = "group_id";
-	private Odoo odoo = null;
-
-	// private JoinUnfollowGroup mJoinUnfollowGroup = null;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -53,9 +47,6 @@ public class GroupsLoader extends BaseFragment implements
 		mContext = getActivity();
 		setHasOptionsMenu(true);
 		setHasSyncStatusObserver(TAG, this, db());
-		mApp = (App) getActivity().getApplicationContext();
-		if (mApp.inNetwork())
-			odoo = mApp.getOdoo();
 		scope = new AppScope(mContext);
 		return inflater.inflate(R.layout.groups, container, false);
 	}
@@ -90,7 +81,7 @@ public class GroupsLoader extends BaseFragment implements
 	}
 
 	private Fragment object(String value) {
-		GroupsLoader group = new GroupsLoader();
+		Groups group = new Groups();
 		Bundle bundle = new Bundle();
 		bundle.putString("group", value);
 		group.setArguments(bundle);

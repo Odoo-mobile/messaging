@@ -16,7 +16,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.odoo.addons.mail.models.MailMessage;
-import com.odoo.base.ir.Attachments;
 import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
@@ -27,9 +26,9 @@ import com.odoo.util.PreferenceManager;
 import com.openerp.R;
 
 public class ComposeMail extends Activity implements NewTokenCreateListener {
-	public static final String TAG = "com.odoo.addons.mail.ComposeMail";
+	public static final String TAG = ComposeMail.class.getSimpleName();
 	private Context mContext = null;
-	private Attachments mAttachment = null;
+	// private Attachments mAttachment = null;
 	private MailMessage mail = null;
 	private OForm mForm = null;
 	private Integer mMailId = null;
@@ -98,7 +97,7 @@ public class ComposeMail extends Activity implements NewTokenCreateListener {
 
 	private void init() {
 		mContext = this;
-		mAttachment = new Attachments(mContext);
+		// mAttachment = new Attachments(mContext);
 		mail = new MailMessage(mContext);
 	}
 

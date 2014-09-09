@@ -8,14 +8,11 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.content.Context;
-import android.net.Uri;
 
 import com.odoo.addons.mail.providers.group.MailGroupProvider;
 import com.odoo.base.mail.MailFollowers;
-import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.OColumn.RelationType;
-import com.odoo.orm.ODataRow;
 import com.odoo.orm.OModel;
 import com.odoo.orm.OSyncHelper;
 import com.odoo.orm.OValues;
@@ -33,10 +30,6 @@ public class MailGroup extends OModel {
 	OColumn name = new OColumn("Name", OVarchar.class, 64);
 	OColumn description = new OColumn("Description", OText.class);
 	OColumn image_medium = new OColumn("Image_Medium", OBlob.class);
-	@Odoo.Functional(method = "getJoined")
-	OColumn has_joined = new OColumn("Joined", OBoolean.class);
-	@Odoo.Functional(method = "getUnreadMessageCount")
-	OColumn new_messages = new OColumn("New Messages", OVarchar.class);
 	OColumn message_follower_ids = new OColumn("Followers",
 			MailFollowers.class, RelationType.ManyToMany);
 	@Odoo.Functional(method = "hasFollowed", depends = { "message_follower_ids" }, store = true)
@@ -48,15 +41,6 @@ public class MailGroup extends OModel {
 		mContext = context;
 	}
 
-	public String getUnreadMessageCount(ODataRow row) {
-		MailMessage mails = new MailMessage(mContext);
-		int count = mails.count("res_id = ? and model = ? and to_read = ?",
-				new Object[] { row.getInt("id"), getModelName(), true });
-		if (count > 0)
-			return count + " ";
-		return "";
-	}
-
 	public int hasFollowed(OValues vals) {
 		List<Integer> ids = JSONUtils.toList((JSONArray) vals
 				.get("message_follower_ids"));
@@ -64,15 +48,6 @@ public class MailGroup extends OModel {
 			return 1;
 		}
 		return 0;
-	}
-
-	public Boolean getJoined(ODataRow row) {
-		MailFollowers followers = new MailFollowers(mContext);
-		ResPartner partners = new ResPartner(mContext);
-		return (followers.select(
-				"res_model = ? and res_id = ? and partner_id = ?",
-				new Object[] { getModelName(), row.getInt("id"),
-						partners.selectRowId(user().getPartner_id()) }).size() > 0);
 	}
 
 	public void followUnfollowGroup(int group_id, boolean follow) {

@@ -181,7 +181,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 			query.addWhere("id", "=", 0);
 			break;
 		case Group:
-			Integer group_id = getArguments().getInt(GroupsLoader.KEY);
+			Integer group_id = getArguments().getInt(Groups.KEY);
 			query.addWhere("res_id", "=", group_id);
 			query.addWhere("model", "=", "mail.group");
 			break;
@@ -245,7 +245,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 			break;
 		case Group:
 			selection += " res_id = ? and model = ?";
-			argsList.add(getArguments().getInt(GroupsLoader.KEY) + "");
+			argsList.add(getArguments().getInt(Groups.KEY) + "");
 			argsList.add("mail.group");
 			break;
 		}
@@ -302,7 +302,6 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		Cursor cr = (Cursor) mAdapter.getItem(position);
 		int _id = cr.getInt(cr.getColumnIndex(OColumn.ROW_ID));
 		int record_id = cr.getInt(cr.getColumnIndex("id"));
-		// MailDetail mDetail = new MailDetail();
 		MailDetail mDetail = new MailDetail();
 		Bundle bundle = new Bundle();
 		bundle.putInt(OColumn.ROW_ID, _id);
@@ -533,7 +532,6 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		values.put("to_read", (to_read) ? 1 : 0);
 		if (!inNetwork())
 			values.put("is_dirty", 1);
-		// values.put("is_dirty", true);
 		String selection = OColumn.ROW_ID + " = ? or parent_id = ?";
 		String[] args = new String[] { mailId + "", mailId + "" };
 		if (to_read) {
