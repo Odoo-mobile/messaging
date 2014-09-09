@@ -61,6 +61,7 @@ public class MailDetail extends BaseFragment implements
 	private ListView mailList = null;
 	private OCursorListAdapter mAdapter;
 	private ImageView imgBtn_send_reply, btnStartFullComposeMode;
+	private Menu mMenu;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -127,19 +128,56 @@ public class MailDetail extends BaseFragment implements
 		}
 	}
 
+	private void toggleMailToRead(int mailId, boolean to_read) {
+		ContentValues values = new ContentValues();
+		values.put("to_read", (to_read) ? 1 : 0);
+		if (!inNetwork())
+			values.put("is_dirty", 1);
+		String selection = OColumn.ROW_ID + " = ? or parent_id = ?";
+		String[] args = new String[] { mailId + "", mailId + "" };
+		if (to_read) {
+			selection = OColumn.ROW_ID + " = ?";
+			args = new String[] { mailId + "" };
+		}
+		getActivity().getContentResolver().update(db().uri(), values,
+				selection, args);
+	}
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		Boolean to_read = false;
 		switch (item.getItemId()) {
 		case R.id.menu_mail_read:
-			// Fix me (Update Notification or MailMessage)
-			// new MailMessage(mContext).markAsRead(row, is_read);
+			to_read = false;
+			mMenu.findItem(R.id.menu_mail_unread).setVisible(true);
+			mMenu.findItem(R.id.menu_mail_read).setVisible(false);
 			break;
 		case R.id.menu_mail_unread:
-			// new MailMessage(mContext).markAsRead(row, !is_read);
+			to_read = true;
+			mMenu.findItem(R.id.menu_mail_unread).setVisible(false);
+			mMenu.findItem(R.id.menu_mail_read).setVisible(true);
 			break;
 		default:
 			break;
 		}
+		final boolean is_read = !to_read;
+		toggleMailToRead(mMailId, to_read);
+		newBackgroundTask(new AsyncTaskListener() {
+
+			@Override
+			public Object onPerformTask() {
+				if (inNetwork()) {
+					MailMessage mail = new MailMessage(getActivity());
+					mail.markMailReadUnread(mMailId, !is_read);
+				}
+				return null;
+			}
+
+			@Override
+			public void onFinish(Object result) {
+				restartLoader();
+			}
+		}).execute();
 		return super.onOptionsItemSelected(item);
 	}
 
@@ -172,15 +210,27 @@ public class MailDetail extends BaseFragment implements
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.menu_mail_detail, menu);
-		// Fix me (check if mail is read or unread) then hide menu alternatively
-		// MenuItem item = menu.findItem(R.id.menu_mail_read);
-		// item.setVisible(false);
+		mMenu = menu;
 	}
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> arg0, Cursor cursor) {
 		mAdapter.changeCursor(cursor);
-
+		boolean to_read_flag = false;
+		if (cursor.moveToFirst()) {
+			do {
+				int to_read = cursor.getInt(cursor.getColumnIndex("to_read"));
+				if (to_read == 1) {
+					to_read_flag = true;
+					break;
+				}
+			} while (cursor.moveToNext());
+		}
+		int menu = R.id.menu_mail_unread;
+		if (!to_read_flag) {
+			menu = R.id.menu_mail_read;
+		}
+		mMenu.findItem(menu).setVisible(false);
 	}
 
 	@Override
@@ -292,7 +342,8 @@ public class MailDetail extends BaseFragment implements
 	}
 
 	private void restartLoader() {
-		getLoaderManager().restartLoader(0, null, this);
+		if (getActivity() != null)
+			getLoaderManager().restartLoader(0, null, this);
 	}
 
 	@Override

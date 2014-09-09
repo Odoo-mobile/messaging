@@ -293,65 +293,6 @@ public class MailMessage extends OModel {
 		}
 	}
 
-	public boolean markAsRead(ODataRow row, Boolean is_read) {
-		try {
-			List<Integer> mIds = new ArrayList<Integer>();
-			List<ODataRow> childs = new ArrayList<ODataRow>();
-			ODataRow parent = ((Integer) row.getM2ORecord("parent_id").getId() == 0) ? row
-					: row.getM2ORecord("parent_id").browse();
-			Object default_model = false;
-			Object default_res_id = false;
-			default_model = parent.get("model");
-			default_res_id = parent.get("res_id");
-			mIds.add(parent.getInt("id"));
-			childs.addAll(parent.getO2MRecord("child_ids").browseEach());
-			for (ODataRow child : childs) {
-				mIds.add(child.getInt("id"));
-			}
-			JSONObject newContext = new JSONObject();
-			newContext.put("default_parent_id", parent.getInt("id"));
-			newContext.put("default_model", default_model);
-			newContext.put("default_res_id", default_res_id);
-
-			OArguments args = new OArguments();
-			args.add(new JSONArray(mIds.toString()));
-			args.add(is_read);
-			args.add(true);
-			args.add(newContext);
-			Integer updated = (Integer) getSyncHelper().callMethod(
-					"set_message_read", args, null);
-			if (updated > 0) {
-				OValues values = new OValues();
-				values.put("to_read", !is_read);
-				// updating local record
-				for (Integer id : mIds)
-					update(values, selectRowId(id));
-				// updating mail notification
-				values = new OValues();
-				if (notification.getColumn("is_read") != null)
-					values.put("is_read", is_read);
-				else
-					values.put("read", is_read);
-				for (Integer id : mIds) {
-					int message_id = selectRowId(id);
-					String where = "message_id = ?";
-					Object[] selection_args = new Object[] { message_id };
-					if (notification.count(where, selection_args) > 0)
-						notification.update(values, where, selection_args);
-					else {
-						values.put("message_id", message_id);
-						values.put("partner_id", author_id());
-						notification.create(values);
-					}
-				}
-			}
-			return true;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-
 	public String getPartnersName(ODataRow row) {
 		String partners = "to ";
 		List<String> partners_name = new ArrayList<String>();
