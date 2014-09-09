@@ -140,12 +140,4 @@ public class MailGroup extends OModel {
 	public OContentProvider getContentProvider() {
 		return new MailGroupProvider();
 	}
-
-	public Uri groupUri() {
-		Uri.Builder uriBuilder = new Uri.Builder();
-		uriBuilder.authority(authority());
-		uriBuilder.path(path() + "/groups");
-		uriBuilder.scheme("content");
-		return uriBuilder.build();
-	}
 }

@@ -181,7 +181,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 			query.addWhere("id", "=", 0);
 			break;
 		case Group:
-			Integer group_id = getArguments().getInt(Groups.KEY);
+			Integer group_id = getArguments().getInt(GroupsLoader.KEY);
 			query.addWhere("res_id", "=", group_id);
 			query.addWhere("model", "=", "mail.group");
 			break;
