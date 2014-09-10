@@ -1,5 +1,6 @@
 package com.odoo.addons.mail;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import odoo.controls.OField;
@@ -14,25 +15,37 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.odoo.addons.mail.models.MailMessage;
+import com.odoo.base.ir.Attachments;
+import com.odoo.base.ir.Attachments.Types;
+import com.odoo.base.ir.IrAttachment;
 import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.ORelIds;
 import com.odoo.orm.OValues;
+import com.odoo.util.OControls;
 import com.odoo.util.ODate;
 import com.odoo.util.PreferenceManager;
 import com.openerp.R;
 
-public class ComposeMail extends Activity implements NewTokenCreateListener {
+public class ComposeMail extends Activity implements NewTokenCreateListener,
+		OnClickListener {
 	public static final String TAG = ComposeMail.class.getSimpleName();
 	private Context mContext = null;
-	// private Attachments mAttachment = null;
+	private Attachments mAttachment = null;
 	private MailMessage mail = null;
 	private OForm mForm = null;
 	private Integer mMailId = null;
 	private ODataRow mParentMail = null;
+	private LinearLayout attachments = null;
 
 	enum AttachmentType {
 		IMAGE, FILE, CAPTURE_IMAGE, IMAGE_OR_CAPTURE_IMAGE, AUDIO, OTHER
@@ -45,6 +58,7 @@ public class ComposeMail extends Activity implements NewTokenCreateListener {
 		setResult(RESULT_CANCELED);
 		initActionbar();
 		init();
+		attachments = (LinearLayout) findViewById(R.id.attachments);
 		mForm = (OForm) findViewById(R.id.mComposeMailForm);
 		Bundle bundle = getIntent().getExtras();
 		OField fieldPartners = (OField) mForm.findViewById(R.id.fieldPartners);
@@ -97,7 +111,7 @@ public class ComposeMail extends Activity implements NewTokenCreateListener {
 
 	private void init() {
 		mContext = this;
-		// mAttachment = new Attachments(mContext);
+		mAttachment = new Attachments(mContext);
 		mail = new MailMessage(mContext);
 	}
 
@@ -105,12 +119,53 @@ public class ComposeMail extends Activity implements NewTokenCreateListener {
 		mForm.setEditable(true);
 	}
 
+	/**
+	 * Handling attachments
+	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == RESULT_OK) {
+			OValues values = mAttachment.handleResult(requestCode, data);
+			if (values != null) {
+				addAttachments(values.toDataRow());
 
+			} else {
+				Toast.makeText(this, "Unable to attach file !",
+						Toast.LENGTH_LONG).show();
+			}
 		}
 		super.onActivityResult(requestCode, resultCode, data);
+	}
+
+	private void addAttachments(ODataRow row) {
+		View view = createAttachmentView(attachments, row);
+		view.setTag(row);
+		attachments.addView(view);
+	}
+
+	private View createAttachmentView(ViewGroup parent, ODataRow row) {
+		View view = getLayoutInflater().inflate(
+				R.layout.mail_compose_attachment_item, parent, false);
+		view.findViewById(R.id.remove_attachment).setOnClickListener(this);
+		setViewData(row, view);
+		return view;
+	}
+
+	private void setViewData(ODataRow row, View view) {
+		if (row.getString("file_type").contains("image")) {
+			ImageView preview = (ImageView) view
+					.findViewById(R.id.attachment_preview);
+			preview.setImageURI(Uri.parse(row.getString("file_uri")));
+		}
+		OControls.setText(view, R.id.file_name, row.getString("name"));
+	}
+
+	@Override
+	public void onClick(View v) {
+		if (v.getId() == R.id.remove_attachment) {
+			View parent = (View) v.getParent().getParent().getParent();
+			attachments.removeView(parent);
+		}
 	}
 
 	private void initActionbar() {
@@ -152,11 +207,10 @@ public class ComposeMail extends Activity implements NewTokenCreateListener {
 			}
 			return true;
 		case R.id.menu_add_files:
-			// mAttachment.requestAttachment(Attachment.Types.FILE);
+			mAttachment.newAttachment(Types.FILE);
 			return true;
 		case R.id.menu_add_images:
-			// mAttachment
-			// .requestAttachment(Attachment.Types.IMAGE_OR_CAPTURE_IMAGE);
+			mAttachment.newAttachment(Types.IMAGE_OR_CAPTURE_IMAGE);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -171,10 +225,24 @@ public class ComposeMail extends Activity implements NewTokenCreateListener {
 		OValues values = new OValues();
 		values = mForm.getFormValues();
 		if (values != null) {
+			// Creating attachment lists
+			IrAttachment attachmentObj = new IrAttachment(this);
+			List<Integer> attachmentIds = new ArrayList<Integer>();
+			for (int i = 0; i < attachments.getChildCount(); i++) {
+				View attachment = attachments.getChildAt(i);
+				OValues vals = ((ODataRow) attachment.getTag()).toValues();
+				vals.put("res_model", false);
+				vals.put("res_id", 0);
+				vals.put("company_id", mail.user().getCompany_id());
+				attachmentIds.add(attachmentObj.resolver().insert(vals));
+			}
+			if (attachmentIds.size() > 0) {
+				values.put("attachment_ids", attachmentIds);
+			}
 			if (mMailId != null) {
-				int mailId = mail.sendQuickReply(values.getString("subject"),
-						values.getString("body"), mMailId,
-						mParentMail.getInt("total_childs"));
+				int mailId = mail.sendQuickReply(values,
+						values.getString("subject"), values.getString("body"),
+						mMailId, mParentMail.getInt("total_childs"));
 				Intent data = new Intent();
 				data.putExtra(Mail.KEY_MESSAGE_ID, mailId);
 				setResult(RESULT_OK, data);
@@ -226,4 +294,5 @@ public class ComposeMail extends Activity implements NewTokenCreateListener {
 			return row;
 		}
 	}
+
 }

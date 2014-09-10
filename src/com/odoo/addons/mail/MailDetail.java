@@ -9,6 +9,7 @@ import odoo.controls.OForm.OnViewClickListener;
 
 import org.json.JSONArray;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
@@ -448,6 +449,24 @@ public class MailDetail extends BaseFragment implements
 		}
 	}
 
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode == KEY_MESSAGE_REPLY_ID
+				&& resultCode == Activity.RESULT_OK) {
+			if (inNetwork()) {
+				scope.main().requestSync(MailProvider.AUTHORITY);
+				Toast.makeText(getActivity(), _s(R.string.message_sent),
+						Toast.LENGTH_LONG).show();
+			} else {
+				Toast.makeText(getActivity(), _s(R.string.message_cant_sent),
+						Toast.LENGTH_LONG).show();
+			}
+			getLoaderManager().restartLoader(0, null, this);
+			OControls.setText(mView, R.id.edtQuickReplyMessage, "");
+		}
+	}
+
 	private void sendQuickMail() {
 		EditText edt = (EditText) mView.findViewById(R.id.edtQuickReplyMessage);
 		ODataRow parent = db().select(mMailId);
@@ -462,7 +481,7 @@ public class MailDetail extends BaseFragment implements
 			ContentValues values = new ContentValues();
 			values.put("message_title", subject);
 			values.put("body", mail_body);
-			mail.sendQuickReply(subject, mail_body, mMailId,
+			mail.sendQuickReply(null, subject, mail_body, mMailId,
 					parent.getInt("total_childs"));
 			getLoaderManager().restartLoader(0, null, this);
 			if (inNetwork()) {

@@ -46,16 +46,15 @@
                 odoo:textLines="5"
                 odoo:with_label="false" />
 
-            <!--
-        <odoo.controls.OList
-        	android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            odoo:custom_layout="@layout/mail_compose_attachment"
-            odoo:emptyListIcon="@drawable/attachment"
-            odoo:emptyListMessage="No Attachment Available"
-            odoo:showDivider="true" >
-        </odoo.controls.OList>
-            -->
+            <LinearLayout
+                android:id="@+id/attachments"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical" >
+
+                <!-- Dynamically added attachments view -->
+            </LinearLayout>
         </odoo.controls.OForm>
     </ScrollView>
 

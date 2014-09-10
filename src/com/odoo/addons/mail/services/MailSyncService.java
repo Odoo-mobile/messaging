@@ -21,6 +21,7 @@ import com.odoo.App;
 import com.odoo.MainActivity;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
+import com.odoo.base.ir.Attachments;
 import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
@@ -78,13 +79,30 @@ public class MailSyncService extends OSyncService implements
 				partner_ids.put(6);
 				partner_ids.put(false);
 				partner_ids.put(p_ids);
+				// Attachments
+				List<Integer> attachments = getAttachmentIds(mail);
+				Object attachment_ids = false;
+				if (attachments.size() > 0) {
+					JSONArray attachmentIds = new JSONArray();
+					attachmentIds.put(6);
+					attachmentIds.put(false);
+					attachmentIds.put(JSONUtils.toArray(attachments));
+					attachment_ids = new JSONArray().put(attachmentIds);
+				}
 				if ((Integer) mail.getM2ORecord("parent_id").getId() == 0) {
-					_sendMail(mail, partner_ids, helper, mails);
+					_sendMail(mail, partner_ids, attachment_ids, helper, mails);
 				} else {
+					JSONArray attachments_reply = new JSONArray();
+					if (!attachment_ids.toString().equals("false")) {
+						attachments_reply = new JSONArray(JSONUtils.toArray(
+								attachments).toString());
+					}
 					ODataRow parent = mail.getM2ORecord("parent_id").browse();
-					sendReply(context, parent, mail, partner_ids, helper, mails);
+					sendReply(context, parent, mail, partner_ids,
+							attachments_reply, helper, mails);
 				}
 			} catch (Exception e) {
+				e.printStackTrace();
 				Log.e(TAG, "sendMails():" + e.getMessage());
 			}
 		}
@@ -92,8 +110,9 @@ public class MailSyncService extends OSyncService implements
 	}
 
 	private void _sendMail(ODataRow mail, JSONArray partner_ids,
-			OSyncHelper helper, MailMessage mails) {
+			Object attachment_ids, OSyncHelper helper, MailMessage mails) {
 		try {
+
 			JSONObject arguments = new JSONObject();
 			arguments.put("composition_mode", "comment");
 			arguments.put("model", false);
@@ -109,6 +128,8 @@ public class MailSyncService extends OSyncService implements
 			arguments.put("record_name", false);
 			arguments.put("partner_ids", new JSONArray().put(partner_ids));
 			arguments.put("template_id", false);
+			arguments.put("attachment_ids", attachment_ids);
+
 			JSONObject kwargs = new JSONObject();
 			kwargs.put("context", helper.getContext(new JSONObject()));
 			OArguments args = new OArguments();
@@ -124,12 +145,14 @@ public class MailSyncService extends OSyncService implements
 			helper.callMethod(model, "send_mail", args, null, null);
 			mails.resolver().delete(mail.getInt(OColumn.ROW_ID));
 		} catch (Exception e) {
+			e.printStackTrace();
 			Log.e(TAG, "_sendMail() : " + e.getMessage());
 		}
 	}
 
 	private void sendReply(Context context, ODataRow parent, ODataRow mail,
-			JSONArray partner_ids, OSyncHelper helper, MailMessage mails) {
+			JSONArray partner_ids, Object attachment_ids, OSyncHelper helper,
+			MailMessage mails) {
 		try {
 			// sending reply
 			String model = (parent.getString("model").equals("false")) ? "mail.thread"
@@ -151,7 +174,7 @@ public class MailSyncService extends OSyncService implements
 			kwargs.put("subject", mail.getString("subject"));
 			kwargs.put("body", mail.getString("body"));
 			kwargs.put("parent_id", parent.getInt("id"));
-			kwargs.put("attachment_ids", new JSONArray());
+			kwargs.put("attachment_ids", attachment_ids);
 			kwargs.put("partner_ids", new JSONArray().put(partner_ids));
 
 			OArguments args = new OArguments();
@@ -163,8 +186,26 @@ public class MailSyncService extends OSyncService implements
 			vals.put("id", messageId);
 			mails.resolver().update(vals.getInt(OColumn.ROW_ID), vals);
 		} catch (Exception e) {
+			e.printStackTrace();
 			Log.e(TAG, "sendReply() : " + e.getMessage());
 		}
+	}
+
+	private List<Integer> getAttachmentIds(ODataRow row) {
+		List<Integer> ids = new ArrayList<Integer>();
+		try {
+			Attachments helper = new Attachments(getApplicationContext());
+			for (ODataRow attachment : row.getM2MRecord("attachment_ids")
+					.browseEach()) {
+				int id = helper.pushToServer(attachment);
+				if (id != 0) {
+					ids.add(id);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return ids;
 	}
 
 	private Boolean updateMails(OUser user) {

@@ -67,7 +67,6 @@ import com.odoo.support.listview.OListAdapter;
 import com.odoo.util.Base64Helper;
 import com.odoo.util.ODate;
 import com.odoo.util.StringUtils;
-import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 /**
@@ -514,7 +513,6 @@ public class OField extends LinearLayout implements
 						mHScroll.setHorizontalScrollBarEnabled(false);
 						mHScroll.addView(mlayout);
 						addView(mHScroll);
-						OLog.log("adding view......");
 						break;
 					}
 

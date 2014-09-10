@@ -225,7 +225,7 @@ public class MailMessage extends OModel {
 		return mNewCreateIds;
 	}
 
-	public Integer sendQuickReply(String subject, String body,
+	public Integer sendQuickReply(OValues values, String subject, String body,
 			Integer parent_id, Integer parent_childs) {
 		body += mContext.getResources().getString(R.string.mail_watermark);
 		OValues vals = new OValues();
@@ -244,7 +244,8 @@ public class MailMessage extends OModel {
 			p_ids.add(partner.getInt(OColumn.ROW_ID));
 		}
 		vals.put("partner_ids", p_ids.toString());
-
+		if (values != null)
+			vals.put("attachment_ids", values.get("attachment_ids"));
 		// Updating parent childs
 		OValues parent_vals = new OValues();
 		parent_vals.put("total_childs", (parent_childs + 1));
