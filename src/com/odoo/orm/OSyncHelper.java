@@ -35,6 +35,8 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.odoo.App;
+import com.odoo.base.ir.Attachments;
+import com.odoo.base.ir.IrAttachment;
 import com.odoo.base.ir.IrModel;
 import com.odoo.orm.ORelationRecordList.ORelationRecords;
 import com.odoo.support.OUser;
@@ -439,6 +441,15 @@ public class OSyncHelper {
 	public Integer create(OModel model, ODataRow data_row) {
 		try {
 			JSONObject values = createJSONValues(model, data_row);
+			if (model.getModelName().equals(
+					new IrAttachment(mContext).getModelName())) {
+				if (data_row.contains(Attachments.KEY_DB_DATAS))
+					values.put(Attachments.KEY_DB_DATAS,
+							data_row.get(Attachments.KEY_DB_DATAS));
+				if (data_row.contains(Attachments.KEY_TYPE))
+					values.put(Attachments.KEY_TYPE,
+							data_row.get(Attachments.KEY_TYPE));
+			}
 			if (values != null) {
 				Integer newId = 0;
 				values.remove("id");

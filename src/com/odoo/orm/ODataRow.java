@@ -135,12 +135,22 @@ public class ODataRow {
 
 	}
 
+	public void addAll(HashMap<String, Object> data) {
+		_data.putAll(data);
+	}
+
 	public void addAll(ODataRow row) {
 		_data.putAll(row.getAll());
 	}
 
 	public HashMap<String, Object> getAll() {
 		return _data;
+	}
+
+	public OValues toValues() {
+		OValues values = new OValues();
+		values.addAll(getAll());
+		return values;
 	}
 
 	public Bundle getPrimaryBundleData() {
