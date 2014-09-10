@@ -262,9 +262,8 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		List<String> argsList = new ArrayList<String>();
 		if (mCurFilter != null) {
 			argsList.addAll(Arrays.asList(args));
-			selection += " and author_name like ? or message_title like ? or body like ?";
-			argsList.add("%" + mCurFilter + "%");
-			argsList.add("%" + mCurFilter + "%");
+			selection += " and author_name like ? or message_title like ?";
+			argsList.add(mCurFilter + "%");
 			argsList.add("%" + mCurFilter + "%");
 			args = argsList.toArray(new String[argsList.size()]);
 		} else {

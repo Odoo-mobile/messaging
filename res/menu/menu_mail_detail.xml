@@ -3,13 +3,13 @@
 
     <item
         android:id="@+id/menu_mail_read"
-        android:icon="@drawable/ic_action_mark_read"
-        android:showAsAction="always"
-        android:title="Read"/>
-    <item
-        android:id="@+id/menu_mail_unread"
         android:icon="@drawable/ic_action_mark_unread"
         android:showAsAction="always"
-        android:title="UnRead"/>
+        android:title="Click to read"/>
+    <item
+        android:id="@+id/menu_mail_unread"
+        android:icon="@drawable/ic_action_mark_read"
+        android:showAsAction="always"
+        android:title="Click to unread"/>
 
 </menu>

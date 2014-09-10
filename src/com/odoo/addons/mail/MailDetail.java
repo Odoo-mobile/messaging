@@ -152,10 +152,6 @@ public class MailDetail extends BaseFragment implements
 			values.put("is_dirty", 1);
 		String selection = OColumn.ROW_ID + " = ? or parent_id = ?";
 		String[] args = new String[] { mailId + "", mailId + "" };
-		if (to_read) {
-			selection = OColumn.ROW_ID + " = ?";
-			args = new String[] { mailId + "" };
-		}
 		getActivity().getContentResolver().update(db().uri(), values,
 				selection, args);
 	}
