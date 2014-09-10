@@ -292,7 +292,6 @@ public class MailDetail extends BaseFragment implements
 										c.getInt(c
 												.getColumnIndex(OColumn.ROW_ID)),
 										mail.author_id());
-								// mListMessages.initListControl(mRecords);
 								has_voted = true;
 								votes++;
 							} else {
@@ -302,7 +301,6 @@ public class MailDetail extends BaseFragment implements
 										c.getInt(c
 												.getColumnIndex(OColumn.ROW_ID)),
 										mail.author_id());
-								// mListMessages.initListControl(mRecords);
 								votes--;
 							}
 							return votes;
@@ -370,7 +368,6 @@ public class MailDetail extends BaseFragment implements
 		// Setting starred color
 		ImageView imgStarred = (ImageView) view
 				.findViewById(R.id.imgBtn_mail_detail_starred);
-
 		String is_fav = cr.getString(cr.getColumnIndex("starred"));
 		imgStarred.setColorFilter((is_fav.equals("1")) ? Color
 				.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
@@ -482,7 +479,9 @@ public class MailDetail extends BaseFragment implements
 
 	@Override
 	public ODataRow updateDataRow(Cursor cr) {
-		return db().select(cr.getInt(cr.getColumnIndex(OColumn.ROW_ID)));
+		return db().selectRelRecord(
+				new String[] { "attachment_ids", "vote_user_ids" },
+				cr.getInt(cr.getColumnIndex(OColumn.ROW_ID)));
 	}
 
 	@Override
