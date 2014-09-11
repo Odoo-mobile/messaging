@@ -299,21 +299,45 @@ public abstract class OContentProvider extends ContentProvider implements
 				// Check for and
 				Pattern pattern = Pattern.compile(" and | AND ");
 				String[] data = pattern.split(selection);
+				StringBuffer or_string = new StringBuffer();
 				for (String token : data) {
-					whr.append(base_alias + "." + token.trim());
-					whr.append(" AND ");
+					if (token.contains("OR") || token.contains("or")) {
+						or_string.append(token.trim());
+						or_string.append(" OR ");
+					} else {
+						whr.append(base_alias + "." + token.trim());
+						whr.append(" AND ");
+					}
 				}
-				whr.delete(whr.length() - 5, whr.length());
+				if (whr.length() > 0)
+					whr.delete(whr.length() - 5, whr.length());
 				// Check for or
-				pattern = Pattern.compile(" or | OR ");
-				data = pattern.split(whr.toString());
-				whr = new StringBuffer();
-				for (String token : data) {
-					whr.append((!token.contains(base_alias)) ? base_alias + "."
-							+ token.trim() : token.trim());
-					whr.append(" OR ");
+				if (or_string.length() > 0) {
+					if (whr.length() > 0)
+						whr.append(" AND ");
+					pattern = Pattern.compile(" or | OR ");
+					data = pattern.split(or_string.toString());
+					for (String token : data) {
+						if (!token.contains(base_alias)) {
+							if (token.contains("(")) {
+								whr.append("(");
+								token = token.replaceAll("\\(", "");
+								whr.append(base_alias + "." + token.trim());
+							} else if (token.contains(")")) {
+								token = token.replaceAll("\\)", "");
+								whr.append(base_alias + "." + token.trim());
+								whr.append(")");
+							} else {
+								whr.append(base_alias + "." + token.trim());
+							}
+						} else {
+							whr.append(token.trim());
+						}
+						whr.append(" OR ");
+					}
+					if (whr.length() > 0)
+						whr.delete(whr.length() - 4, whr.length());
 				}
-				whr.delete(whr.length() - 4, whr.length());
 			} else {
 				whr.append(selection);
 			}
