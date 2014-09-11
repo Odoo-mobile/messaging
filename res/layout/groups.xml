@@ -1,0 +1,39 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:odoo="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <!--
+         <include
+        android:id="@+id/loadingProgress"
+        layout="@layout/listview_data_loading_progress"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        android:visibility="gone" />
+    -->
+
+    <android.widgets.SwipeRefreshLayout
+        android:id="@+id/swipe_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <ListView
+            android:id="@+id/listGroups"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+        </ListView>
+
+        <!--
+        <odoo.controls.OList
+            android:id="@+id/listGroups"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            odoo:custom_layout="@layout/groups_list_item"
+            odoo:emptyListIcon="@drawable/ic_action_social_group" >
+        </odoo.controls.OList>
+        -->
+
+    </android.widgets.SwipeRefreshLayout>
+
+</LinearLayout>

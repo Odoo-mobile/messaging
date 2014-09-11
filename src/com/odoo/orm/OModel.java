@@ -26,12 +26,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-
 import odoo.ODomain;
 import odoo.OdooVersion;
-
 import org.json.JSONObject;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -39,11 +36,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.text.TextUtils;
 import android.util.Log;
-
 import com.odoo.App;
-import com.odoo.base.ir.providers.model.ModelProvider;
 import com.odoo.orm.OColumn.RelationType;
 import com.odoo.orm.ORelIds.RelData;
 import com.odoo.orm.annotations.Odoo;
@@ -775,7 +769,36 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 		return records;
 	}
 
+	public ODataRow selectRelRecord(String[] columns, int base_id) {
+		ODataRow row = new ODataRow();
+		for (String col : columns) {
+			OColumn column = getColumn(col);
+			if (column.getRelationType() != null) {
+				switch (column.getRelationType()) {
+				case ManyToMany:
+					row.put(column.getName(), new OM2MRecord(this, column,
+							base_id));
+					break;
+				case OneToMany:
+					row.put(column.getName(), new OO2MRecord(this, column,
+							base_id));
+					break;
+				case ManyToOne:
+					row.put(column.getName(), new OM2ORecord(this, column,
+							base_id));
+					break;
+				}
+			}
+		}
+		return row;
+	}
+
 	public List<ODataRow> query(String sql, String[] args) {
+		return query(sql, args, true);
+	}
+
+	public List<ODataRow> query(String sql, String[] args,
+			Boolean closeConnection) {
 		List<ODataRow> records = new ArrayList<ODataRow>();
 		SQLiteDatabase db = getReadableDatabase();
 		Cursor cr = db.rawQuery(sql, args);
@@ -794,7 +817,8 @@ public class OModel extends OSQLiteHelper implements OModelHelper {
 			} while (cr.moveToNext());
 		}
 		cr.close();
-		db.close();
+		if (closeConnection)
+			db.close();
 		return records;
 	}
 

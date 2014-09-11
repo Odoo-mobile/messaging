@@ -4,10 +4,14 @@
     <color name="theme_primary_dark">#303f9f</color>
     <color name="theme_primary_light">#7986cb</color>
     <color name="odoo_purple">#a24689</color>
+    <color name="odoo_purple_dark">#d0a2c4</color>
+    <color name="odoo_purple_dark1">#8f3975</color>
     <color name="odoo_purple_tran">#dda24689</color>
     <color name="gray_text">#a09f9f</color>
     <color name="gray_light">#d1d0d0</color>
     <color name="list_divider">#ddd</color>
+    <color name="odoo_green_dark">#669900</color>
+    <color name="odoo_red_dark">#CC0000</color>
     <color name="card_view_parent_background">#e5e5e5</color>
     <color name="session_photo_scrim">#3000</color>
     <color name="body_text_1">#de000000</color>
@@ -22,6 +26,11 @@
     <color name="navdrawer_icon_tint">#808080</color>
     <color name="navdrawer_icon_tint_selected">@color/theme_primary</color>
     <color name="actionbar_bg_color">#ebebeb</color>
-    <color name="translucent_status_bg_color">@color/actionbar_bg_color</color>
+    <color name="translucent_status_bg_color">@color/odoo_purple</color>
+    <color name="divider">#afafaf</color>
+    <color name="message_text">#ffffff</color>
+    <color name="button_text">#acacac</color>
+    <color name="button_background">#db555555</color>
+    <color name="button_background_pressed">#858585</color>
 
 </resources>

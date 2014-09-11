@@ -37,6 +37,7 @@ import com.odoo.auth.OdooAccountManager;
 import com.odoo.orm.OModel;
 import com.odoo.support.AppScope;
 import com.odoo.support.OUser;
+import com.odoo.util.PreferenceManager;
 
 /**
  * The Class BaseFragment.
@@ -244,7 +245,6 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 			getActivity().runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-
 					boolean syncActive = ContentResolver.isSyncActive(
 							OdooAccountManager.getAccount(getActivity(), OUser
 									.current(getActivity()).getAndroidName()),
@@ -254,14 +254,16 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 									.current(getActivity()).getAndroidName()),
 							syncOberserverModel.authority());
 					boolean refreshing = syncActive | syncPending;
-					if (!refreshing) {
-						scope.main().refreshDrawer(drawer_tag);
-					}
+					refreshDrawer();
 					mSyncStatusObserverListener.onStatusChange(refreshing);
 				}
 			});
 		}
 	};
+
+	public void refreshDrawer() {
+		scope.main().refreshDrawer(drawer_tag);
+	}
 
 	public void setHasSearchView(OnSearchViewChangeListener listener,
 			Menu menu, int menu_id) {
@@ -332,4 +334,7 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 		scope = new AppScope(getActivity());
 	}
 
+	public PreferenceManager getPref() {
+		return new PreferenceManager(getActivity());
+	}
 }

@@ -120,6 +120,6 @@ public class BaseSettings extends PreferenceActivity implements
 
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
-		return false;
+		return true;
 	}
 }

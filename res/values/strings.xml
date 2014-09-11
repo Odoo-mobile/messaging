@@ -4,10 +4,38 @@
     <string name="title_activity_main">Messaging</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
+    <string name="label_mail_compose">Compose Mail</string>
+    <string name="title_mail_compose">Compose</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="add_attachment">Attachment</string>
+    <string name="add_file">Add File</string>
+    <string name="add_image">Add Image</string>
+    <string name="send_now">Send Now</string>
+    <string name="message_inbox_all_read"><b>Good Job!</b> Your inbox is empty.\n \n
+Your inbox contains private messages or emails sent to you as well as information related to documents or people you follow.</string>
+    <string name="message_tome_all_read"><b>No private message.</b>\n\nThis list contains messages sent to you.</string>
+    <string name="message_todo_all_read"><b>No todo.</b>\n\n
+When you process messages in your inbox, you can mark some as todo. From this menu, you can process all your todo.</string>
+    <string name="message_no_group_message">No message in this group.</string>
+    <string name="message_no_outbox_message">No message in outbox.</string>
     <string name="create_new">Create New</string>
-     <string name="edit">Edit</string>
-      <string name="delete">Delete</string>
-       <string name="save">Save</string>
-       
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="save">Save</string>
+    <string name="title_replay_mail">Reply</string>
+    <string name="mail_watermark"><Data><![CDATA[<p>--<br /><small>Sent from <a href="https://play.google.com/store/apps/details?id=com.openerp" target="_blank"><b>Odoo Mobile</b></a></small></p>]]></Data></string>
+    <string name="first_join_group">You must first join group</string>
+    <string name="no_connection">No Connection</string>
+    <string name="message_sent">Message Sent</string>
+    <string name="message_cant_sent">Message can\'t Sent</string>
+    <string name="reply_sent">Reply Sent</string>
+    <string name="reply_cant_sent">Reply can\'t Sent</string>
+    <string name="no_activity_found">No activity found to handle file</string>
+    <string name="unable_to_find_attachment">Unable to find attachment!</string>
+    <string name="undo">UNDO</string>
+    <string name="label_odoo_mail">Odoo Mail</string>
+    <string name="toast_group_followed">Group Followed</string>
+    <string name="toast_group_unfollowed">Group Unfollowed</string>
 
 </resources>

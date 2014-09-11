@@ -31,6 +31,7 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -145,7 +146,12 @@ public class AttachmentDepricated implements OnClickListener {
 	}
 
 	private void requestIntent(Intent intent, int requestCode) {
-		((Activity) mContext).startActivityForResult(intent, requestCode);
+		try {
+			((Activity) mContext).startActivityForResult(intent, requestCode);
+		} catch (ActivityNotFoundException e) {
+			Toast.makeText(mContext, "No Activity Found to handle request",
+					Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	public ODataRow handleResult(Intent data) {
@@ -183,7 +189,6 @@ public class AttachmentDepricated implements OnClickListener {
 			uri = data.getParcelableExtra(Intent.EXTRA_STREAM);
 			break;
 		}
-
 		return uriToDataRow(uri, bitmap);
 	}
 
@@ -304,7 +309,6 @@ public class AttachmentDepricated implements OnClickListener {
 				Log.i(TAG, "Attachment created #" + a_id);
 				mNewAttachmentIds.add(a_id);
 			}
-
 			// }
 		}
 	}
@@ -329,6 +333,7 @@ public class AttachmentDepricated implements OnClickListener {
 				for (OValues values : mAttachments) {
 					long id = 0;// FIXME: mOdoo.create(values);
 					Log.i(TAG, "Attachment created #" + id);
+
 				}
 			}
 			return null;

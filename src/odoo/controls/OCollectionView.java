@@ -65,5 +65,4 @@ public class OCollectionView extends ListView {
 		setEmptyIcon(icon_resId);
 		setEmptyMessage(message_resId);
 	}
-
 }

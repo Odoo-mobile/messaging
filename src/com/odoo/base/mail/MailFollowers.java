@@ -20,12 +20,14 @@ package com.odoo.base.mail;
 
 import android.content.Context;
 
+import com.odoo.base.mail.provider.MailFollowerProvider;
 import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.OColumn.RelationType;
 import com.odoo.orm.OModel;
 import com.odoo.orm.types.OInteger;
 import com.odoo.orm.types.OText;
+import com.odoo.support.provider.OContentProvider;
 
 public class MailFollowers extends OModel {
 
@@ -36,6 +38,12 @@ public class MailFollowers extends OModel {
 
 	public MailFollowers(Context context) {
 		super(context, "mail.followers");
+		setCreateWriteLocal(true);
+	}
+
+	@Override
+	public OContentProvider getContentProvider() {
+		return new MailFollowerProvider();
 	}
 
 	@Override

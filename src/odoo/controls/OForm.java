@@ -219,7 +219,7 @@ public class OForm extends LinearLayout implements View.OnClickListener {
 						if (column.getRelationType() != null
 								&& (column.getRelationType() == RelationType.ManyToMany || column
 										.getRelationType() == RelationType.OneToMany)) {
-							widget = OFieldType.MANY_TO_MANY_TAGS;
+							widget = OFieldType.MANY_TO_MANY_TAGS;//
 						}
 						if (column.isFunctionalColumn()) {
 							Object value = mRecord.get(column.getName());

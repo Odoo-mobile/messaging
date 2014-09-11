@@ -47,7 +47,7 @@ import com.openerp.R;
 public abstract class BaseActivity extends FragmentActivity implements
 		FragmentLoader, DrawerListener {
 	public static final String TAG = BaseActivity.class.getSimpleName();
-	private static final int NAVDRAWER_LAUNCH_DELAY = 250;
+	private static final int NAVDRAWER_LAUNCH_DELAY = 300;
 	private static final int ACCOUNT_BOX_EXPAND_ANIM_DURATION = 200;
 	private DrawerLayout mDrawerLayout = null;
 	private ActionBarDrawerToggle mDrawerToggle = null;
