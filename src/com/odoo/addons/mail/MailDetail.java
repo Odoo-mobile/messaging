@@ -72,6 +72,7 @@ public class MailDetail extends BaseFragment implements
 	private Menu mMenu;
 	private PreferenceManager mPref;
 	private Attachments mAttachment;
+	private Cursor cr = null;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -179,7 +180,7 @@ public class MailDetail extends BaseFragment implements
 
 	private void archiveMail(final Boolean to_read) {
 		toggleMailToRead(mMailId, to_read);
-		newBackgroundTask(new AsyncTaskListener() {
+		scope.main().newBackgroundTask(new AsyncTaskListener() {
 
 			@Override
 			public Object onPerformTask() {
@@ -227,26 +228,35 @@ public class MailDetail extends BaseFragment implements
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.menu_mail_detail, menu);
 		mMenu = menu;
+		if (cr != null) {
+			updateMenuVisibility();
+		}
 	}
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> arg0, Cursor cursor) {
 		mAdapter.changeCursor(cursor);
+		cr = cursor;
+		updateMenuVisibility();
+	}
+
+	private void updateMenuVisibility() {
 		boolean to_read_flag = false;
-		if (cursor.moveToFirst()) {
+		if (cr.moveToFirst()) {
 			do {
-				int to_read = cursor.getInt(cursor.getColumnIndex("to_read"));
+				int to_read = cr.getInt(cr.getColumnIndex("to_read"));
 				if (to_read == 1) {
 					to_read_flag = true;
 					break;
 				}
-			} while (cursor.moveToNext());
+			} while (cr.moveToNext());
+			int menu_id = R.id.menu_mail_unread;
+			if (!to_read_flag) {
+				menu_id = R.id.menu_mail_read;
+			}
+			if (mMenu != null)
+				mMenu.findItem(menu_id).setVisible(false);
 		}
-		int menu = R.id.menu_mail_unread;
-		if (!to_read_flag) {
-			menu = R.id.menu_mail_read;
-		}
-		mMenu.findItem(menu).setVisible(false);
 	}
 
 	@Override
@@ -269,7 +279,7 @@ public class MailDetail extends BaseFragment implements
 
 				try {
 					final int mail_id = c.getInt(c.getColumnIndex("id"));
-					newBackgroundTask(new AsyncTaskListener() {
+					scope.main().newBackgroundTask(new AsyncTaskListener() {
 						boolean has_voted = false;
 
 						@Override
@@ -330,7 +340,7 @@ public class MailDetail extends BaseFragment implements
 				imgStarred.setColorFilter((is_fav) ? Color
 						.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
 				// markAsTodo
-				newBackgroundTask(new AsyncTaskListener() {
+				scope.main().newBackgroundTask(new AsyncTaskListener() {
 
 					@Override
 					public Object onPerformTask() {

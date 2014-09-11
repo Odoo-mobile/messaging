@@ -215,7 +215,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	}
 
 	private void createSelection() {
-		selection = "";
+		selection = " ";
 		List<String> argsList = new ArrayList<String>();
 		switch (mType) {
 		case Inbox:
@@ -260,14 +260,13 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 			setSwipeRefreshing(true);
 		}
 		List<String> argsList = new ArrayList<String>();
+		createSelection();
 		if (mCurFilter != null) {
 			argsList.addAll(Arrays.asList(args));
-			selection += " and author_name like ? or message_title like ?";
+			selection += " and (author_name like ? or message_title like ?)";
 			argsList.add(mCurFilter + "%");
 			argsList.add("%" + mCurFilter + "%");
 			args = argsList.toArray(new String[argsList.size()]);
-		} else {
-			createSelection();
 		}
 		Uri uri = ((MailMessage) db()).mailUri();
 		return new CursorLoader(getActivity(), uri, new String[] {
@@ -447,7 +446,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 				imgStarred.setColorFilter((is_fav) ? Color
 						.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
 				// markAsTodo
-				newBackgroundTask(new AsyncTaskListener() {
+				scope.main().newBackgroundTask(new AsyncTaskListener() {
 
 					@Override
 					public Object onPerformTask() {
