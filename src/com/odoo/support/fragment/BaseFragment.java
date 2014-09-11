@@ -37,6 +37,7 @@ import com.odoo.auth.OdooAccountManager;
 import com.odoo.orm.OModel;
 import com.odoo.support.AppScope;
 import com.odoo.support.OUser;
+import com.odoo.util.PreferenceManager;
 
 /**
  * The Class BaseFragment.
@@ -333,4 +334,7 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 		scope = new AppScope(getActivity());
 	}
 
+	public PreferenceManager getPref() {
+		return new PreferenceManager(getActivity());
+	}
 }

@@ -155,7 +155,7 @@ public class Groups extends BaseFragment implements LoaderCallbacks<Cursor>,
 		if (inNetwork()) {
 			switch (view.getId()) {
 			case R.id.btnJoinGroup:
-				newBackgroundTask(new AsyncTaskListener() {
+				scope.main().newBackgroundTask(new AsyncTaskListener() {
 
 					@Override
 					public Object onPerformTask() {
@@ -175,7 +175,7 @@ public class Groups extends BaseFragment implements LoaderCallbacks<Cursor>,
 
 				break;
 			case R.id.btnUnJoinGroup:
-				newBackgroundTask(new AsyncTaskListener() {
+				scope.main().newBackgroundTask(new AsyncTaskListener() {
 
 					@Override
 					public Object onPerformTask() {
