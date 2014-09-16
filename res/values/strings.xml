@@ -37,5 +37,6 @@ When you process messages in your inbox, you can mark some as todo. From this me
     <string name="label_odoo_mail">Odoo Mail</string>
     <string name="toast_group_followed">Group Followed</string>
     <string name="toast_group_unfollowed">Group Unfollowed</string>
+    <string name="check_for_new_data">Sync messages</string>
 
 </resources>

@@ -292,6 +292,22 @@ public class MailSyncService extends OSyncService implements
 
 	public List<Integer> getPartnersServerId(List<ODataRow> rows) {
 		List<Integer> pIds = new ArrayList<Integer>();
+
+		for (ODataRow row : rows) {
+			int server_id = row.getInt("id");
+			if (server_id == 0) {
+				ODomain domain = new ODomain();
+				domain.add("email", "ilike", row.getString("email"));
+				server_id = getPartnerId(domain, row);
+			}
+			pIds.add(server_id);
+		}
+
+		return pIds;
+	}
+
+	public int getPartnerId(ODomain domain, ODataRow row) {
+		int server_id = 0;
 		try {
 			Context context = getApplicationContext();
 			ResPartner partner = new ResPartner(context);
@@ -299,33 +315,23 @@ public class MailSyncService extends OSyncService implements
 			Odoo odoo = app.getOdoo();
 			JSONObject fields = new JSONObject();
 			fields.accumulate("fields", "email");
-			for (ODataRow row : rows) {
-				int server_id = row.getInt("id");
-				if (server_id == 0) {
-					ODomain domain = new ODomain();
-					domain.add("email", "ilike", row.getString("email"));
-					JSONObject result = odoo.search_read(
-							partner.getModelName(), fields, domain.get());
-					JSONArray records = result.getJSONArray("records");
-					if (records.length() > 0) {
-						JSONObject record = records.getJSONObject(0);
-						server_id = record.getInt("id");
-						OValues vals = new OValues();
-						vals.put("id", server_id);
-						partner.resolver().update(row.getInt(OColumn.ROW_ID),
-								vals);
-					} else {
-						// Creating partner on server
-						server_id = partner.getSyncHelper()
-								.create(partner, row);
-						Log.v(TAG, "Partner Created on server #" + server_id);
-					}
-				}
-				pIds.add(server_id);
+			JSONObject result = odoo.search_read(partner.getModelName(),
+					fields, domain.get());
+			JSONArray records = result.getJSONArray("records");
+			if (records.length() > 0) {
+				JSONObject record = records.getJSONObject(0);
+				server_id = record.getInt("id");
+				OValues vals = new OValues();
+				vals.put("id", server_id);
+				partner.resolver().update(row.getInt(OColumn.ROW_ID), vals);
+			} else {
+				// Creating partner on server
+				server_id = partner.getSyncHelper().create(partner, row);
+				Log.v(TAG, "Partner Created on server #" + server_id);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return pIds;
+		return server_id;
 	}
 }

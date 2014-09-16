@@ -413,6 +413,8 @@ public class MailDetail extends BaseFragment implements
 		} else {
 			mfield.setVisibility(View.GONE);
 		}
+		String names = ((MailMessage) db()).getPartnersName(row);
+		OControls.setText(view, R.id.partner_names, names);
 	}
 
 	@Override
@@ -504,9 +506,11 @@ public class MailDetail extends BaseFragment implements
 
 	@Override
 	public ODataRow updateDataRow(Cursor cr) {
-		return db().selectRelRecord(
-				new String[] { "attachment_ids", "vote_user_ids" },
-				cr.getInt(cr.getColumnIndex(OColumn.ROW_ID)));
+		return db()
+				.selectRelRecord(
+						new String[] { "attachment_ids", "vote_user_ids",
+								"partner_ids" },
+						cr.getInt(cr.getColumnIndex(OColumn.ROW_ID)));
 	}
 
 	@Override

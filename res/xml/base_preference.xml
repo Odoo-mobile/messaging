@@ -16,7 +16,7 @@
         android:key="application_about"
         android:title="@string/title_about" >
         <Preference
-            android:icon="@drawable/ic_odoo_o"
+            android:icon="@drawable/ic_odoo_o_purple"
             android:title="@string/summary_about_odoo_mobile" >
             <intent android:action="com.odoo.ACTION_ABOUT" />
         </Preference>

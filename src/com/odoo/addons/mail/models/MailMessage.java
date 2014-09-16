@@ -298,7 +298,9 @@ public class MailMessage extends OModel {
 		String partners = "to ";
 		List<String> partners_name = new ArrayList<String>();
 		for (ODataRow p : row.getM2MRecord("partner_ids").browseEach()) {
-			partners_name.add(p.getString("name"));
+			if (partners_name.size() < 10) {
+				partners_name.add(p.getString("name"));
+			}
 		}
 		return partners + TextUtils.join(", ", partners_name);
 	}

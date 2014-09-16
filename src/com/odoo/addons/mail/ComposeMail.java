@@ -13,10 +13,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -34,10 +36,11 @@ import com.odoo.orm.OValues;
 import com.odoo.util.OControls;
 import com.odoo.util.ODate;
 import com.odoo.util.PreferenceManager;
+import com.odoo.util.Utils;
 import com.openerp.R;
 
 public class ComposeMail extends Activity implements NewTokenCreateListener,
-		OnClickListener {
+		OnClickListener, OnFocusChangeListener {
 	public static final String TAG = ComposeMail.class.getSimpleName();
 	private Context mContext = null;
 	private Attachments mAttachment = null;
@@ -46,6 +49,7 @@ public class ComposeMail extends Activity implements NewTokenCreateListener,
 	private Integer mMailId = null;
 	private ODataRow mParentMail = null;
 	private LinearLayout attachments = null;
+	private OField fieldPartners = null;
 
 	enum AttachmentType {
 		IMAGE, FILE, CAPTURE_IMAGE, IMAGE_OR_CAPTURE_IMAGE, AUDIO, OTHER
@@ -61,7 +65,7 @@ public class ComposeMail extends Activity implements NewTokenCreateListener,
 		attachments = (LinearLayout) findViewById(R.id.attachments);
 		mForm = (OForm) findViewById(R.id.mComposeMailForm);
 		Bundle bundle = getIntent().getExtras();
-		OField fieldPartners = (OField) mForm.findViewById(R.id.fieldPartners);
+		fieldPartners = (OField) mForm.findViewById(R.id.fieldPartners);
 		if (bundle != null && bundle.containsKey(MailDetail.KEY_MESSAGE_ID)) {
 			mMailId = bundle.getInt(MailDetail.KEY_MESSAGE_ID);
 			mParentMail = mail.select(mMailId);
@@ -71,6 +75,7 @@ public class ComposeMail extends Activity implements NewTokenCreateListener,
 		}
 		initControls();
 		fieldPartners.setOnNewTokenCreateListener(this);
+		fieldPartners.setOnTokenFocusChangeListener(this);
 		if (bundle != null) {
 			String subject_text = "";
 			if (bundle.containsKey(MailDetail.KEY_SUBJECT)) {
@@ -272,7 +277,10 @@ public class ComposeMail extends Activity implements NewTokenCreateListener,
 
 	@Override
 	public Object newTokenAddListener(String token) {
-		return quickPartnerCreate(token);
+		if (Utils.validator().validateEmail(token)) {
+			return quickPartnerCreate(token);
+		}
+		return null;
 	}
 
 	private ODataRow quickPartnerCreate(String email) {
@@ -292,6 +300,24 @@ public class ComposeMail extends Activity implements NewTokenCreateListener,
 			row.put("email", email);
 			row.put("image_small", false);
 			return row;
+		}
+	}
+
+	@Override
+	public void onFocusChange(View v, boolean hasFocus) {
+		if (!hasFocus) {
+			String token = fieldPartners.getToken().toString()
+					.replaceAll("\\,", "").trim();
+			if (token.length() > 0) {
+				if (!TextUtils.isEmpty(token)) {
+					Object tkn = newTokenAddListener(token);
+					if (tkn != null) {
+						fieldPartners.setTagText("");
+						fieldPartners.addTagObject(tkn);
+					}
+				}
+				fieldPartners.setTagText("");
+			}
 		}
 	}
 

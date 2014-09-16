@@ -16,6 +16,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -388,6 +389,15 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 			Intent i = new Intent(getActivity(), ComposeMail.class);
 			startActivityForResult(i, REQUEST_COMPOSE_MAIL);
 		}
+		if (v.getId() == R.id.checkForNewData) {
+			new Handler().postDelayed(new Runnable() {
+
+				@Override
+				public void run() {
+					onRefresh();
+				}
+			}, 250);
+		}
 	}
 
 	public void toggleEmptyView(boolean show) {
@@ -426,6 +436,10 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		}
 		OControls.setImage(mView, R.id.emptyListIcon, icon);
 		OControls.setText(mView, R.id.emptyListMessage, _s(str));
+		if (mType != Type.Outbox)
+			mView.findViewById(R.id.checkForNewData).setOnClickListener(this);
+		else
+			mView.findViewById(R.id.checkForNewData).setVisibility(View.GONE);
 	}
 
 	private void restartLoader() {

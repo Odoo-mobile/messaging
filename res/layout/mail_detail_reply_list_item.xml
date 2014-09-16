@@ -56,6 +56,16 @@
                     odoo:singleLine="true"
                     odoo:with_label="false" />
 
+                <TextView
+                    android:id="@+id/partner_names"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@string/font_fontFamily_condensed"
+                    android:paddingLeft="3dp"
+                    android:singleLine="true"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="#636363" />
+
                 <odoo.controls.OField
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -82,9 +92,9 @@
             android:id="@+id/msgAttachments"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:layout_marginBottom="10dp"
             android:layout_marginTop="5dp"
             odoo:customLayout="@layout/mail_detail_list_attachment"
             odoo:customLayoutOriantation="vertical"

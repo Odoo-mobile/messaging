@@ -308,7 +308,8 @@ public abstract class MultiTagsTextView extends MultiAutoCompleteTextView
 				} else {
 					bestGuess = defaultObject(currentCompletionText());
 				}
-				replaceText(convertSelectionToString(bestGuess));
+				if (bestGuess != null)
+					replaceText(convertSelectionToString(bestGuess));
 			} else {
 				super.performCompletion();
 			}
