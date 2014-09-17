@@ -190,7 +190,7 @@
             android:label="Messages"
             android:syncable="true" />
 
-        <!-- Message provider service -->
+        <!-- Mail provider service -->
         <service
             android:name="com.odoo.addons.mail.services.MailSyncService"
             android:exported="true" >
@@ -226,6 +226,31 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/sync_mailgroup" />
         </service>
+        <!-- Mail Widget -->
+        <receiver
+            android:name="com.odoo.addons.mail.widgets.MailWidget"
+            android:label="Odoo Messaging" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_mail" />
+        </receiver>
+        <!-- Mail widget remote view service -->
+        <service
+            android:name="com.odoo.addons.mail.widgets.MailRemoteViewService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <!-- Mail widget configuration -->
+        <activity
+            android:name="com.odoo.addons.mail.widgets.MailWidgetConfigure"
+            android:icon="@drawable/ic_launcher_odoo" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
