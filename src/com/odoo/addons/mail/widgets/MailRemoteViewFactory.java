@@ -84,10 +84,10 @@ public class MailRemoteViewFactory implements RemoteViewsFactory {
 		String starred = row.getString("starred");
 		if (starred.equals("1"))
 			mView.setImageViewResource(R.id.imgMessageStarred,
-					Color.parseColor("#FF8800"));
+					starred_drawables[0]); // Color.parseColor("#FF8800")
 		else
 			mView.setImageViewResource(R.id.imgMessageStarred,
-					Color.parseColor("#aaaaaa"));
+					starred_drawables[0]); // Color.parseColor("#aaaaaa")
 
 		String subject = row.getString("subject");
 		if (subject.equals("false")) {
@@ -127,7 +127,6 @@ public class MailRemoteViewFactory implements RemoteViewsFactory {
 		bundle.putInt(WidgetHelper.EXTRA_WIDGET_DATA_VALUE, row.getInt("id"));
 		fillInIntent.putExtras(bundle);
 		mView.setOnClickFillInIntent(R.id.messageListViewItem, fillInIntent);
-
 		return mView;
 	}
 
@@ -154,18 +153,15 @@ public class MailRemoteViewFactory implements RemoteViewsFactory {
 		List<ODataRow> messages = message.select(where, whereArgs, null, null,
 				"date DESC");
 		for (ODataRow row : messages) {
-			OLog.log("Row  : " + row);
 			boolean isParent = true;
-			// Get parent id of the row Mail
+			// Get parent id of the Mail
 			ODataRow rows = row.getM2ORecord("parent_id").browse();
 			int key = 0;
 			if (rows != null)
 				key = rows.getInt("id");
-			OLog.log(key + "Rowssss ====" + rows);
 			if (key != 0) {
 				isParent = false;
 			}
-
 			// if (key == 0) {
 			// key = row.getInt("id");
 			// } else {
@@ -180,7 +176,6 @@ public class MailRemoteViewFactory implements RemoteViewsFactory {
 				} else {
 					newRow = message.select(key);
 				}
-
 				int childs = message.count("parent_id = ? ", new String[] { key
 						+ "" });
 				newRow.put("childs", childs);
