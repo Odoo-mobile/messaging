@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
@@ -19,6 +21,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 import android.widgets.SwipeRefreshLayout.OnRefreshListener;
 
+import com.odoo.App;
 import com.odoo.addons.mail.models.MailGroup;
 import com.odoo.addons.mail.providers.group.MailGroupProvider;
 import com.odoo.orm.ODataRow;
@@ -78,6 +81,19 @@ public class Groups extends BaseFragment implements LoaderCallbacks<Cursor>,
 		menu.add(new DrawerItem(TAG, "My Groups", true));
 		menu.add(new DrawerItem(TAG, "Groups", 0,
 				R.drawable.ic_action_social_group, object("group")));
+		Intent intent = null;
+		String note_package = "com.odoo.note";
+		App app = (App) context.getApplicationContext();
+		if (app.appInstalled(note_package)) {
+			intent = app.getPackageManager().getLaunchIntentForPackage(
+					note_package);
+		} else {
+			intent = new Intent(Intent.ACTION_VIEW,
+					Uri.parse("market://details?id=" + note_package));
+		}
+		menu.add(new DrawerItem(TAG, "Notes", true));
+		menu.add(new DrawerItem(TAG, "Notes", 0, R.drawable.ic_action_notes,
+				intent));
 		return menu;
 	}
 
