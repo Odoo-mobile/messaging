@@ -120,8 +120,6 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 			mTwoPane = true;
 		}
 		if (savedInstanceState != null) {
-			// mDrawerItemSelectedPosition = savedInstanceState
-			// .getInt("current_drawer_item");
 			return;
 		}
 		init();
@@ -130,7 +128,8 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);
-		if (OUser.current(mContext) != null && !isNewAccountRequest()) {
+		if (OUser.current(mContext) != null && !isNewAccountRequest()
+				&& !intentRequests()) {
 			populateNavDrawer(savedInstanceState);
 			setupAccountBox();
 			if (savedInstanceState != null) {
@@ -403,15 +402,19 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 
 	@Override
 	public void loadFragment(DrawerItem item) {
-
-		Fragment fragment = (Fragment) item.getFragmentInstace();
-		if (item.getTagColor() != null
-				&& !fragment.getArguments().containsKey("tag_color")) {
-			Bundle tagcolor = fragment.getArguments();
-			tagcolor.putInt("tag_color", Color.parseColor(item.getTagColor()));
-			fragment.setArguments(tagcolor);
+		Object frag = item.getFragmentInstace();
+		if (frag instanceof Fragment) {
+			Fragment fragment = (Fragment) frag;
+			if (item.getTagColor() != null
+					&& !fragment.getArguments().containsKey("tag_color")) {
+				Bundle tagcolor = fragment.getArguments();
+				tagcolor.putInt("tag_color",
+						Color.parseColor(item.getTagColor()));
+				fragment.setArguments(tagcolor);
+			}
+			frag = fragment;
 		}
-		loadFragment(fragment);
+		loadFragment(frag);
 	}
 
 	private void loadFragment(Object instance) {
@@ -518,27 +521,20 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 	}
 
 	@Override
-	protected void intentRequests() {
-		int position = getCurrentPosition();
+	protected boolean intentRequests() {
 		/**
 		 * TODO: handle intent request from outside
 		 */
 		if (getIntent().getAction() != null
 				&& !getIntent().getAction().toString()
 						.equalsIgnoreCase("android.intent.action.MAIN")) {
-
+			lockDrawer(false);
 			/**
 			 * TODO: handle widget fragment requests.
 			 */
 
-		} else {
-			if (position > 0) {
-				if (position != getDrawerItemPosition()) {
-					loadFragment(getDrawerItem(position));
-				}
-			}
 		}
-
+		return false;
 	}
 
 	public void setViewAutoHide(ListView listView, View view) {
