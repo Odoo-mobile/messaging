@@ -1,23 +1,28 @@
 package com.odoo.addons.mail.widgets;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.TimeZone;
 
+import android.annotation.SuppressLint;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService.RemoteViewsFactory;
 
+import com.odoo.addons.mail.Mail;
 import com.odoo.addons.mail.models.MailMessage;
-import com.odoo.orm.ODataRow;
+import com.odoo.orm.OColumn;
 import com.odoo.support.OUser;
-import com.odoo.support.listview.OCursorListAdapter;
-import com.odoo.util.logger.OLog;
+import com.odoo.util.Base64Helper;
+import com.odoo.util.ODate;
 import com.odoo.widgets.WidgetHelper;
 import com.openerp.R;
 
@@ -25,25 +30,24 @@ public class MailRemoteViewFactory implements RemoteViewsFactory {
 
 	public static final String TAG = "com.odoo.addons.mail.widgets.MailRemoteViewFactory";
 	private Context mContext = null;
-	private int mAppWidgetId = -1;
+	private Cursor mCursor;
+	private String mFilter = "";
+	private String selection;
+	private String[] args;
+	private int[] background_resources = new int[] { Color.WHITE,
+			Color.parseColor("#ebebeb") };
 
-	private int[] starred_drawables = new int[] { R.drawable.ic_action_starred };
-	private List<Object> mMailListItems = new ArrayList<Object>();
-	private OCursorListAdapter mAdapter = null;
-	String mFilter = "inbox";
-
+	@SuppressLint("InlinedApi")
 	public MailRemoteViewFactory(Context context, Intent intent) {
 		Log.d(TAG, "MessageRemoteViewFactory->constructor()");
 		mContext = context;
-		mAppWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-				AppWidgetManager.INVALID_APPWIDGET_ID);
 		mFilter = intent.getExtras().getString(
 				AppWidgetManager.EXTRA_APPWIDGET_OPTIONS);
 	}
 
 	@Override
 	public int getCount() {
-		return mMailListItems.size();
+		return mCursor.getCount();
 	}
 
 	@Override
@@ -60,93 +64,57 @@ public class MailRemoteViewFactory implements RemoteViewsFactory {
 
 	@Override
 	public RemoteViews getViewAt(int position) {
-		Log.d(TAG, "getViewAt()");
-
 		RemoteViews mView = new RemoteViews(mContext.getPackageName(),
 				R.layout.widget_mail_item_layout);
+		mCursor.moveToPosition(position);
+		// Updating views
+		int to_read = mCursor.getInt(mCursor.getColumnIndex("to_read"));
+		mView.setInt(R.id.mail_row, "setBackgroundColor",
+				background_resources[to_read]);
 
-		// ODataRow row = (ODataRow) mMailListItems.get(position);
-		OLog.log("position = " + position);
+		int is_fav = mCursor.getInt(mCursor.getColumnIndex("starred"));
+		mView.setInt(
+				R.id.img_starred_mlist,
+				"setColorFilter",
+				(is_fav == 1) ? Color.parseColor("#FF8800") : Color
+						.parseColor("#aaaaaa"));
 
-		Cursor c = (Cursor) mMailListItems.get(position);
-		// String to_read = row.getString("to_read");
-		// int to_read = c.getInt(c.getColumnIndex("to_read"));
-		// if (to_read == 1) {
-		// mView.setTextColor(R.id.txvMessageSubject, Color.BLACK);
-		// mView.setTextColor(R.id.txvMessageFrom, Color.BLACK);
-		// } else {
-		// mView.setTextColor(R.id.txvMessageSubject,
-		// Color.parseColor("#414141"));
-		// mView.setTextColor(R.id.txvMessageFrom, Color.parseColor("#414141"));
-		// }
-		// // String starred = row.getString("starred");
-		// int starred = c.getInt(c.getColumnIndex("starred"));
-		// if (starred == 1)
-		// mView.setImageViewResource(R.id.imgMessageStarred,
-		// starred_drawables[0]); // Color.parseColor("#FF8800")
-		// else
-		// mView.setImageViewResource(R.id.imgMessageStarred,
-		// starred_drawables[0]); // Color.parseColor("#aaaaaa")
-		//
-		// // String subject = row.getString("subject");
-		// String subject = c.getString(c.getColumnIndex("subject"));
-		// if (subject.equals("false")) {
-		// // subject = row.getString("type");
-		// subject = c.getString(c.getColumnIndex("type"));
-		// }
-		// // if (!row.getString("record_name").equals("false"))
-		// if (!c.getString(c.getColumnIndex("record_name")).equals("false"))
-		// subject = c.getString(c.getColumnIndex("record_name"));
-		// // subject = row.getString("record_name");
-		// mView.setTextViewText(R.id.txvMessageSubject, subject);
-		//
-		// // if (row.getInt("childs") > 0) {
-		// if (c.getInt(c.getColumnIndex("childs")) > 0) {
-		// mView.setViewVisibility(R.id.txvChilds, View.VISIBLE);
-		// // mView.setTextViewText(R.id.txvChilds, row.getString("childs")
-		// // + " reply");
-		// mView.setTextViewText(R.id.txvChilds,
-		// c.getString(c.getColumnIndex("childs")) + " reply");
-		// } else
-		// mView.setViewVisibility(R.id.txvChilds, View.GONE);
-		//
-		// // mView.setTextViewText(R.id.txvMessageBody,
-		// // HTMLHelper.htmlToString(row.getString("body")));
-		// // String date = row.getString("date");
-		// mView.setTextViewText(R.id.txvMessageBody,
-		// HTMLHelper.htmlToString(c.getString(c.getColumnIndex("body"))));
-		// String date = c.getString(c.getColumnIndex("date"));
-		// mView.setTextViewText(R.id.txvMessageDate, ODate.getDate(mContext,
-		// date, TimeZone.getDefault().getID(), "MMM dd,  hh:mm a"));
-		// mView.setTextColor(R.id.txvMessageDate, Color.parseColor("#414141"));
-		//
-		// // String from = row.getString("email_from");
-		// // if (from.equals("false")) {
-		// // ODataRow author_id = row.getM2ORecord("author_id").browse();
-		// // if (author_id != null)
-		// // from = row.getM2ORecord("author_id").browse().getString("name");
-		// // }
-		// String from = c.getString(c.getColumnIndex("email_from"));
-		// // if (from.equals("false")) {
-		// // ODataRow author_id =
-		// // c.getM2ORecord(c.getColumnIndex("author_id")).browse();
-		// // if (author_id != null)
-		// // from =
-		// //
-		// c.getM2ORecord(c.getColumnIndex("author_id")).browse().getString("name");
-		// // }
-		// mView.setTextViewText(R.id.txvMessageFrom, from);
-		// // mView.setViewVisibility(R.id.txvMessageTag, View.GONE);
+		int replies = Integer.parseInt(mCursor.getString(mCursor
+				.getColumnIndex("total_childs")));
+		String childs = "";
+		if (replies > 0) {
+			childs = replies + " replies";
+		}
+		mView.setTextViewText(R.id.total_childs, childs);
+		mView.setTextViewText(R.id.message_title,
+				mCursor.getString(mCursor.getColumnIndex("message_title")));
+		mView.setTextViewText(R.id.author_name,
+				mCursor.getString(mCursor.getColumnIndex("author_name")));
+		mView.setTextViewText(R.id.message_short_body,
+				mCursor.getString(mCursor.getColumnIndex("short_body")));
+		mView.setTextViewText(R.id.mail_date, ODate.getDate(mContext, mCursor
+				.getString(mCursor.getColumnIndex("date")), TimeZone
+				.getDefault().getID(), "MMM dd"));
+		String base64 = mCursor.getString(mCursor
+				.getColumnIndex("author_id_image_small"));
+		Bitmap bitmap = null;
+		if (!base64.equals("false")) {
+			bitmap = Base64Helper.getBitmapImage(mContext, base64);
+		} else {
+			bitmap = BitmapFactory.decodeResource(mContext.getResources(),
+					R.drawable.avatar);
+		}
+		bitmap = Base64Helper.getRoundedCornerBitmap(mContext, bitmap, true);
+		mView.setBitmap(R.id.author_image, "setImageBitmap", bitmap);
 
+		// onClick intent call
 		final Intent fillInIntent = new Intent();
 		fillInIntent.setAction(MailWidget.ACTION_MESSAGE_WIDGET_CALL);
 		final Bundle bundle = new Bundle();
-		// bundle.putInt(WidgetHelper.EXTRA_WIDGET_DATA_VALUE,
-		// row.getInt("id"));
 		bundle.putInt(WidgetHelper.EXTRA_WIDGET_DATA_VALUE,
-				c.getInt(c.getColumnIndex("id")));
+				mCursor.getInt(mCursor.getColumnIndex(OColumn.ROW_ID)));
 		fillInIntent.putExtras(bundle);
-		mView.setOnClickFillInIntent(R.id.messageListViewItem, fillInIntent);
+		mView.setOnClickFillInIntent(R.id.mail_row_clickable, fillInIntent);
 		return mView;
 	}
 
@@ -164,88 +132,62 @@ public class MailRemoteViewFactory implements RemoteViewsFactory {
 	public void onCreate() {
 		if (OUser.current(mContext) == null)
 			return;
-		mMailListItems.clear();
-		HashMap<String, ODataRow> parents = new HashMap<String, ODataRow>();
 		MailMessage message = new MailMessage(mContext);
-		String where = "to_read = ? AND starred = ? AND parent_id = ?";
-		String[] whereArgs = new String[] { "1", "0", "0" };
-		// HashMap<String, Object> whereMap = getWhere(mFilter);
-		// String where = (String) whereMap.get("where");
-		// String[] whereArgs = (String[]) whereMap.get("whereArgs");
-		// List<ODataRow> messages = message.select(where, whereArgs, null,
-		// null,
-		// "date DESC");
-		Cursor c = mContext.getContentResolver().query(
-				message.uri(),
-				new String[] { "message_title", "author_name",
-						"author_id.image_small", "total_childs", "parent_id",
-						"date", "to_read", "body", "starred" }, where,
-				whereArgs, null);
-		OLog.log("cursor" + c.toString());
-		// ODataRow newRow = null;
-		while (c.moveToNext()) {
-			// OLog.log(c.getString(c.getColumnIndex("body")));
-			// OLog.log(c.getString(c.getColumnIndex("subject")));
-			// OLog.log(c.getInt(c.getColumnIndex("type")) + "");
-			// OLog.log(c.getString(c.getColumnIndex("message_title")));
-			// newRow = c.toString();
-			mMailListItems.add(c);
+		Mail.Type mType = Mail.Type.Inbox;
+		if (mFilter.equals(MailWidgetConfigure.KEY_TOME)) {
+			mType = Mail.Type.ToMe;
 		}
-		OLog.log("List items " + mMailListItems.toString());
-		// SQLiteDatabase db = message.getReadableDatabase();
-		// ContentResolver cr=
-		// OLog.log("Cursor == "+c);
-		// for (ODataRow row : messages) {
-		// boolean isParent = true;
-		// // Get parent id of the Mail
-		// ODataRow rows = row.getM2ORecord("parent_id").browse();
-		// int key = 0;
-		// if (rows != null)
-		// key = rows.getInt("id");
-		// if (key != 0) {
-		// isParent = false;
-		// }
-		// if (!parents.containsKey(key)) {
-		// // Fetching row parent message
-		// ODataRow newRow = null;
-		//
-		// if (isParent) {
-		// newRow = row;
-		// } else {
-		// newRow = message.select(key);
-		// }
-		// int childs = message.count("parent_id = ? ", new String[] { key
-		// + "" });
-		// newRow.put("childs", childs);
-		// parents.put(key + "", null);
-		// mMailListItems.add(newRow);
-		// }
-		// }
+		if (mFilter.equals(MailWidgetConfigure.KEY_TODO)) {
+			mType = Mail.Type.ToDo;
+		}
+		if (mFilter.equals(MailWidgetConfigure.KEY_ARCHIVE)) {
+			mType = Mail.Type.Archives;
+		}
+		createSelection(mType);
+		mCursor = mContext.getContentResolver().query(
+				message.mailUri(),
+				new String[] { "message_title", "author_name", "parent_id",
+						"author_id.image_small", "total_childs", "date",
+						"to_read", "short_body", "starred" }, selection, args,
+				null);
 
 	}
 
-	// public HashMap<String, Object> getWhere(String type) {
-	// HashMap<String, Object> map = new HashMap<String, Object>();
-	// String where = null;
-	// String[] whereArgs = null;
-	// if (type != null) {
-	// if (type.equals("inbox")) {
-	// where = "to_read = ? AND starred = ?";
-	// whereArgs = new String[] { "1", "0" };
-	// }
-	// if (type.equals("to-do")) {
-	// where = "to_read = ? AND starred = ?";
-	// whereArgs = new String[] { "1", "1" };
-	// }
-	// if (type.equals("to:me")) {
-	// where = "res_id = ? AND to_read = ?";
-	// whereArgs = new String[] { "0", "1" };
-	// }
-	// }
-	// map.put("where", where);
-	// map.put("whereArgs", whereArgs);
-	// return map;
-	// }
+	private void createSelection(Mail.Type mType) {
+		selection = " ";
+		List<String> argsList = new ArrayList<String>();
+		switch (mType) {
+		case Inbox:
+			selection += " to_read = ? and starred = ? and id != ?";
+			argsList.add("1");
+			argsList.add("0");
+			argsList.add("0");
+			break;
+		case ToMe:
+			selection += " to_read = ? and starred = ? and res_id = ?";
+			argsList.add("1");
+			argsList.add("0");
+			argsList.add("0");
+			break;
+		case ToDo:
+			selection += " to_read = ? and starred = ?";
+			argsList.add("1");
+			argsList.add("1");
+			break;
+		case Outbox:
+			selection += " id = ?";
+			argsList.add("0");
+			break;
+		case Archives:
+			// Load all mails expect out box
+			selection += " id != ?";
+			argsList.add("0");
+			break;
+		default:
+			break;
+		}
+		args = argsList.toArray(new String[argsList.size()]);
+	}
 
 	@Override
 	public void onDataSetChanged() {
@@ -254,5 +196,7 @@ public class MailRemoteViewFactory implements RemoteViewsFactory {
 
 	@Override
 	public void onDestroy() {
+		mCursor.close();
 	}
+
 }

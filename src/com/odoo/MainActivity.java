@@ -42,17 +42,21 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.odoo.addons.mail.MailDetail;
+import com.odoo.addons.mail.widgets.MailWidget;
 import com.odoo.auth.OdooAccountManager;
 import com.odoo.base.account.AccountsDetail;
 import com.odoo.base.account.UserProfile;
 import com.odoo.base.ir.IrModel;
 import com.odoo.base.login_signup.AccountCreate;
 import com.odoo.base.login_signup.LoginSignup;
+import com.odoo.orm.OColumn;
 import com.odoo.support.OUser;
 import com.odoo.support.fragment.AsyncTaskListener;
 import com.odoo.support.fragment.FragmentListener;
 import com.odoo.util.PreferenceManager;
 import com.odoo.util.drawer.DrawerItem;
+import com.odoo.widgets.WidgetHelper;
 import com.openerp.R;
 
 /**
@@ -120,8 +124,6 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 			mTwoPane = true;
 		}
 		if (savedInstanceState != null) {
-			// mDrawerItemSelectedPosition = savedInstanceState
-			// .getInt("current_drawer_item");
 			return;
 		}
 		init();
@@ -130,7 +132,8 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);
-		if (OUser.current(mContext) != null && !isNewAccountRequest()) {
+		if (OUser.current(mContext) != null && !isNewAccountRequest()
+				&& !intentRequests()) {
 			populateNavDrawer(savedInstanceState);
 			setupAccountBox();
 			if (savedInstanceState != null) {
@@ -518,27 +521,33 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 	}
 
 	@Override
-	protected void intentRequests() {
-		int position = getCurrentPosition();
+	protected boolean intentRequests() {
 		/**
 		 * TODO: handle intent request from outside
 		 */
 		if (getIntent().getAction() != null
 				&& !getIntent().getAction().toString()
 						.equalsIgnoreCase("android.intent.action.MAIN")) {
-
+			lockDrawer(false);
 			/**
 			 * TODO: handle widget fragment requests.
 			 */
-
-		} else {
-			if (position > 0) {
-				if (position != getDrawerItemPosition()) {
-					loadFragment(getDrawerItem(position));
+			if (getIntent().getAction().equals(
+					MailWidget.ACTION_MESSAGE_WIDGET_CALL)) {
+				String key = getIntent().getExtras().getString(
+						WidgetHelper.EXTRA_WIDGET_ITEM_KEY);
+				if (key.equals("message_detail")) {
+					MailDetail detail = new MailDetail();
+					Bundle bundle = new Bundle();
+					bundle.putInt(OColumn.ROW_ID, getIntent().getExtras()
+							.getInt(WidgetHelper.EXTRA_WIDGET_DATA_VALUE));
+					detail.setArguments(bundle);
+					startMainFragment(detail, false);
+					return true;
 				}
 			}
 		}
-
+		return false;
 	}
 
 	public void setViewAutoHide(ListView listView, View view) {

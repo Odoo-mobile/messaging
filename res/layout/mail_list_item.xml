@@ -8,56 +8,6 @@
     odoo:model="mail.message" >
 
     <LinearLayout
-        android:id="@+id/messageArchiveView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#aaa"
-        android:divider="#ffffff"
-        android:dividerPadding="8dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:paddingLeft="10dp"
-        android:showDividers="middle"
-        android:visibility="gone" >
-
-        <TextView
-            style="?android:textAppearanceMedium"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:fontFamily="sans-serif-condensed"
-            android:paddingLeft="?android:listPreferredItemPaddingLeft"
-            android:text="Archived"
-            android:textColor="#fff" />
-
-        <LinearLayout
-            android:id="@+id/undoArchived"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="?android:selectableItemBackground"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:paddingRight="10dp" >
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_action_undo"
-                android:tint="#ffffff" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:fontFamily="@string/font_fontFamily_condensed"
-                android:paddingLeft="5dp"
-                android:text="UNDO"
-                android:textAppearance="?android:textAppearanceMedium"
-                android:textColor="#fff" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
         android:id="@+id/messageListViewItem"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
