@@ -21,10 +21,10 @@ import com.openerp.R;
 
 public class MailWidgetConfigure extends Activity implements
 		OnItemClickListener {
-	public static final String KEY_INBOX = "KEY_INBOX";
-	public static final String KEY_TODO = "KEY_TODO";
-	public static final String KEY_TOME = "KEY_TOME";
-	public static final String KEY_ARCHIVE = "KEY_ARCHIVE";
+	public static final String KEY_INBOX = "inbox";
+	public static final String KEY_TODO = "to-do";
+	public static final String KEY_TOME = "to:me";
+	public static final String KEY_ARCHIVE = "archive";
 
 	private static final String PREFS_NAME = "com.odoo.widgetsWidgetProvider";
 
