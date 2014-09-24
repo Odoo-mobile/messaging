@@ -143,7 +143,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		List<DrawerItem> menu = new ArrayList<DrawerItem>();
 		menu.add(new DrawerItem(TAG, "Inbox", count_total(context, Type.Inbox),
 				R.drawable.ic_action_inbox, object(Type.Inbox)));
-		menu.add(new DrawerItem(TAG, "To: me", count_total(context, Type.ToMe),
+		menu.add(new DrawerItem(TAG, "To:me", count_total(context, Type.ToMe),
 				R.drawable.ic_action_user, object(Type.ToMe)));
 		menu.add(new DrawerItem(TAG, "To-do", count_total(context, Type.ToDo),
 				R.drawable.ic_action_clipboard, object(Type.ToDo)));

@@ -25,7 +25,7 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="center_vertical"
-                android:src="@drawable/ic_launcher" />
+                android:src="@drawable/ic_odoo_o_purple" />
 
             <LinearLayout
                 android:id="@+id/widgetTopBar"
@@ -40,6 +40,7 @@
                     android:id="@+id/widgetTxvWidgetTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@string/font_fontFamily_condensed"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="#4B4B4D"
                     android:textStyle="bold" />
@@ -48,6 +49,7 @@
                     android:id="@+id/txvWidgetUserName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@string/font_fontFamily_light"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textColor="#4B4B4D" />
             </LinearLayout>
@@ -58,7 +60,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:padding="8dp"
-                android:src="@drawable/ic_action_mail_add"
+                android:src="@drawable/ic_action_mail_compose"
                 android:tint="#414141" />
         </LinearLayout>
 

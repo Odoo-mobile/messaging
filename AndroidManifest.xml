@@ -246,7 +246,8 @@
         <!-- Mail widget configuration -->
         <activity
             android:name="com.odoo.addons.mail.widgets.MailWidgetConfigure"
-            android:icon="@drawable/ic_launcher_odoo" >
+            android:icon="@drawable/ic_odoo_o_purple"
+            android:theme="@style/PreferenceTheme" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
