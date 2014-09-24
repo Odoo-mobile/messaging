@@ -52,6 +52,7 @@ import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.util.OControls;
 import com.odoo.util.PreferenceManager;
 import com.odoo.util.drawer.DrawerItem;
+import com.odoo.util.logger.OLog;
 import com.openerp.R;
 
 public class MailDetail extends BaseFragment implements
@@ -101,6 +102,7 @@ public class MailDetail extends BaseFragment implements
 			public View onViewCreated(Context context, ViewGroup view,
 					Cursor cr, int position) {
 				int parent_id = cr.getInt(cr.getColumnIndex("parent_id"));
+				OLog.log("parent_id == " + parent_id);
 				int resource = (parent_id == 0) ? mAdapter.getResource()
 						: R.layout.mail_detail_reply_list_item;
 				return mAdapter.inflate(resource, view);
