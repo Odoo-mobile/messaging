@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.openerp"
-    android:versionCode="27"
-    android:versionName="1.0 Beta" >
+    package="com.odoo"
+    android:versionCode="6"
+    android:versionName="2.0.2alpha" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -27,15 +27,16 @@
     <uses-permission android:name="android.permission.GET_TASKS" />
 
     <application
-        android:name="com.openerp.App"
+        android:name="com.odoo.App"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
+        android:logo="@drawable/ic_odoo_o"
         android:theme="@style/AppTheme" >
 
         <!-- Android Account Authentication Service -->
-        <service android:name="com.openerp.auth.OpenERPAuthenticateService" >
+        <service android:name="com.odoo.auth.OdooAuthenticateService" >
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" >
                 </action>
@@ -48,7 +49,7 @@
         </service>
 
         <activity
-            android:name="com.openerp.MainActivity"
+            android:name="com.odoo.MainActivity"
             android:label="@string/title_activity_main" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -57,166 +58,115 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.openerp.AppSettingsActivity"
-            android:icon="@drawable/ic_launcher_o" >
+            android:name="com.odoo.BaseSettings"
+            android:theme="@style/PreferenceTheme" >
             <intent-filter>
-                <action android:name="com.openerp.ACTION_ACCOUNT_CONFIG" />
+                <action android:name="com.odoo.ACTION_ACCOUNT_BASE_CONFIG" />
+
+                <category android:name="android.intent.category.PREFERENCE" />
             </intent-filter>
         </activity>
         <activity
-            android:name="com.openerp.addons.note.NoteComposeActivity"
-            android:label="@string/title_activity_note_compose" >
+            android:name="com.odoo.GeneralSettings"
+            android:theme="@style/PreferenceTheme" >
             <intent-filter>
-                <action android:name="android.intent.action.SEND" />
+                <action android:name="com.odoo.ACTION_ACCOUNT_GENERAL_CONFIG" />
+
+                <category android:name="android.intent.category.PREFERENCE" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.odoo.base.about.About"
+            android:theme="@style/PreferenceTheme" >
+            <intent-filter>
+                <action android:name="com.odoo.ACTION_ABOUT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.odoo.addons.mail.ComposeMail"
+            android:icon="@drawable/ic_odoo_o"
+            android:label="@string/title_mail_compose" >
+            <intent-filter
+                android:icon="@drawable/ic_launcher"
+                android:label="@string/label_odoo_mail" >
+                <action android:name="android.intent.action.SENDTO" />
+
+                <data android:scheme="mailto" />
 
                 <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="text/plain" />
             </intent-filter>
-        </activity>
-        <activity
-            android:name="com.openerp.addons.message.MessageComposeActivity"
-            android:label="@string/title_activity_message_compose" >
-            <intent-filter>
+            <intent-filter
+                android:icon="@drawable/ic_launcher"
+                android:label="@string/label_odoo_mail" >
                 <action android:name="android.intent.action.SEND" />
+
+                <data android:mimeType="*/*" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter
+                android:icon="@drawable/ic_launcher"
+                android:label="@string/label_odoo_mail" >
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+
+                <data android:mimeType="*/*" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter
+                android:icon="@drawable/ic_launcher"
+                android:label="@string/label_odoo_mail" >
                 <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="image/*" />
-                <data android:mimeType="vnd.android.cursor.item/vnd.com.openerp.auth.profile" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
+                <data android:scheme="mailto" />
 
                 <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="text/plain" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="audio/*" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND_MULTIPLE" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="audio/*" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="application/*" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND_MULTIPLE" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="application/*" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND_MULTIPLE" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="image/*" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND_MULTIPLE" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="text/plain" />
+                <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
-
-        <!-- Message provider -->
+        <!-- Base Providers (Note: update authority as per your app package) -->
         <provider
-            android:name="com.openerp.addons.message.providers.message.MessageProvider"
-            android:authorities="com.openerp.addons.message.providers.message"
-            android:enabled="true"
-            android:exported="true"
-            android:label="Messages"
-            android:syncable="true" />
-        <!-- Message provider service -->
-        <service
-            android:name="com.openerp.addons.message.services.MessageSyncService"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_messages" />
-        </service>
-
-        <!-- Note provider -->
+            android:name="com.odoo.base.ir.providers.model.ModelProvider"
+            android:authorities="com.odoo.mail.base.ir.providers.model"
+            android:exported="false"
+            android:multiprocess="true" />
         <provider
-            android:name="com.openerp.addons.note.providers.note.NoteProvider"
-            android:authorities="com.openerp.addons.note.providers.note"
-            android:enabled="true"
-            android:exported="true"
-            android:label="Notes"
-            android:syncable="true" />
-        <!-- Note provider service -->
-        <service
-            android:name="com.openerp.addons.note.services.NoteSyncService"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_notes" />
-        </service>
-
-        <!-- Mail Group provider -->
+            android:name="com.odoo.base.res.providers.users.UsersProvider"
+            android:authorities="com.odoo.mail.base.res.providers.users"
+            android:exported="false"
+            android:multiprocess="true" />
         <provider
-            android:name="com.openerp.addons.message.providers.groups.MailGroupProvider"
-            android:authorities="com.openerp.addons.message.providers.groups"
-            android:enabled="true"
-            android:exported="true"
-            android:label="Groups"
-            android:syncable="true" />
+            android:name="com.odoo.base.ir.providers.attachments.AttachmentProvider"
+            android:authorities="com.odoo.mail.base.ir.providers.attachments"
+            android:exported="false"
+            android:multiprocess="true" />
+        <provider
+            android:name="com.odoo.base.res.providers.country.CountryProvider"
+            android:authorities="com.odoo.mail.base.res.providers.country"
+            android:exported="false"
+            android:multiprocess="true" />
+        <provider
+            android:name="com.odoo.base.res.providers.company.CompanyProvider"
+            android:authorities="com.odoo.mail.base.res.providers.company"
+            android:exported="false"
+            android:multiprocess="true" />
+        <provider
+            android:name="com.odoo.base.res.providers.partners.PartnersProvider"
+            android:authorities="com.odoo.mail.base.res.providers.partners"
+            android:exported="false"
+            android:multiprocess="true" />
+        <provider
+            android:name="com.odoo.base.mail.provider.MailFollowerProvider"
+            android:authorities="com.odoo.base.mail.provider.mailfollower"
+            android:exported="false"
+            android:multiprocess="true" />
 
-        <!-- Mail Group provider service -->
-        <service
-            android:name="com.openerp.addons.message.services.MailGroupSyncService"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_groups" />
-        </service>
-
-        <!-- Meeting service -->
-        <service
-            android:name="com.openerp.addons.meeting.services.MeetingSyncService"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_meetings" />
-        </service>
-
+        <!-- /Base Providers -->
         <!-- Contact service -->
+        <!--
+        FIXME: 
         <service
-            android:name="com.openerp.base.res.services.ContactSyncService"
+            android:name="com.odoo.base.res.services.ContactSyncService"
             android:exported="true"
             android:process=":contacts" >
             <intent-filter>
@@ -230,53 +180,74 @@
                 android:name="android.provider.CONTACTS_STRUCTURE"
                 android:resource="@xml/contacts" />
         </service>
+        -->
+        <!-- Mail Provider -->
+        <provider
+            android:name="com.odoo.addons.mail.providers.mail.MailProvider"
+            android:authorities="com.odoo.addons.mail.providers.mail"
+            android:enabled="true"
+            android:exported="true"
+            android:label="Messages"
+            android:syncable="true" />
 
-        <!-- Message Widget -->
+        <!-- Mail provider service -->
+        <service
+            android:name="com.odoo.addons.mail.services.MailSyncService"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/sync_mail" />
+        </service>
+        <!-- Mail Group provider -->
+        <provider
+            android:name="com.odoo.addons.mail.providers.group.MailGroupProvider"
+            android:authorities="com.odoo.addons.mail.providers.group"
+            android:enabled="true"
+            android:exported="true"
+            android:label="Groups"
+            android:syncable="true" />
+        <provider
+            android:name="com.odoo.addons.mail.providers.notification.MailNotificationProvider"
+            android:authorities="com.odoo.addons.mail.providers.notification"
+            android:multiprocess="true" />
+        <!-- Mail Group provider service -->
+        <service
+            android:name="com.odoo.addons.mail.services.MailGroupSyncService"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/sync_mailgroup" />
+        </service>
+        <!-- Mail Widget -->
         <receiver
-            android:name="com.openerp.addons.message.widgets.MessageWidget"
-            android:label="OpenERP Messaging" >
+            android:name="com.odoo.addons.mail.widgets.MailWidget"
+            android:label="Odoo Messaging" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
 
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/widget_message" />
+                android:resource="@xml/widget_mail" />
         </receiver>
-        <!-- Message widget remote view service -->
+        <!-- Mail widget remote view service -->
         <service
-            android:name="com.openerp.addons.message.widgets.MessageRemoteViewService"
+            android:name="com.odoo.addons.mail.widgets.MailRemoteViewService"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
 
-        <!-- Message widget configuration -->
+        <!-- Mail widget configuration -->
         <activity
-            android:name="com.openerp.addons.message.widgets.MessageWidgetConfigure"
-            android:icon="@drawable/ic_launcher_o" >
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
-            </intent-filter>
-        </activity>
-
-        <!-- Note Widget -->
-        <receiver
-            android:name="com.openerp.addons.note.widgets.NoteWidget"
-            android:label="OpenERP Notes" >
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_note" />
-        </receiver>
-        <!-- Note widget remote view service -->
-        <service
-            android:name="com.openerp.addons.note.widgets.NoteRemoteViewService"
-            android:permission="android.permission.BIND_REMOTEVIEWS" />
-        <!-- Note widget configuration -->
-        <activity
-            android:name="com.openerp.addons.note.widgets.NoteWidgetConfigure"
-            android:icon="@drawable/ic_launcher_o" >
+            android:name="com.odoo.addons.mail.widgets.MailWidgetConfigure"
+            android:icon="@drawable/ic_odoo_o_purple"
+            android:theme="@style/PreferenceTheme" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>

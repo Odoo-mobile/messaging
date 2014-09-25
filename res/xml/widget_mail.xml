@@ -1,0 +1,13 @@
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="com.odoo.addons.mail.widgets.MailWidgetConfigure"
+    android:initialLayout="@layout/widget_mail_layout"
+    android:minHeight="150dip"
+    android:minResizeHeight="110dip"
+    android:minResizeWidth="150dip"
+    android:minWidth="204dip"
+    android:previewImage="@drawable/ic_launcher_odoo"
+    android:resizeMode="vertical|horizontal"
+    android:updatePeriodMillis="10000"
+    android:widgetCategory="keyguard|home_screen" >
+
+</appwidget-provider>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_mail_search"
+        android:icon="@drawable/ic_action_search"
+        android:actionViewClass="android.widget.SearchView"
+        android:showAsAction="always|collapseActionView"
+        android:title="@string/label_search">
+    </item>
+    <!--
+    <item
+        android:id="@+id/menu_mail_create"
+        android:icon="@drawable/ic_action_mail_compose"
+        android:showAsAction="always"
+        android:title="@string/label_mail_compose">
+    </item>
+    -->
+
+
+</menu>

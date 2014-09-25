@@ -2,31 +2,29 @@
 <resources>
 
     <string name="app_name">Odoo</string>
-
+    <string name="label_odoo">Odoo</string>
+    <!-- Settings -->
+    <string name="general_settings">General Settings</string>
+    <string name="application_settings">Application Settings</string>
+    <string name="application_settings_summary">Sync settings, Interval settings, sync data limit, and more</string>
+    <string name="account_settings">Account Settings</string>
+    <string name="add_account">Add Account</string>
+    <string name="summary_about_odoo_mobile">Odoo Mobile</string>
+    <string name="build_version">Build Version</string>
+    <string name="label_powered_by">Powered by</string>
+    <string name="odoo_mobile_framework">Odoo Mobile framework</string>
+    <string name="supported_versions">Supported versions</string>
+    <string name="supported_versions_names">Odoo 7.0+</string>
     <!-- Account -->
     <string name="account_user_dp">Account User Display Picture</string>
     <string name="logo_description">Odoo</string>
-    <string name="account_title">Setup Your Odoo Server</string>
-    <string name="account_description">Provide your Odoo Server URL and click on Continue button to test connection and go next step.</string>
-    <string name="account_edit_server_url">Server URL</string>
-    <string name="account_edit_server_port">Port Number (If any)</string>
-    <string name="account_continue_button">Continue</string>
-    <string name="account_login_button">Login</string>
     <string name="str_user_login">User Login</string>
     <string name="str_user_name">User Name</string>
     <string name="str_server_url">Server URL</string>
     <string name="str_database">Database</string>
+    <string name="str_odoo_version">Odoo Version</string>
     <string name="str_timezone">TimeZone</string>
-    <string name="str_provide_port_number">Provide your port number with URL if any.</string>
-    <string name="str_secure_connection">Secure Connection</string>
-
-    <!-- Login Fragment Strings -->
-    <string name="login_title">Config Your Odoo Login Details</string>
-    <string name="login_description">Select your working database and provide your username and password to access.</string>
     <string name="login_select_database">Select Database</string>
-    <string name="login_edit_username">Username</string>
-    <string name="login_edit_password">Password</string>
-    <string name="action_settings">Settings</string>
 
     <!-- SyncWizard fragment strings -->
     <string name="syncwizard_title">Enable/Disable your Sync Settings</string>
@@ -62,7 +60,7 @@
     </string-array>
 
     <!-- Aboout Company Fragment Strings -->
-    <string name="about_Company_line1">Copyright © 2004-TODAY Odoo. All Rights Reserved.</string>
+    <string name="about_Company_line1">Copyright © 2004-TODAY Odoo SA. All Rights Reserved.</string>
     <string name="about_Company_line2">Odoo is a trademark of the <a href="https://www.odoo.com/">Odoo.com.</a></string>
     <string name="about_Company_line3">Licenced under the terms of <a href="http://www.gnu.org/licenses/agpl.html/">GNU Affero General Public License</a></string>
     <string name="about_Company_line4">For more information visit <a href="https://www.odoo.com/">Odoo.com</a>.</string>
@@ -80,10 +78,12 @@
     <string name="title_profile">Profile</string>
     <string name="title_general_settings">General Settings</string>
     <string name="title_accounts">Accounts</string>
-    <string name="title_setup_account">Setup Account</string>
-    <string name="title_about_us">About Us</string>
+    <string name="title_about">About</string>
     <string name="title_connecting">Connecting&#8230;</string>
     <string name="title_loggin_in">Logging in&#8230;</string>
+    <string name="title_account_create">Creating account&#8230;</string>
+    <string name="title_database_create">Creating local DB&#8230;</string>
+    <string name="title_getting_instances">Getting instances&#8230;</string>
     <string name="title_confirm">Confirm</string>
     <string name="title_ssl_warning">SSL Warning</string>
     <string name="title_enter_password">Enter Password</string>
@@ -98,12 +98,16 @@
     <string name="label_yes">Yes</string>
     <string name="label_no">No</string>
     <string name="label_login">Login</string>
+    <string name="label_search">Search</string>
     <string name="label_delete">Delete</string>
     <string name="label_cancel">Cancel</string>
     <string name="label_logout">Logout</string>
     <string name="label_version">Version</string>
     <string name="label_update_info">Update Info</string>
     <string name="label_process_anyway">Process Anyway</string>
+    <string name="label_read_more">Read More</string>
+    <string name="label_read_less">Read Less</string>
+    <string name="label_no_records_found">No Records found</string>
 
     <!-- Toasts -->
     <string name="toast_setting_saved">Setting saved.</string>
@@ -116,5 +120,8 @@
     <string name="toast_are_you_sure_delete_account">Are you sure want to delete account ?</string>
     <string name="toast_provide_server_url">Provide Server URL</string>
     <string name="toast_unable_to_reach_odoo_server">Unable to reach Odoo Server.</string>
+    <string name="toast_no_database_found">No database found !</string>
+
+    <bool name="fit_to_window_height">false</bool>
 
 </resources>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?android:selectableItemBackground"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="8dp" >
+
+    <LinearLayout
+        android:id="@+id/mailAttachment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:selectableItemBackground"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp" >
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginRight="5dp"
+            android:src="@drawable/file_attachment" />
+
+        <odoo.controls.OField
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            app:defaultImage="@drawable/file_attachment"
+            app:fieldTextStyle="bold"
+            app:field_color="#414141"
+            app:field_name="datas_fname"
+            app:field_textAppearance="?android:attr/textAppearanceSmall"
+            app:with_label="false" >
+        </odoo.controls.OField>
+    </LinearLayout>
+
+</LinearLayout>

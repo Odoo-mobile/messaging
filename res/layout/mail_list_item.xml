@@ -1,0 +1,132 @@
+<odoo.controls.OForm xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:odoo="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="horizontal"
+    odoo:background_selector="?android:attr/listSelector"
+    odoo:model="mail.message" >
+
+    <LinearLayout
+        android:id="@+id/messageListViewItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <odoo.controls.OField
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="18dp"
+            odoo:binaryType="round_image"
+            odoo:defaultImage="@drawable/avatar"
+            odoo:field_name="author_id_image_small"
+            odoo:imageWidthHeight="50"
+            odoo:with_label="false" >
+        </odoo.controls.OField>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingBottom="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="10dp" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" >
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal" >
+
+                    <odoo.controls.OField
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        odoo:fieldTextStyle="bold"
+                        odoo:field_color="#414141"
+                        odoo:field_name="author_name"
+                        odoo:field_textAppearance="?android:attr/textAppearanceSmall"
+                        odoo:with_label="false" >
+                    </odoo.controls.OField>
+
+                    <odoo.controls.OField
+                        android:id="@+id/totalChilds"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        odoo:fieldTextStyle="bold"
+                        odoo:field_color="@color/gray_text"
+                        odoo:field_name="total_childs"
+                        odoo:field_textAppearance="?android:attr/textAppearanceSmall"
+                        odoo:singleLine="true"
+                        odoo:with_label="false" />
+                </LinearLayout>
+
+                <odoo.controls.OField
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    odoo:displayPattern="MMM dd"
+                    odoo:fieldTextStyle="bold"
+                    odoo:field_color="@color/gray_text"
+                    odoo:field_name="date"
+                    odoo:field_textAppearance="?android:attr/textAppearanceSmall"
+                    odoo:with_label="false" >
+                </odoo.controls.OField>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="left|top"
+                android:orientation="horizontal"
+                android:paddingBottom="5dp" >
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical" >
+
+                    <odoo.controls.OField
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        odoo:fieldTextStyle="bold"
+                        odoo:field_color="#414141"
+                        odoo:field_name="message_title"
+                        odoo:field_textAppearance="?android:attr/textAppearanceSmall"
+                        odoo:singleLine="true"
+                        odoo:with_label="false" >
+                    </odoo.controls.OField>
+
+                    <odoo.controls.OField
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        odoo:fieldTextStyle="bold"
+                        odoo:field_color="@color/gray_text"
+                        odoo:field_name="short_body"
+                        odoo:field_textAppearance="?android:attr/textAppearanceSmall"
+                        odoo:showAsText="true"
+                        odoo:singleLine="true"
+                        odoo:with_label="false" />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/img_starred_mlist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="ImgStarred"
+                    android:src="@drawable/ic_action_star_dark"
+                    android:tint="#aaa" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</odoo.controls.OForm>

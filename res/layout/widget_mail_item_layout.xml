@@ -1,0 +1,136 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mail_row"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    android:gravity="center_horizontal"
+    android:orientation="horizontal" >
+
+    <LinearLayout
+        android:id="@+id/mail_row_clickable"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal" >
+
+        <ImageView
+            android:id="@+id/author_image"
+            android:layout_width="@dimen/navdrawer_profile_image_size"
+            android:layout_height="@dimen/navdrawer_profile_image_size"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="18dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/avatar" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingBottom="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="10dp" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" >
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal" >
+
+                    <TextView
+                        android:id="@+id/author_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="5dp"
+                        android:fontFamily="@string/font_fontFamily_condensed"
+                        android:singleLine="true"
+                        android:text="Author"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:textColor="#414141"
+                        android:textStyle="bold" >
+                    </TextView>
+
+                    <TextView
+                        android:id="@+id/total_childs"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@string/font_fontFamily_condensed"
+                        android:singleLine="true"
+                        android:text="5"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:textColor="@color/gray_text"
+                        android:textStyle="bold" >
+                    </TextView>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/mail_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@string/font_fontFamily_condensed"
+                    android:singleLine="true"
+                    android:text="Sep 10"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="@color/gray_text"
+                    android:textStyle="bold" >
+                </TextView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="left|top"
+                android:orientation="horizontal"
+                android:paddingBottom="5dp" >
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:id="@+id/message_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@string/font_fontFamily_condensed"
+                        android:singleLine="true"
+                        android:text="Message title"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:textColor="#414141"
+                        android:textStyle="bold" >
+                    </TextView>
+
+                    <TextView
+                        android:id="@+id/message_short_body"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@string/font_fontFamily_condensed"
+                        android:singleLine="true"
+                        android:text="Message short body"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:textColor="@color/gray_text"
+                        android:textStyle="bold" >
+                    </TextView>
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/img_starred_mlist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="ImgStarred"
+                    android:src="@drawable/ic_action_star_dark"
+                    android:tint="#aaa" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>
