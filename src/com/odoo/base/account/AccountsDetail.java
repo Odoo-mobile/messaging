@@ -45,7 +45,7 @@ import com.odoo.support.OUser;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
-import com.openerp.R;
+import com.odoo.R;
 
 public class AccountsDetail extends BaseFragment implements
 		BeforeListRowCreateListener, OnListRowViewClickListener {

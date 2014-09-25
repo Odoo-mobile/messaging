@@ -20,7 +20,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.AbsListView;
 
-import com.openerp.R;
+import com.odoo.R;
 
 public class FloatingActionButton extends View {
 	private final Interpolator mInterpolator = new AccelerateDecelerateInterpolator();

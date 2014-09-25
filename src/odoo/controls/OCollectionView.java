@@ -6,7 +6,7 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.widget.ListView;
 
-import com.openerp.R;
+import com.odoo.R;
 
 public class OCollectionView extends ListView {
 

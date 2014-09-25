@@ -35,7 +35,7 @@ import com.odoo.support.fragment.BaseFragment;
 import com.odoo.support.fragment.FragmentListener;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
-import com.openerp.R;
+import com.odoo.R;
 
 public class LoginSignup extends BaseFragment implements OnClickListener,
 		OnFocusChangeListener {

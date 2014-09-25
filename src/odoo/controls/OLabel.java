@@ -27,7 +27,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.openerp.R;
+import com.odoo.R;
 
 /**
  * The Class OLabel.

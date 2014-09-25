@@ -42,7 +42,7 @@ import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerHelper;
 import com.odoo.util.drawer.DrawerItem;
 import com.odoo.util.drawer.DrawerListener;
-import com.openerp.R;
+import com.odoo.R;
 
 public abstract class BaseActivity extends FragmentActivity implements
 		FragmentLoader, DrawerListener {

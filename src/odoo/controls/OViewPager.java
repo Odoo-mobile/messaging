@@ -40,7 +40,7 @@ import com.odoo.orm.ODataRow;
 import com.odoo.orm.OModel;
 import com.odoo.support.fragment.BaseFragment;
 import com.odoo.util.drawer.DrawerItem;
-import com.openerp.R;
+import com.odoo.R;
 
 /**
  * The Class OViewPager.

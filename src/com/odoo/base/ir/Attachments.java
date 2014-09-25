@@ -46,7 +46,7 @@ import com.odoo.orm.ODataRow;
 import com.odoo.orm.OValues;
 import com.odoo.util.Base64Helper;
 import com.odoo.util.ODate;
-import com.openerp.R;
+import com.odoo.R;
 
 public class Attachments implements OnClickListener {
 	public static final String TAG = Attachments.class.getSimpleName();

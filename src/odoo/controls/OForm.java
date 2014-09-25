@@ -39,7 +39,7 @@ import com.odoo.orm.OValues;
 import com.odoo.orm.types.OBlob;
 import com.odoo.orm.types.OBoolean;
 import com.odoo.orm.types.OHtml;
-import com.openerp.R;
+import com.odoo.R;
 
 /**
  * The Class OForm.

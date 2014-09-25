@@ -24,7 +24,7 @@ import com.odoo.support.OUser;
 import com.odoo.util.Base64Helper;
 import com.odoo.util.ODate;
 import com.odoo.widgets.WidgetHelper;
-import com.openerp.R;
+import com.odoo.R;
 
 public class MailRemoteViewFactory implements RemoteViewsFactory {
 

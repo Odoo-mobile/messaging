@@ -53,7 +53,7 @@ import com.odoo.orm.OModel;
 import com.odoo.orm.OSyncHelper;
 import com.odoo.orm.OValues;
 import com.odoo.orm.OdooHelper;
-import com.openerp.R;
+import com.odoo.R;
 
 /**
  * The Class AttachmentFragment.

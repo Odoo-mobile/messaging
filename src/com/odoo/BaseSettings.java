@@ -35,7 +35,7 @@ import com.odoo.auth.OdooAccountManager;
 import com.odoo.base.about.About;
 import com.odoo.support.OUser;
 import com.odoo.util.Base64Helper;
-import com.openerp.R;
+import com.odoo.R;
 
 public class BaseSettings extends PreferenceActivity implements
 		OnPreferenceClickListener {

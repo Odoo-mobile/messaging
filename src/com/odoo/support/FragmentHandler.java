@@ -23,7 +23,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 
 import com.odoo.MainActivity;
-import com.openerp.R;
+import com.odoo.R;
 
 /**
  * The Class FragmentHandler.

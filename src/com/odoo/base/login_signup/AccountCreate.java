@@ -34,7 +34,7 @@ import com.odoo.util.OControls;
 import com.odoo.util.PreferenceManager;
 import com.odoo.util.controls.ExpandableHeightGridView;
 import com.odoo.util.drawer.DrawerItem;
-import com.openerp.R;
+import com.odoo.R;
 
 public class AccountCreate extends BaseFragment implements OnItemClickListener {
 

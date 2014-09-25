@@ -24,7 +24,7 @@ import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.openerp.R;
+import com.odoo.R;
 
 public class About extends Activity {
 

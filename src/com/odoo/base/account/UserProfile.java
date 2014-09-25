@@ -48,7 +48,7 @@ import com.odoo.support.fragment.BaseFragment;
 import com.odoo.util.Base64Helper;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
-import com.openerp.R;
+import com.odoo.R;
 
 public class UserProfile extends BaseFragment {
 	View rootView = null;

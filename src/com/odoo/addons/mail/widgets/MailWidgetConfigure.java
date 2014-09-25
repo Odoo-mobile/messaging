@@ -17,7 +17,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.odoo.support.OUser;
-import com.openerp.R;
+import com.odoo.R;
 
 public class MailWidgetConfigure extends Activity implements
 		OnItemClickListener {

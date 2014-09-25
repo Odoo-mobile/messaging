@@ -49,7 +49,7 @@ import android.widget.TextView;
 import com.odoo.orm.ODataRow;
 import com.odoo.support.listview.OListAdapter;
 import com.odoo.support.listview.OListAdapter.OnSearchChange;
-import com.openerp.R;
+import com.odoo.R;
 
 /**
  * The Class OList.

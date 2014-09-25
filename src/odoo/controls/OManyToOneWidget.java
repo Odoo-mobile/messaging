@@ -41,7 +41,7 @@ import com.odoo.orm.OColumn.ColumnDomain;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OModel;
 import com.odoo.support.listview.OListAdapter;
-import com.openerp.R;
+import com.odoo.R;
 
 /**
  * The Class OManyToOneWidget.

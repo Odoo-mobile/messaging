@@ -53,7 +53,7 @@ import com.odoo.util.OControls;
 import com.odoo.util.PreferenceManager;
 import com.odoo.util.drawer.DrawerItem;
 import com.odoo.util.logger.OLog;
-import com.openerp.R;
+import com.odoo.R;
 
 public class MailDetail extends BaseFragment implements
 		LoaderCallbacks<Cursor>, OnRowViewClickListener, OnViewBindListener,

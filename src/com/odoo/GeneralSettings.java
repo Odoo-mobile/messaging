@@ -24,7 +24,7 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.view.MenuItem;
 
-import com.openerp.R;
+import com.odoo.R;
 
 public class GeneralSettings extends PreferenceActivity {
 

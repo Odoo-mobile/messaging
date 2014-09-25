@@ -33,7 +33,7 @@ import com.odoo.support.service.OSyncFinishListener;
 import com.odoo.support.service.OSyncService;
 import com.odoo.util.JSONUtils;
 import com.odoo.util.ONotificationHelper;
-import com.openerp.R;
+import com.odoo.R;
 
 public class MailSyncService extends OSyncService implements
 		OSyncFinishListener {

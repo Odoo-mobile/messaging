@@ -37,7 +37,7 @@ import com.odoo.util.OControls;
 import com.odoo.util.ODate;
 import com.odoo.util.PreferenceManager;
 import com.odoo.util.Utils;
-import com.openerp.R;
+import com.odoo.R;
 
 public class ComposeMail extends Activity implements NewTokenCreateListener,
 		OnClickListener, OnFocusChangeListener {

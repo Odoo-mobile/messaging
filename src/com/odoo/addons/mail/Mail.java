@@ -53,7 +53,7 @@ import com.odoo.support.listview.OCursorListAdapter.OnRowViewClickListener;
 import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
-import com.openerp.R;
+import com.odoo.R;
 
 public class Mail extends BaseFragment implements OnRefreshListener,
 		LoaderManager.LoaderCallbacks<Cursor>, SyncStatusObserverListener,

@@ -33,7 +33,7 @@ import com.odoo.orm.types.OVarchar;
 import com.odoo.support.provider.OContentProvider;
 import com.odoo.util.ODate;
 import com.odoo.util.StringUtils;
-import com.openerp.R;
+import com.odoo.R;
 
 public class MailMessage extends OModel {
 	private Context mContext = null;
