@@ -185,6 +185,7 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle("Uninstall required");
 		builder.setMessage("Please uninstall older version of Odoo Messaging");
+		builder.setCancelable(false);
 		builder.setPositiveButton("Uninstall now", new OnClickListener() {
 
 			@Override
