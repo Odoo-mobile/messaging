@@ -22,6 +22,7 @@ import android.widget.Toast;
 import android.widgets.SwipeRefreshLayout.OnRefreshListener;
 
 import com.odoo.App;
+import com.odoo.R;
 import com.odoo.addons.mail.models.MailGroup;
 import com.odoo.addons.mail.providers.group.MailGroupProvider;
 import com.odoo.orm.ODataRow;
@@ -34,7 +35,6 @@ import com.odoo.support.listview.OCursorListAdapter.OnRowViewClickListener;
 import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
-import com.odoo.R;
 
 public class Groups extends BaseFragment implements LoaderCallbacks<Cursor>,
 		OnRefreshListener, SyncStatusObserverListener, OnItemClickListener,
@@ -82,7 +82,7 @@ public class Groups extends BaseFragment implements LoaderCallbacks<Cursor>,
 		menu.add(new DrawerItem(TAG, "Groups", 0,
 				R.drawable.ic_action_social_group, object("group")));
 		Intent intent = null;
-		String note_package = "com.odoo.note";
+		String note_package = "com.odoo.notes";
 		App app = (App) context.getApplicationContext();
 		if (app.appInstalled(note_package)) {
 			intent = app.getPackageManager().getLaunchIntentForPackage(
