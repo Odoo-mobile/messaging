@@ -37,4 +37,13 @@
         <item name="android:maxHeight">16dip</item>
     </style>
 
+    <style name="CustomActionbar1" parent="android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
+        <item name="android:background">#a24689</item>
+        <item name="android:titleTextStyle">@style/ActionBar.TitleTextStyle</item>
+    </style>
+
+    <style name="NewAppTheme" parent="AppBaseTheme">
+        <item name="android:actionBarStyle">@style/CustomActionbar1</item>
+    </style>
+
 </resources>

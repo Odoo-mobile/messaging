@@ -8,4 +8,8 @@
 
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light.DarkActionBar"></style>
 
+    <style name="NewAppTheme" parent="AppBaseTheme">
+        <item name="android:actionBarStyle">@style/CustomActionbar1</item>
+    </style>
+
 </resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <drawable name="root_background">@android:color/transparent</drawable>
+
+</resources>

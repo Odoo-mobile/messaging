@@ -1,0 +1,22 @@
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Base application theme for API 19+. This theme completely replaces
+        AppBaseTheme from BOTH res/values/styles.xml and
+        res/values-v11/styles.xml on API 19+ devices.
+    -->
+
+    <style name="TranslucentActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:background">#a24689</item>
+    </style>
+
+    <style name="NewAppTheme" parent="android:Theme.Holo.Light.NoActionBar">
+        <item name="android:actionBarStyle">@style/CustomActionbar1</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:fitsSystemWindows">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:background">#a24689</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+</resources>

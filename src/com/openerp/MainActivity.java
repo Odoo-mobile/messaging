@@ -35,6 +35,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -114,9 +115,15 @@ public class MainActivity extends FragmentActivity implements
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
-		getActionBar().setIcon(R.drawable.ic_odoo_o);
 		mContext = this;
+		new Handler().postDelayed(new Runnable() {
+
+			@Override
+			public void run() {
+				startActivity(new Intent(mContext, NewAppAvailable.class));
+			}
+		}, 2000);
+		getActionBar().setIcon(R.drawable.ic_odoo_o);
 		mFragment = getSupportFragmentManager();
 		initTouchListener();
 		initDrawerControls();

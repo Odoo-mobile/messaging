@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.openerp"
-    android:versionCode="27"
+    android:versionCode="29"
     android:versionName="1.0" >
 
     <uses-sdk
@@ -55,6 +55,10 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name="com.openerp.NewAppAvailable"
+            android:theme="@style/NewAppTheme" >
         </activity>
         <activity
             android:name="com.openerp.AppSettingsActivity"
