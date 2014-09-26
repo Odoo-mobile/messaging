@@ -78,7 +78,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	private int lastSwipedMail = -1;
 
 	public enum Type {
-		Inbox, ToMe, ToDo, Archives, Outbox, Group
+		Inbox, Tome, Todo, Archives, Outbox, Group
 	}
 
 	private int[] background_resources = new int[] {
@@ -141,17 +141,20 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	@Override
 	public List<DrawerItem> drawerMenus(Context context) {
 		List<DrawerItem> menu = new ArrayList<DrawerItem>();
-		menu.add(new DrawerItem(TAG, "Inbox", count_total(context, Type.Inbox),
-				R.drawable.ic_action_inbox, object(Type.Inbox)));
-		menu.add(new DrawerItem(TAG, "To:me", count_total(context, Type.ToMe),
-				R.drawable.ic_action_user, object(Type.ToMe)));
-		menu.add(new DrawerItem(TAG, "To-do", count_total(context, Type.ToDo),
-				R.drawable.ic_action_clipboard, object(Type.ToDo)));
-		menu.add(new DrawerItem(TAG, "Archives", 0,
+		menu.add(new DrawerItem(TAG, _s(R.string.drawer_inbox), count_total(
+				context, Type.Inbox), R.drawable.ic_action_inbox,
+				object(Type.Inbox)));
+		menu.add(new DrawerItem(TAG, _s(R.string.drawer_tome), count_total(
+				context, Type.Tome), R.drawable.ic_action_user,
+				object(Type.Tome)));
+		menu.add(new DrawerItem(TAG, _s(R.string.drawer_todo), count_total(
+				context, Type.Todo), R.drawable.ic_action_clipboard,
+				object(Type.Todo)));
+		menu.add(new DrawerItem(TAG, _s(R.string.drawer_archives), 0,
 				R.drawable.ic_action_briefcase, object(Type.Archives)));
-		menu.add(new DrawerItem(TAG, "Outbox",
-				count_total(context, Type.Outbox),
-				R.drawable.ic_action_unsent_mail, object(Type.Outbox)));
+		menu.add(new DrawerItem(TAG, _s(R.string.drawer_outbox), count_total(
+				context, Type.Outbox), R.drawable.ic_action_unsent_mail,
+				object(Type.Outbox)));
 		return menu;
 	}
 
@@ -170,12 +173,12 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 			query.addWhere("starred", "=", 0);
 			query.addWhere("id", "!=", 0);
 			break;
-		case ToMe:
+		case Tome:
 			query.addWhere("to_read", "=", 1);
 			query.addWhere("starred", "=", 0);
 			query.addWhere("res_id", "=", 0);
 			break;
-		case ToDo:
+		case Todo:
 			query.addWhere("to_read", "=", 1);
 			query.addWhere("starred", "=", 1);
 			break;
@@ -225,13 +228,13 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 			argsList.add("0");
 			argsList.add("0");
 			break;
-		case ToMe:
+		case Tome:
 			selection += " to_read = ? and starred = ? and res_id = ?";
 			argsList.add("1");
 			argsList.add("0");
 			argsList.add("0");
 			break;
-		case ToDo:
+		case Todo:
 			selection += " to_read = ? and starred = ?";
 			argsList.add("1");
 			argsList.add("1");
@@ -414,11 +417,11 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 			icon = R.drawable.ic_action_inbox;
 			str = R.string.message_inbox_all_read;
 			break;
-		case ToMe:
+		case Tome:
 			icon = R.drawable.ic_action_user;
 			str = R.string.message_tome_all_read;
 			break;
-		case ToDo:
+		case Todo:
 			icon = R.drawable.ic_action_clipboard;
 			str = R.string.message_todo_all_read;
 			break;

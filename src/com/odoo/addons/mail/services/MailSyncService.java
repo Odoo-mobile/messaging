@@ -102,7 +102,7 @@ public class MailSyncService extends OSyncService implements
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-				Log.e(TAG, "sendMails():" + e.getMessage());
+				Log.e(TAG, "send Mails()" + e.getMessage());
 			}
 		}
 		return true;
@@ -133,7 +133,7 @@ public class MailSyncService extends OSyncService implements
 			kwargs.put("context", helper.getContext(new JSONObject()));
 			OArguments args = new OArguments();
 			args.add(arguments);
-			String model = "mail.compose.message";
+			String model = "mail_compose_message";
 			// Creating compose message
 			Object message_id = helper.callMethod(model, "create", args, null,
 					kwargs);
@@ -154,7 +154,7 @@ public class MailSyncService extends OSyncService implements
 			MailMessage mails) {
 		try {
 			// sending reply
-			String model = (parent.getString("model").equals("false")) ? "mail.thread"
+			String model = (parent.getString("model").equals("false")) ? "mail_thread"
 					: parent.getString("model");
 			String method = "message_post";
 			Object res_model = (parent.getString("model").equals("false")) ? false
@@ -186,7 +186,7 @@ public class MailSyncService extends OSyncService implements
 			mails.resolver().update(vals.getInt(OColumn.ROW_ID), vals);
 		} catch (Exception e) {
 			e.printStackTrace();
-			Log.e(TAG, "sendReply() : " + e.getMessage());
+			Log.e(TAG, "send Reply()" + e.getMessage());
 		}
 	}
 
@@ -329,7 +329,7 @@ public class MailSyncService extends OSyncService implements
 			} else {
 				// Creating partner on server
 				server_id = partner.getSyncHelper().create(partner, row);
-				Log.v(TAG, "Partner Created on server #" + server_id);
+				Log.v(TAG, "partner created on server " + server_id);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

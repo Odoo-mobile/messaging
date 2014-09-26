@@ -36,14 +36,15 @@ public class MailWidgetConfigure extends Activity implements
 		setContentView(R.layout.widget_mail_configure_layout);
 		setTitle("Widget Configure");
 		setResult(RESULT_CANCELED);
-		mOptionsList.add("Inbox");
-		mOptionsList.add("To-Do");
-		mOptionsList.add("To:me");
-		mOptionsList.add("Archive");
+		mOptionsList.add(getString(R.string.drawer_inbox));
+		mOptionsList.add(getString(R.string.drawer_todo));
+		mOptionsList.add(getString(R.string.drawer_tome));
+		mOptionsList.add(getString(R.string.drawer_archives));
 		initListView();
 
 		if (OUser.current(this) == null) {
-			Toast.makeText(this, "No account found", Toast.LENGTH_LONG).show();
+			Toast.makeText(this, getString(R.string.toast_no_acccount_found),
+					Toast.LENGTH_LONG).show();
 			finish();
 		}
 

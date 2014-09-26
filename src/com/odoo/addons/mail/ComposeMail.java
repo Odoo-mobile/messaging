@@ -135,7 +135,8 @@ public class ComposeMail extends Activity implements NewTokenCreateListener,
 				addAttachments(values.toDataRow());
 
 			} else {
-				Toast.makeText(this, "Unable to attach file !",
+				Toast.makeText(this,
+						getString(R.string.toast_unable_to_attach_file),
 						Toast.LENGTH_LONG).show();
 			}
 		}
@@ -194,8 +195,8 @@ public class ComposeMail extends Activity implements NewTokenCreateListener,
 		case R.id.menu_mail_compose:
 			if (getPref().getBoolean("confirm_send_mail", false)) {
 				AlertDialog.Builder builder = new AlertDialog.Builder(this);
-				builder.setTitle("Send mail");
-				builder.setMessage("Send mail ?");
+				builder.setTitle("Send reply");
+				builder.setMessage("Send mail reply ?");
 				builder.setPositiveButton("Send",
 						new DialogInterface.OnClickListener() {
 

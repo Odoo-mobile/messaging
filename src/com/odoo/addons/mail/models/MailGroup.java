@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import android.content.Context;
 
+import com.odoo.R;
 import com.odoo.addons.mail.providers.group.MailGroupProvider;
 import com.odoo.base.mail.MailFollowers;
 import com.odoo.orm.OColumn;
