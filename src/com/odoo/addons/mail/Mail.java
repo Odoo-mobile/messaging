@@ -141,17 +141,20 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	@Override
 	public List<DrawerItem> drawerMenus(Context context) {
 		List<DrawerItem> menu = new ArrayList<DrawerItem>();
-		menu.add(new DrawerItem(TAG, "Inbox", count_total(context, Type.Inbox),
-				R.drawable.ic_action_inbox, object(Type.Inbox)));
-		menu.add(new DrawerItem(TAG, "To:me", count_total(context, Type.ToMe),
-				R.drawable.ic_action_user, object(Type.ToMe)));
-		menu.add(new DrawerItem(TAG, "To-do", count_total(context, Type.ToDo),
-				R.drawable.ic_action_clipboard, object(Type.ToDo)));
-		menu.add(new DrawerItem(TAG, "Archives", 0,
+		menu.add(new DrawerItem(TAG, _s(R.string.drawer_inbox), count_total(
+				context, Type.Inbox), R.drawable.ic_action_inbox,
+				object(Type.Inbox)));
+		menu.add(new DrawerItem(TAG, _s(R.string.drawer_tome), count_total(
+				context, Type.ToMe), R.drawable.ic_action_user,
+				object(Type.ToMe)));
+		menu.add(new DrawerItem(TAG, _s(R.string.drawer_todo), count_total(
+				context, Type.ToDo), R.drawable.ic_action_clipboard,
+				object(Type.ToDo)));
+		menu.add(new DrawerItem(TAG, _s(R.string.drawer_archives), 0,
 				R.drawable.ic_action_briefcase, object(Type.Archives)));
-		menu.add(new DrawerItem(TAG, "Outbox",
-				count_total(context, Type.Outbox),
-				R.drawable.ic_action_unsent_mail, object(Type.Outbox)));
+		menu.add(new DrawerItem(TAG, _s(R.string.drawer_outbox), count_total(
+				context, Type.Outbox), R.drawable.ic_action_unsent_mail,
+				object(Type.Outbox)));
 		return menu;
 	}
 

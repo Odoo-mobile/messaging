@@ -36,6 +36,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.odoo.R;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.base.ir.Attachments;
@@ -52,8 +53,6 @@ import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.util.OControls;
 import com.odoo.util.PreferenceManager;
 import com.odoo.util.drawer.DrawerItem;
-import com.odoo.util.logger.OLog;
-import com.odoo.R;
 
 public class MailDetail extends BaseFragment implements
 		LoaderCallbacks<Cursor>, OnRowViewClickListener, OnViewBindListener,
@@ -425,9 +424,10 @@ public class MailDetail extends BaseFragment implements
 			if (getPref().getBoolean("confirm_send_mail", false)) {
 				AlertDialog.Builder builder = new AlertDialog.Builder(
 						getActivity());
-				builder.setTitle("Send reply");
-				builder.setMessage("Send mail reply ?");
-				builder.setPositiveButton("Send",
+				builder.setTitle(_s(R.string.builder_send_reply_title));
+				builder.setMessage(_s(R.string.builder_send_reply_message));
+				builder.setPositiveButton(
+						_s(R.string.builder_send_reply_positive_button_text),
 						new DialogInterface.OnClickListener() {
 
 							@Override
@@ -436,7 +436,9 @@ public class MailDetail extends BaseFragment implements
 								sendQuickMail();
 							}
 						});
-				builder.setNegativeButton("Cancel", null);
+				builder.setNegativeButton(
+						_s(R.string.builder_send_reply_negative_button_text),
+						null);
 				builder.show();
 			} else {
 				sendQuickMail();

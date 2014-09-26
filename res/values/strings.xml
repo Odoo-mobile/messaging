@@ -24,7 +24,7 @@ When you process messages in your inbox, you can mark some as todo. From this me
     <string name="delete">Delete</string>
     <string name="save">Save</string>
     <string name="title_replay_mail">Reply</string>
-    <string name="mail_watermark"><Data><![CDATA[<p>--<br /><small>Sent from <a href="https://play.google.com/store/apps/details?id=com.openerp" target="_blank"><b>Odoo Mobile</b></a></small></p>]]></Data></string>
+    <string name="mail_watermark"><Data><![CDATA[<p>--<br /><small>Sent from <a href="https://play.google.com/store/apps/details?id=com.odoo" target="_blank"><b>Odoo Mobile</b></a></small></p>]]></Data></string>
     <string name="first_join_group">You must first join group</string>
     <string name="no_connection">No Connection</string>
     <string name="message_sent">Message Sent</string>
@@ -37,6 +37,24 @@ When you process messages in your inbox, you can mark some as todo. From this me
     <string name="label_odoo_mail">Odoo Mail</string>
     <string name="toast_group_followed">Group Followed</string>
     <string name="toast_group_unfollowed">Group Unfollowed</string>
+    <string name="toast_no_acccount_found">No account found</string>
     <string name="check_for_new_data">Sync messages</string>
+    <string name="toast_unable_to_attach_file">Unable to attach file !</string>
+    <string name="drawer_notes">Notes</string>
+    <string name="drawer_group_title">My Groups</string>
+    <string name="drawer_group">Groups</string>
+    <string name="drawer_inbox">Inbox</string>
+    <string name="drawer_tome">To:me"</string>
+    <string name="drawer_todo">To-do</string>
+    <string name="drawer_archives">Archives</string>
+    <string name="drawer_outbox">Outbox</string>
+    <string name="builder_send_mail_title">Send mail</string>
+    <string name="builder_send_mail_message">Send mail ?</string>
+    <string name="builder_send_mail_positive_button_text">Send</string>
+    <string name="builder_send_mail_negative_button_text">Cancel</string>
+    <string name="builder_send_reply_title">Send reply</string>
+    <string name="builder_send_reply_message">Send reply ?</string>
+    <string name="builder_send_reply_positive_button_text">Send</string>
+    <string name="builder_send_reply_negative_button_text">Cancel</string>
 
 </resources>
