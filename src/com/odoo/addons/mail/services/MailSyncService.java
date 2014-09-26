@@ -19,8 +19,8 @@ import android.util.Log;
 
 import com.odoo.App;
 import com.odoo.MainActivity;
+import com.odoo.R;
 import com.odoo.addons.mail.models.MailMessage;
-import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.base.ir.Attachments;
 import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
@@ -32,8 +32,7 @@ import com.odoo.support.service.OSyncAdapter;
 import com.odoo.support.service.OSyncFinishListener;
 import com.odoo.support.service.OSyncService;
 import com.odoo.util.JSONUtils;
-import com.odoo.util.ONotificationHelper;
-import com.odoo.R;
+import com.odoo.util.notification.NotificationBuilder;
 
 public class MailSyncService extends OSyncService implements
 		OSyncFinishListener {
@@ -277,15 +276,18 @@ public class MailSyncService extends OSyncService implements
 	public OSyncAdapter performSync(SyncResult syncResult) {
 		App app = (App) getApplicationContext();
 		if (!app.appOnTop() && syncResult.stats.numInserts > 0) {
-			int newTotal = (int) syncResult.stats.numInserts;
-			ONotificationHelper mNotification = new ONotificationHelper();
-			Context context = getApplicationContext();
-			Intent mainActiivty = new Intent(context, MainActivity.class);
-			mNotification.setResultIntent(mainActiivty, context);
-			mNotification.showNotification(context, newTotal
-					+ " unread messages", newTotal
-					+ " new message received (Odoo)", MailProvider.AUTHORITY,
-					R.drawable.ic_odoo_o);
+			int newTotal = new MailMessage(getApplicationContext()).count(
+					"to_read = ? or to_read = ?", new String[] { "true", "1" });
+			NotificationBuilder notification = new NotificationBuilder(
+					getApplicationContext());
+			notification.setAutoCancel(true);
+			notification.setIcon(R.drawable.ic_odoo_o);
+			notification.setTitle(newTotal + " unread messages");
+			notification.setText(newTotal + " new message received (Odoo)");
+			Intent rIntent = new Intent(getApplicationContext(),
+					MainActivity.class);
+			notification.setResultIntent(rIntent);
+			notification.build().show();
 		}
 		return null;
 	}

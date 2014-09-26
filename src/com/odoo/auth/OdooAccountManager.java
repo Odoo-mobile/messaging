@@ -26,6 +26,7 @@ import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.odoo.App;
 import com.odoo.config.SyncWizardValues;
@@ -154,6 +155,7 @@ public class OdooAccountManager {
 		AccountManager accMgr = AccountManager.get(context);
 		Account[] accounts = accMgr.getAccountsByType(PARAM_AUTHTOKEN_TYPE);
 		for (Account ac : accounts) {
+			Log.v("AccountManager", "Removing account : " + ac.name);
 			accMgr.removeAccount(ac, null, null);
 		}
 	}
