@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -77,9 +78,11 @@ public class Groups extends BaseFragment implements LoaderCallbacks<Cursor>,
 
 	@Override
 	public List<DrawerItem> drawerMenus(Context context) {
+		Resources res = context.getResources();
 		List<DrawerItem> menu = new ArrayList<DrawerItem>();
-		menu.add(new DrawerItem(TAG, _s(R.string.drawer_group_title), true));
-		menu.add(new DrawerItem(TAG, _s(R.string.drawer_group), 0,
+		menu.add(new DrawerItem(TAG, context
+				.getString(R.string.drawer_group_title), true));
+		menu.add(new DrawerItem(TAG, res.getString(R.string.drawer_group), 0,
 				R.drawable.ic_action_social_group, object("group")));
 		Intent intent = null;
 		String note_package = "com.odoo.notes";
@@ -91,8 +94,8 @@ public class Groups extends BaseFragment implements LoaderCallbacks<Cursor>,
 			intent = new Intent(Intent.ACTION_VIEW,
 					Uri.parse("market://details?id=" + note_package));
 		}
-		menu.add(new DrawerItem(TAG, _s(R.string.drawer_notes), true));
-		menu.add(new DrawerItem(TAG, _s(R.string.drawer_notes), 0,
+		menu.add(new DrawerItem(TAG, res.getString(R.string.drawer_notes), true));
+		menu.add(new DrawerItem(TAG, res.getString(R.string.drawer_notes), 0,
 				R.drawable.ic_action_notes, intent));
 		return menu;
 	}

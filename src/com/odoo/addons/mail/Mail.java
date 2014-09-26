@@ -12,6 +12,7 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
@@ -38,6 +39,7 @@ import android.widgets.SwipeRefreshLayout.OnRefreshListener;
 
 import com.odoo.OSwipeListener.SwipeCallbacks;
 import com.odoo.OTouchListener;
+import com.odoo.R;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.orm.OColumn;
@@ -53,7 +55,6 @@ import com.odoo.support.listview.OCursorListAdapter.OnRowViewClickListener;
 import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.util.OControls;
 import com.odoo.util.drawer.DrawerItem;
-import com.odoo.R;
 
 public class Mail extends BaseFragment implements OnRefreshListener,
 		LoaderManager.LoaderCallbacks<Cursor>, SyncStatusObserverListener,
@@ -140,21 +141,22 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 
 	@Override
 	public List<DrawerItem> drawerMenus(Context context) {
+		Resources res = context.getResources();
 		List<DrawerItem> menu = new ArrayList<DrawerItem>();
-		menu.add(new DrawerItem(TAG, _s(R.string.drawer_inbox), count_total(
-				context, Type.Inbox), R.drawable.ic_action_inbox,
+		menu.add(new DrawerItem(TAG, res.getString(R.string.drawer_inbox),
+				count_total(context, Type.Inbox), R.drawable.ic_action_inbox,
 				object(Type.Inbox)));
-		menu.add(new DrawerItem(TAG, _s(R.string.drawer_tome), count_total(
-				context, Type.ToMe), R.drawable.ic_action_user,
+		menu.add(new DrawerItem(TAG, res.getString(R.string.drawer_tome),
+				count_total(context, Type.ToMe), R.drawable.ic_action_user,
 				object(Type.ToMe)));
-		menu.add(new DrawerItem(TAG, _s(R.string.drawer_todo), count_total(
-				context, Type.ToDo), R.drawable.ic_action_clipboard,
-				object(Type.ToDo)));
-		menu.add(new DrawerItem(TAG, _s(R.string.drawer_archives), 0,
-				R.drawable.ic_action_briefcase, object(Type.Archives)));
-		menu.add(new DrawerItem(TAG, _s(R.string.drawer_outbox), count_total(
-				context, Type.Outbox), R.drawable.ic_action_unsent_mail,
-				object(Type.Outbox)));
+		menu.add(new DrawerItem(TAG, res.getString(R.string.drawer_todo),
+				count_total(context, Type.ToDo),
+				R.drawable.ic_action_clipboard, object(Type.ToDo)));
+		menu.add(new DrawerItem(TAG, res.getString(R.string.drawer_archives),
+				0, R.drawable.ic_action_briefcase, object(Type.Archives)));
+		menu.add(new DrawerItem(TAG, res.getString(R.string.drawer_outbox),
+				count_total(context, Type.Outbox),
+				R.drawable.ic_action_unsent_mail, object(Type.Outbox)));
 		return menu;
 	}
 
