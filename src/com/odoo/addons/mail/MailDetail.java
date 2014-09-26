@@ -424,9 +424,10 @@ public class MailDetail extends BaseFragment implements
 			if (getPref().getBoolean("confirm_send_mail", false)) {
 				AlertDialog.Builder builder = new AlertDialog.Builder(
 						getActivity());
-				builder.setTitle("Send Mail");
-				builder.setMessage("Send mail reply ?");
-				builder.setPositiveButton("Send",
+				builder.setTitle(_s(R.string.builder_send_reply_title));
+				builder.setMessage(_s(R.string.builder_send_reply_message));
+				builder.setPositiveButton(
+						_s(R.string.builder_send_reply_positive_button_text),
 						new DialogInterface.OnClickListener() {
 
 							@Override
@@ -435,7 +436,9 @@ public class MailDetail extends BaseFragment implements
 								sendQuickMail();
 							}
 						});
-				builder.setNegativeButton("Cancel", null);
+				builder.setNegativeButton(
+						_s(R.string.builder_send_reply_negative_button_text),
+						null);
 				builder.show();
 			} else {
 				sendQuickMail();

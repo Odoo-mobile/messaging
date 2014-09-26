@@ -133,7 +133,7 @@ public class MailSyncService extends OSyncService implements
 			kwargs.put("context", helper.getContext(new JSONObject()));
 			OArguments args = new OArguments();
 			args.add(arguments);
-			String model = "mail_compose_message";
+			String model = "mail.compose.message";
 			// Creating compose message
 			Object message_id = helper.callMethod(model, "create", args, null,
 					kwargs);
@@ -154,7 +154,7 @@ public class MailSyncService extends OSyncService implements
 			MailMessage mails) {
 		try {
 			// sending reply
-			String model = (parent.getString("model").equals("false")) ? "mail_thread"
+			String model = (parent.getString("model").equals("false")) ? "mail.thread"
 					: parent.getString("model");
 			String method = "message_post";
 			Object res_model = (parent.getString("model").equals("false")) ? false

@@ -135,10 +135,10 @@ public class MailRemoteViewFactory implements RemoteViewsFactory {
 		MailMessage message = new MailMessage(mContext);
 		Mail.Type mType = Mail.Type.Inbox;
 		if (mFilter.equals(MailWidgetConfigure.KEY_TOME)) {
-			mType = Mail.Type.Tome;
+			mType = Mail.Type.ToMe;
 		}
 		if (mFilter.equals(MailWidgetConfigure.KEY_TODO)) {
-			mType = Mail.Type.Todo;
+			mType = Mail.Type.ToDo;
 		}
 		if (mFilter.equals(MailWidgetConfigure.KEY_ARCHIVE)) {
 			mType = Mail.Type.Archives;
@@ -163,13 +163,13 @@ public class MailRemoteViewFactory implements RemoteViewsFactory {
 			argsList.add("0");
 			argsList.add("0");
 			break;
-		case Tome:
+		case ToMe:
 			selection += " to_read = ? and starred = ? and res_id = ?";
 			argsList.add("1");
 			argsList.add("0");
 			argsList.add("0");
 			break;
-		case Todo:
+		case ToDo:
 			selection += " to_read = ? and starred = ?";
 			argsList.add("1");
 			argsList.add("1");

@@ -195,9 +195,10 @@ public class ComposeMail extends Activity implements NewTokenCreateListener,
 		case R.id.menu_mail_compose:
 			if (getPref().getBoolean("confirm_send_mail", false)) {
 				AlertDialog.Builder builder = new AlertDialog.Builder(this);
-				builder.setTitle("Send reply");
-				builder.setMessage("Send mail reply ?");
-				builder.setPositiveButton("Send",
+				builder.setTitle(getString(R.string.builder_send_mail_title));
+				builder.setMessage(getString(R.string.builder_send_mail_message));
+				builder.setPositiveButton(
+						getString(R.string.builder_send_mail_positive_button_text),
 						new DialogInterface.OnClickListener() {
 
 							@Override
@@ -206,7 +207,9 @@ public class ComposeMail extends Activity implements NewTokenCreateListener,
 								mailcompose();
 							}
 						});
-				builder.setNegativeButton("Cancel", null);
+				builder.setNegativeButton(
+						getString(R.string.builder_send_mail_negative_button_text),
+						null);
 				builder.show();
 			} else {
 				mailcompose();

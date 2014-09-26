@@ -78,7 +78,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	private int lastSwipedMail = -1;
 
 	public enum Type {
-		Inbox, Tome, Todo, Archives, Outbox, Group
+		Inbox, ToMe, ToDo, Archives, Outbox, Group
 	}
 
 	private int[] background_resources = new int[] {
@@ -145,11 +145,11 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 				context, Type.Inbox), R.drawable.ic_action_inbox,
 				object(Type.Inbox)));
 		menu.add(new DrawerItem(TAG, _s(R.string.drawer_tome), count_total(
-				context, Type.Tome), R.drawable.ic_action_user,
-				object(Type.Tome)));
+				context, Type.ToMe), R.drawable.ic_action_user,
+				object(Type.ToMe)));
 		menu.add(new DrawerItem(TAG, _s(R.string.drawer_todo), count_total(
-				context, Type.Todo), R.drawable.ic_action_clipboard,
-				object(Type.Todo)));
+				context, Type.ToDo), R.drawable.ic_action_clipboard,
+				object(Type.ToDo)));
 		menu.add(new DrawerItem(TAG, _s(R.string.drawer_archives), 0,
 				R.drawable.ic_action_briefcase, object(Type.Archives)));
 		menu.add(new DrawerItem(TAG, _s(R.string.drawer_outbox), count_total(
@@ -173,12 +173,12 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 			query.addWhere("starred", "=", 0);
 			query.addWhere("id", "!=", 0);
 			break;
-		case Tome:
+		case ToMe:
 			query.addWhere("to_read", "=", 1);
 			query.addWhere("starred", "=", 0);
 			query.addWhere("res_id", "=", 0);
 			break;
-		case Todo:
+		case ToDo:
 			query.addWhere("to_read", "=", 1);
 			query.addWhere("starred", "=", 1);
 			break;
@@ -228,13 +228,13 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 			argsList.add("0");
 			argsList.add("0");
 			break;
-		case Tome:
+		case ToMe:
 			selection += " to_read = ? and starred = ? and res_id = ?";
 			argsList.add("1");
 			argsList.add("0");
 			argsList.add("0");
 			break;
-		case Todo:
+		case ToDo:
 			selection += " to_read = ? and starred = ?";
 			argsList.add("1");
 			argsList.add("1");
@@ -417,11 +417,11 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 			icon = R.drawable.ic_action_inbox;
 			str = R.string.message_inbox_all_read;
 			break;
-		case Tome:
+		case ToMe:
 			icon = R.drawable.ic_action_user;
 			str = R.string.message_tome_all_read;
 			break;
-		case Todo:
+		case ToDo:
 			icon = R.drawable.ic_action_clipboard;
 			str = R.string.message_todo_all_read;
 			break;
