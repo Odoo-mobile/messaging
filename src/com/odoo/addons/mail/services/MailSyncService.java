@@ -275,9 +275,9 @@ public class MailSyncService extends OSyncService implements
 	@Override
 	public OSyncAdapter performSync(SyncResult syncResult) {
 		App app = (App) getApplicationContext();
-		if (!app.appOnTop() && syncResult.stats.numInserts > 0) {
-			int newTotal = new MailMessage(getApplicationContext()).count(
-					"to_read = ? or to_read = ?", new String[] { "true", "1" });
+		int newTotal = (int) syncResult.stats.numInserts;
+		newTotal = (newTotal != 0) ? newTotal / 2 : newTotal;
+		if (!app.appOnTop() && newTotal > 0) {
 			NotificationBuilder notification = new NotificationBuilder(
 					getApplicationContext());
 			notification.setAutoCancel(true);
