@@ -14,6 +14,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import com.odoo.R;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.base.ir.IrAttachment;
 import com.odoo.base.res.ResPartner;
@@ -33,7 +34,6 @@ import com.odoo.orm.types.OVarchar;
 import com.odoo.support.provider.OContentProvider;
 import com.odoo.util.ODate;
 import com.odoo.util.StringUtils;
-import com.odoo.R;
 
 public class MailMessage extends OModel {
 	private Context mContext = null;
@@ -99,7 +99,6 @@ public class MailMessage extends OModel {
 	@Odoo.Functional(method = "getReplies", depends = { "child_ids" }, store = true)
 	OColumn total_childs = new OColumn("Replies", OVarchar.class)
 			.setLocalColumn();
-
 	private List<Integer> mNewCreateIds = new ArrayList<Integer>();
 	private MailNotification notification = null;
 

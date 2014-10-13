@@ -164,7 +164,6 @@
         <!-- /Base Providers -->
         <!-- Contact service -->
         <!--
-        FIXME: 
         <service
             android:name="com.odoo.base.res.services.ContactSyncService"
             android:exported="true"

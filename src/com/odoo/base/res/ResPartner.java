@@ -64,5 +64,4 @@ public class ResPartner extends OModel {
 	public Boolean canUpdateToServer() {
 		return false;
 	}
-
 }

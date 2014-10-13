@@ -218,9 +218,8 @@ public class MailDetail extends BaseFragment implements
 		args = argsList.toArray(new String[argsList.size()]);
 		Uri uri = ((MailMessage) db()).mailDetailUri();
 		return new CursorLoader(mContext, uri, new String[] { "message_title",
-				"author_name", "author_id.image_small", "total_childs",
-				"parent_id", "date", "to_read", "body", "starred" }, selection,
-				args, "date DESC");
+				"author_name", "total_childs", "parent_id", "date", "to_read",
+				"body", "starred" }, selection, args, "date DESC");
 
 	}
 
@@ -509,11 +508,22 @@ public class MailDetail extends BaseFragment implements
 
 	@Override
 	public ODataRow updateDataRow(Cursor cr) {
-		return db()
-				.selectRelRecord(
-						new String[] { "attachment_ids", "vote_user_ids",
-								"partner_ids" },
-						cr.getInt(cr.getColumnIndex(OColumn.ROW_ID)));
+		ODataRow row = new ODataRow();
+		ODataRow record = db().selectRelRecord(
+				new String[] { "attachment_ids", "vote_user_ids",
+						"partner_ids", "author_id" },
+				cr.getInt(cr.getColumnIndex(OColumn.ROW_ID)));
+		row.put("attachment_ids", record.get("attachment_ids"));
+		row.put("vote_user_ids", record.get("vote_user_ids"));
+		row.put("partner_ids", record.get("partner_ids"));
+
+		String author_image = "false";
+		ODataRow author = record.getM2ORecord("author_id").browse();
+		if (author != null) {
+			author_image = author.getString("image_small");
+		}
+		row.put("author_id_image_small", author_image);
+		return row;
 	}
 
 	@Override

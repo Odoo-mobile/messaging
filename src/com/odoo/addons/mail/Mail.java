@@ -51,6 +51,7 @@ import com.odoo.support.fragment.BaseFragment;
 import com.odoo.support.fragment.OnSearchViewChangeListener;
 import com.odoo.support.fragment.SyncStatusObserverListener;
 import com.odoo.support.listview.OCursorListAdapter;
+import com.odoo.support.listview.OCursorListAdapter.BeforeBindUpdateData;
 import com.odoo.support.listview.OCursorListAdapter.OnRowViewClickListener;
 import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.util.OControls;
@@ -60,7 +61,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		LoaderManager.LoaderCallbacks<Cursor>, SyncStatusObserverListener,
 		OnItemClickListener, OnSearchViewChangeListener, OnViewBindListener,
 		OnClickListener, OnRowViewClickListener, SwipeCallbacks,
-		UndoBarListener {
+		UndoBarListener, BeforeBindUpdateData {
 
 	public static final String TAG = Mail.class.getSimpleName();
 	public static final String KEY = "fragment_mail";
@@ -119,6 +120,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		mAdapter = new OCursorListAdapter(getActivity(), null,
 				R.layout.mail_list_item);
 		mAdapter.setOnViewBindListener(this);
+		mAdapter.setBeforeBindUpdateData(this);
 		mailList.setAdapter(mAdapter);
 		mailList.setOnItemClickListener(this);
 		mailList.setEmptyView(mView.findViewById(R.id.loadingProgress));
@@ -276,9 +278,9 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		}
 		Uri uri = ((MailMessage) db()).mailUri();
 		return new CursorLoader(getActivity(), uri, new String[] {
-				"message_title", "author_name", "parent_id",
-				"author_id.image_small", "total_childs", "date", "to_read",
-				"short_body", "starred" }, selection, args, "date DESC");
+				"message_title", "author_name", "parent_id", "total_childs",
+				"date", "to_read", "short_body", "starred" }, selection, args,
+				"date DESC");
 	}
 
 	@Override
@@ -558,6 +560,21 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		}
 		getActivity().getContentResolver().update(db().uri(), values,
 				selection, args);
+	}
+
+	@Override
+	public ODataRow updateDataRow(Cursor cr) {
+		String author_image = "false";
+		ODataRow author = db()
+				.selectRelRecord(new String[] { "author_id" },
+						cr.getInt(cr.getColumnIndex(OColumn.ROW_ID)))
+				.getM2ORecord("author_id").browse();
+		if (author != null) {
+			author_image = author.getString("image_small");
+		}
+		ODataRow row = new ODataRow();
+		row.put("author_id_image_small", author_image);
+		return row;
 	}
 
 }
