@@ -32,6 +32,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,6 +41,7 @@ import com.odoo.R;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.base.ir.Attachments;
+import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OSyncHelper;
@@ -73,6 +75,8 @@ public class MailDetail extends BaseFragment implements
 	private PreferenceManager mPref;
 	private Attachments mAttachment;
 	private Cursor cr = null;
+	private List<Object> mBuilderitems = new ArrayList<Object>();
+	private List<ODataRow> mVoters = new ArrayList<ODataRow>();
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -370,14 +374,20 @@ public class MailDetail extends BaseFragment implements
 	}
 
 	@Override
-	public void onViewBind(View view, Cursor cr, ODataRow row) {
+	public void onViewBind(View view, Cursor cr, final ODataRow row) {
+
 		// Setting starred color
+		final ResPartner res = new ResPartner(mContext);
+
+		LinearLayout lvote_Counter = (LinearLayout) view
+				.findViewById(R.id.voteCounter);
 		ImageView imgStarred = (ImageView) view
 				.findViewById(R.id.imgBtn_mail_detail_starred);
 		String is_fav = cr.getString(cr.getColumnIndex("starred"));
 		imgStarred.setColorFilter((is_fav.equals("1")) ? Color
 				.parseColor("#FF8800") : Color.parseColor("#aaaaaa"));
 		List<Integer> voters_id = row.getM2MRecord("vote_user_ids").getRelIds();
+
 		int voters = voters_id.size();
 		if (voters > 0) {
 			int author_id = ((MailMessage) db()).author_id();
@@ -414,6 +424,21 @@ public class MailDetail extends BaseFragment implements
 		}
 		String names = ((MailMessage) db()).getPartnersName(row);
 		OControls.setText(view, R.id.partner_names, names);
+
+		lvote_Counter.setOnLongClickListener(new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				mBuilderitems.clear();
+				mVoters = row.getM2MRecord("vote_user_ids").browseEach();
+				if (mVoters.size() > 0) {
+					for (ODataRow row : mVoters)
+						mBuilderitems.add(res.select(row.getInt("_id")));
+				}
+				new VoterDialog(mContext, mVoters, mBuilderitems).build()
+						.show();
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -423,10 +448,10 @@ public class MailDetail extends BaseFragment implements
 			if (getPref().getBoolean("confirm_send_mail", false)) {
 				AlertDialog.Builder builder = new AlertDialog.Builder(
 						getActivity());
-				builder.setTitle(_s(R.string.builder_send_reply_title));
-				builder.setMessage(_s(R.string.builder_send_reply_message));
+				builder.setTitle(_s(R.string.dialog_send_reply_title));
+				builder.setMessage(_s(R.string.dialog_send_reply_message));
 				builder.setPositiveButton(
-						_s(R.string.builder_send_reply_positive_button_text),
+						_s(R.string.dialog_send_reply_positive_button_text),
 						new DialogInterface.OnClickListener() {
 
 							@Override
@@ -436,7 +461,7 @@ public class MailDetail extends BaseFragment implements
 							}
 						});
 				builder.setNegativeButton(
-						_s(R.string.builder_send_reply_negative_button_text),
+						_s(R.string.dialog_send_reply_negative_button_text),
 						null);
 				builder.show();
 			} else {

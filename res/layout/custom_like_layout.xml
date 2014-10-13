@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:iosched="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="8dp" >
+
+    <odoo.controls.BezelImageView
+        android:id="@+id/img_user_image"
+        android:layout_width="@dimen/navdrawer_profile_image_size"
+        android:layout_height="@dimen/navdrawer_profile_image_size"
+        android:scaleType="centerCrop"
+        android:src="@drawable/avatar"
+        iosched:maskDrawable="@drawable/circle_mask" />
+
+    <TextView
+        android:id="@+id/txv_username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="5dp"
+        android:fontFamily="@string/font_fontFamily_condensed"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#414141" />
+
+</LinearLayout>

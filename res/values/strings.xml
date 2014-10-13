@@ -48,13 +48,15 @@ When you process messages in your inbox, you can mark some as todo. From this me
     <string name="drawer_todo">To-do</string>
     <string name="drawer_archives">Archives</string>
     <string name="drawer_outbox">Outbox</string>
-    <string name="builder_send_mail_title">Send mail</string>
-    <string name="builder_send_mail_message">Send mail ?</string>
-    <string name="builder_send_mail_positive_button_text">Send</string>
-    <string name="builder_send_mail_negative_button_text">Cancel</string>
-    <string name="builder_send_reply_title">Send reply</string>
-    <string name="builder_send_reply_message">Send reply ?</string>
-    <string name="builder_send_reply_positive_button_text">Send</string>
-    <string name="builder_send_reply_negative_button_text">Cancel</string>
+    <string name="dialog_send_mail_title">Send mail</string>
+    <string name="dialog_send_mail_message">Send mail ?</string>
+    <string name="dialog_send_mail_positive_button_text">Send</string>
+    <string name="dialog_send_mail_negative_button_text">Cancel</string>
+    <string name="dialog_send_reply_title">Send reply</string>
+    <string name="dialog_send_reply_message">Send reply ?</string>
+    <string name="dialog_send_reply_positive_button_text">Send</string>
+    <string name="dialog_send_reply_negative_button_text">Cancel</string>
+    <string name="dialog_like_title">Voters</string>
+    <string name="label_no_voter_found">No Voter found</string>
 
 </resources>
