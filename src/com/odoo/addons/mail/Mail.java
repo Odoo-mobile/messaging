@@ -42,6 +42,7 @@ import com.odoo.OTouchListener;
 import com.odoo.R;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
+import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.sql.OQuery;
@@ -51,6 +52,7 @@ import com.odoo.support.fragment.BaseFragment;
 import com.odoo.support.fragment.OnSearchViewChangeListener;
 import com.odoo.support.fragment.SyncStatusObserverListener;
 import com.odoo.support.listview.OCursorListAdapter;
+import com.odoo.support.listview.OCursorListAdapter.BeforeBindUpdateData;
 import com.odoo.support.listview.OCursorListAdapter.OnRowViewClickListener;
 import com.odoo.support.listview.OCursorListAdapter.OnViewBindListener;
 import com.odoo.util.OControls;
@@ -60,7 +62,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		LoaderManager.LoaderCallbacks<Cursor>, SyncStatusObserverListener,
 		OnItemClickListener, OnSearchViewChangeListener, OnViewBindListener,
 		OnClickListener, OnRowViewClickListener, SwipeCallbacks,
-		UndoBarListener {
+		UndoBarListener, BeforeBindUpdateData {
 
 	public static final String TAG = Mail.class.getSimpleName();
 	public static final String KEY = "fragment_mail";
@@ -119,6 +121,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		mAdapter = new OCursorListAdapter(getActivity(), null,
 				R.layout.mail_list_item);
 		mAdapter.setOnViewBindListener(this);
+		mAdapter.setBeforeBindUpdateData(this);
 		mailList.setAdapter(mAdapter);
 		mailList.setOnItemClickListener(this);
 		mailList.setEmptyView(mView.findViewById(R.id.loadingProgress));
@@ -276,9 +279,9 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		}
 		Uri uri = ((MailMessage) db()).mailUri();
 		return new CursorLoader(getActivity(), uri, new String[] {
-				"message_title", "author_name", "parent_id",
-				"author_id.image_small", "total_childs", "date", "to_read",
-				"short_body", "starred" }, selection, args, "date DESC");
+				"message_title", "author_name", "parent_id", "author_id",
+				"total_childs", "date", "to_read", "short_body", "starred" },
+				selection, args, "date DESC");
 	}
 
 	@Override
@@ -560,4 +563,18 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 				selection, args);
 	}
 
+	@Override
+	public ODataRow updateDataRow(Cursor cr) {
+		String author_image = "false";
+		ODataRow row = new ODataRow();
+		if (!cr.getString(cr.getColumnIndex("author_id")).equals("false")) {
+			ODataRow partner = new ResPartner(getActivity()).select(cr
+					.getInt(cr.getColumnIndex("author_id")));
+			if (partner != null) {
+				author_image = partner.getString("image_small");
+			}
+		}
+		row.put("author_id_image_small", author_image);
+		return row;
+	}
 }

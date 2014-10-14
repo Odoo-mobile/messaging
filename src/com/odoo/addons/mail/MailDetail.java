@@ -40,6 +40,7 @@ import com.odoo.R;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.base.ir.Attachments;
+import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OSyncHelper;
@@ -218,9 +219,9 @@ public class MailDetail extends BaseFragment implements
 		args = argsList.toArray(new String[argsList.size()]);
 		Uri uri = ((MailMessage) db()).mailDetailUri();
 		return new CursorLoader(mContext, uri, new String[] { "message_title",
-				"author_name", "author_id.image_small", "total_childs",
-				"parent_id", "date", "to_read", "body", "starred" }, selection,
-				args, "date DESC");
+				"author_name", "author_id", "total_childs", "parent_id",
+				"date", "to_read", "body", "starred" }, selection, args,
+				"date DESC");
 
 	}
 
@@ -509,11 +510,21 @@ public class MailDetail extends BaseFragment implements
 
 	@Override
 	public ODataRow updateDataRow(Cursor cr) {
-		return db()
+		ODataRow row = new ODataRow();
+		ODataRow rec = db()
 				.selectRelRecord(
 						new String[] { "attachment_ids", "vote_user_ids",
 								"partner_ids" },
 						cr.getInt(cr.getColumnIndex(OColumn.ROW_ID)));
+		row.addAll(rec.getAll());
+		String author_image = "false";
+		if (!cr.getString(cr.getColumnIndex("author_id")).equals("false")) {
+			author_image = new ResPartner(getActivity()).select(
+					cr.getInt(cr.getColumnIndex("author_id"))).getString(
+					"image_small");
+		}
+		row.put("author_id_image_small", author_image);
+		return row;
 	}
 
 	@Override
