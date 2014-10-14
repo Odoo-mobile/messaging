@@ -40,6 +40,7 @@ import com.odoo.R;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
 import com.odoo.base.ir.Attachments;
+import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OSyncHelper;
@@ -218,9 +219,9 @@ public class MailDetail extends BaseFragment implements
 		args = argsList.toArray(new String[argsList.size()]);
 		Uri uri = ((MailMessage) db()).mailDetailUri();
 		return new CursorLoader(mContext, uri, new String[] { "message_title",
-				"author_name", "total_childs", "parent_id", "date", "to_read",
-				"body", "starred" }, selection, args, "date DESC");
-
+				"author_name", "author_id", "total_childs", "parent_id",
+				"date", "to_read", "body", "starred" }, selection, args,
+				"date DESC");
 	}
 
 	@Override
@@ -509,18 +510,17 @@ public class MailDetail extends BaseFragment implements
 	@Override
 	public ODataRow updateDataRow(Cursor cr) {
 		ODataRow row = new ODataRow();
-		ODataRow record = db().selectRelRecord(
-				new String[] { "attachment_ids", "vote_user_ids",
-						"partner_ids", "author_id" },
-				cr.getInt(cr.getColumnIndex(OColumn.ROW_ID)));
-		row.put("attachment_ids", record.get("attachment_ids"));
-		row.put("vote_user_ids", record.get("vote_user_ids"));
-		row.put("partner_ids", record.get("partner_ids"));
-
+		ODataRow rec = db()
+				.selectRelRecord(
+						new String[] { "attachment_ids", "vote_user_ids",
+								"partner_ids" },
+						cr.getInt(cr.getColumnIndex(OColumn.ROW_ID)));
+		row.addAll(rec.getAll());
 		String author_image = "false";
-		ODataRow author = record.getM2ORecord("author_id").browse();
-		if (author != null) {
-			author_image = author.getString("image_small");
+		if (!cr.getString(cr.getColumnIndex("author_id")).equals("false")) {
+			author_image = new ResPartner(getActivity()).select(
+					cr.getInt(cr.getColumnIndex("author_id"))).getString(
+					"image_small");
 		}
 		row.put("author_id_image_small", author_image);
 		return row;

@@ -42,6 +42,7 @@ import com.odoo.OTouchListener;
 import com.odoo.R;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.addons.mail.providers.mail.MailProvider;
+import com.odoo.base.res.ResPartner;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.sql.OQuery;
@@ -278,9 +279,9 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		}
 		Uri uri = ((MailMessage) db()).mailUri();
 		return new CursorLoader(getActivity(), uri, new String[] {
-				"message_title", "author_name", "parent_id", "total_childs",
-				"date", "to_read", "short_body", "starred" }, selection, args,
-				"date DESC");
+				"message_title", "author_name", "parent_id", "author_id",
+				"total_childs", "date", "to_read", "short_body", "starred" },
+				selection, args, "date DESC");
 	}
 
 	@Override
@@ -565,16 +566,15 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 	@Override
 	public ODataRow updateDataRow(Cursor cr) {
 		String author_image = "false";
-		ODataRow author = db()
-				.selectRelRecord(new String[] { "author_id" },
-						cr.getInt(cr.getColumnIndex(OColumn.ROW_ID)))
-				.getM2ORecord("author_id").browse();
-		if (author != null) {
-			author_image = author.getString("image_small");
-		}
 		ODataRow row = new ODataRow();
+		if (!cr.getString(cr.getColumnIndex("author_id")).equals("false")) {
+			ODataRow partner = new ResPartner(getActivity()).select(cr
+					.getInt(cr.getColumnIndex("author_id")));
+			if (partner != null) {
+				author_image = partner.getString("image_small");
+			}
+		}
 		row.put("author_id_image_small", author_image);
 		return row;
 	}
-
 }

@@ -206,6 +206,12 @@ public abstract class BaseActivity extends FragmentActivity implements
 		});
 	}
 
+	/**
+	 * DONOT CROSS
+	 * 
+	 * @return
+	 */
+
 	protected Boolean isNewAccountRequest() {
 		return mRequestForNewAccount;
 	}

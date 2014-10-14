@@ -164,6 +164,10 @@
         <!-- /Base Providers -->
         <!-- Contact service -->
         <!--
+<<<<<<< HEAD
+=======
+        FIXME: 
+>>>>>>> master-messaging-quick-fix-dpr
         <service
             android:name="com.odoo.base.res.services.ContactSyncService"
             android:exported="true"
