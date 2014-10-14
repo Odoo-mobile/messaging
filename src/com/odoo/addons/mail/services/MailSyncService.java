@@ -23,8 +23,10 @@ import com.odoo.R;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.base.ir.Attachments;
 import com.odoo.base.res.ResPartner;
+import com.odoo.base.res.ResUsers;
 import com.odoo.orm.OColumn;
 import com.odoo.orm.ODataRow;
+import com.odoo.orm.OFieldsHelper;
 import com.odoo.orm.OSyncHelper;
 import com.odoo.orm.OValues;
 import com.odoo.support.OUser;
@@ -243,6 +245,7 @@ public class MailSyncService extends OSyncService implements
 		Context context = getApplicationContext();
 		App app = (App) context;
 		MailMessage mail = new MailMessage(context);
+		ResUsers users = new ResUsers(context);
 		try {
 			Odoo odoo = app.getOdoo();
 			ODomain domain = new ODomain();
@@ -264,8 +267,33 @@ public class MailSyncService extends OSyncService implements
 				OValues values = new OValues();
 				values.put("to_read", to_read);
 				values.put("starred", starred);
-				values.put("vote_user_ids", vote_user_ids.toString());
+				List<Integer> local_vote_user_ids = new ArrayList<Integer>();
+				for (Integer user_id : vote_user_ids) {
+					OValues vals = new OValues();
+					vals.put("id", user_id);
+					local_vote_user_ids.add(users.createORReplace(vals));
+				}
+				values.put("vote_user_ids", local_vote_user_ids.toString());
 				mail.resolver().update(row_id, values);
+			}
+			OFieldsHelper userFields = new OFieldsHelper(new String[] {
+					"login", "name" });
+			JSONArray user_result = odoo.search_read(users.getModelName(),
+					userFields.get(), null).getJSONArray("records");
+			List<Integer> local_uids = new ArrayList<Integer>();
+			for (ODataRow rows : users.select()) {
+				local_uids.add(rows.getInt("id"));
+			}
+			for (int i = 0; i < user_result.length(); i++) {
+				JSONObject row = user_result.getJSONObject(i);
+				if (!local_uids.contains(row.getInt("id"))) {
+					OValues values = new OValues();
+					values.put("id", row.getInt("id"));
+					values.put("name", row.getString("name"));
+					values.put("login", row.getString("login"));
+					values.put("is_dirty", false);
+					users.createORReplace(values);
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
