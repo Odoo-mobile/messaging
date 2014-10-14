@@ -60,9 +60,4 @@ public class ResPartner extends OModel {
 		return new PartnersProvider();
 	}
 
-	@Override
-	public Boolean canUpdateToServer() {
-		return false;
-	}
-
 }
