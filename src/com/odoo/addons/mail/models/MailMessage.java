@@ -72,9 +72,9 @@ public class MailMessage extends OModel {
 			RelationType.ManyToMany);
 
 	@Odoo.Functional(method = "getToRead", store = true, depends = { "notification_ids" })
-	OColumn to_read = new OColumn("To Read", OBoolean.class).setDefault(true);
+	OColumn to_read = new OColumn("To Read", OBoolean.class).setDefault(1);
 	@Odoo.Functional(method = "getStarred", store = true, depends = { "notification_ids" })
-	OColumn starred = new OColumn("Starred", OBoolean.class).setDefault(false);
+	OColumn starred = new OColumn("Starred", OBoolean.class).setDefault(0);
 
 	@Odoo.Functional(method = "storeAuthorName", store = true, depends = {
 			"author_id", "email_from" })
@@ -98,7 +98,7 @@ public class MailMessage extends OModel {
 
 	@Odoo.Functional(method = "getReplies", depends = { "child_ids" }, store = true)
 	OColumn total_childs = new OColumn("Replies", OVarchar.class)
-			.setLocalColumn();
+			.setLocalColumn().setDefault(0);
 	private List<Integer> mNewCreateIds = new ArrayList<Integer>();
 	private MailNotification notification = null;
 

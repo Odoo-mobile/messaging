@@ -378,12 +378,15 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		// Setting starred color
 		ImageView imgStarred = (ImageView) view
 				.findViewById(R.id.img_starred_mlist);
-		int is_fav = cr.getInt(cr.getColumnIndex("starred"));
+
+		int is_fav = 0;
+		is_fav = cr.getInt(cr.getColumnIndex("starred"));
 		imgStarred.setColorFilter((is_fav == 1) ? Color.parseColor("#FF8800")
 				: Color.parseColor("#aaaaaa"));
 		OField totalChilds = (OField) view.findViewById(R.id.totalChilds);
-		int replies = Integer.parseInt(cr.getString(cr
-				.getColumnIndex("total_childs")));
+		int replies = 0;
+		String total_childs = cr.getString(cr.getColumnIndex("total_childs"));
+		replies = Integer.parseInt(total_childs);
 		String childs = "";
 		if (replies > 0) {
 			childs = replies + " replies";
