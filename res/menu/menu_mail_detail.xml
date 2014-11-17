@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
 
     <item
         android:id="@+id/menu_mail_read"
         android:icon="@drawable/ic_action_mark_unread"
-        android:showAsAction="always"
-        android:title="Click to read"/>
+        android:title="Click to read"
+        app:showAsAction="always"/>
     <item
         android:id="@+id/menu_mail_unread"
         android:icon="@drawable/ic_action_mark_read"
-        android:showAsAction="always"
-        android:title="Click to unread"/>
+        android:title="Click to unread"
+        app:showAsAction="always"/>
 
 </menu>

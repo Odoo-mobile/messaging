@@ -204,7 +204,7 @@ public class Mail extends BaseFragment implements OnRefreshListener,
 		return query;
 	}
 
-	private Fragment object(Type type) {
+	public Fragment object(Type type) {
 		Mail mail = new Mail();
 		Bundle bundle = new Bundle();
 		bundle.putString(KEY, type.toString());

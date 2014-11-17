@@ -3,12 +3,14 @@ package com.odoo.addons.mail.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.Activity;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -16,10 +18,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.odoo.support.OUser;
 import com.odoo.R;
+import com.odoo.support.OUser;
 
-public class MailWidgetConfigure extends Activity implements
+public class MailWidgetConfigure extends ActionBarActivity implements
 		OnItemClickListener {
 	public static final String KEY_INBOX = "inbox";
 	public static final String KEY_TODO = "to-do";
@@ -41,13 +43,22 @@ public class MailWidgetConfigure extends Activity implements
 		mOptionsList.add(getString(R.string.drawer_tome));
 		mOptionsList.add(getString(R.string.drawer_archives));
 		initListView();
-
+		initActionbar();
 		if (OUser.current(this) == null) {
 			Toast.makeText(this, getString(R.string.toast_no_acccount_found),
 					Toast.LENGTH_LONG).show();
 			finish();
 		}
 
+	}
+
+	private void initActionbar() {
+		getActionbar().setHomeButtonEnabled(true);
+		getActionbar().setDisplayHomeAsUpEnabled(true);
+	}
+
+	private ActionBar getActionbar() {
+		return getSupportActionBar();
 	}
 
 	private void initListView() {
@@ -92,6 +103,12 @@ public class MailWidgetConfigure extends Activity implements
 		resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
 		setResult(RESULT_OK, resultValue);
 		finish();
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		finish();
+		return super.onOptionsItemSelected(item);
 	}
 
 }

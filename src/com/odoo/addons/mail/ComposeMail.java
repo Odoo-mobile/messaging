@@ -6,13 +6,14 @@ import java.util.List;
 import odoo.controls.OField;
 import odoo.controls.OForm;
 import odoo.controls.OTagsView.NewTokenCreateListener;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.odoo.R;
 import com.odoo.addons.mail.models.MailMessage;
 import com.odoo.base.ir.Attachments;
 import com.odoo.base.ir.Attachments.Types;
@@ -37,10 +39,9 @@ import com.odoo.util.OControls;
 import com.odoo.util.ODate;
 import com.odoo.util.PreferenceManager;
 import com.odoo.util.Utils;
-import com.odoo.R;
 
-public class ComposeMail extends Activity implements NewTokenCreateListener,
-		OnClickListener, OnFocusChangeListener {
+public class ComposeMail extends ActionBarActivity implements
+		NewTokenCreateListener, OnClickListener, OnFocusChangeListener {
 	public static final String TAG = ComposeMail.class.getSimpleName();
 	private Context mContext = null;
 	private Attachments mAttachment = null;
@@ -175,8 +176,12 @@ public class ComposeMail extends Activity implements NewTokenCreateListener,
 	}
 
 	private void initActionbar() {
-		getActionBar().setHomeButtonEnabled(true);
-		getActionBar().setDisplayHomeAsUpEnabled(true);
+		getActionbar().setHomeButtonEnabled(true);
+		getActionbar().setDisplayHomeAsUpEnabled(true);
+	}
+
+	private ActionBar getActionbar() {
+		return getSupportActionBar();
 	}
 
 	@Override

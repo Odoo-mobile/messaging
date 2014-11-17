@@ -25,6 +25,13 @@
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+
+    <permission
+        android:name="com.odoo.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
 
     <application
         android:name=".App"
@@ -214,7 +221,7 @@
         <activity
             android:name="com.odoo.addons.mail.widgets.MailWidgetConfigure"
             android:icon="@drawable/ic_odoo_o_purple"
-            android:theme="@style/ProfileActivityTheme" >
+            android:theme="@style/SettingActivity" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>

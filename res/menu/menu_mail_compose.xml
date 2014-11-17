@@ -1,20 +1,21 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
 
     <item
         android:id="@+id/menu_add_all_attachments"
         android:icon="@drawable/ic_action_content_new_attachment"
-        android:showAsAction="always"
-        android:title="@string/add_attachment">
+        android:title="@string/add_attachment"
+        app:showAsAction="always">
         <menu>
             <item
                 android:id="@+id/menu_add_images"
-                android:showAsAction="always"
-                android:title="@string/add_image">
+                android:title="@string/add_image"
+                app:showAsAction="always">
             </item>
             <item
                 android:id="@+id/menu_add_files"
-                android:showAsAction="always"
-                android:title="@string/add_file">
+                android:title="@string/add_file"
+                app:showAsAction="always">
             </item>
         </menu>
     </item>
@@ -22,7 +23,7 @@
         android:id="@+id/menu_mail_compose"
         android:icon="@drawable/ic_action_send_now"
         android:orderInCategory="100"
-        android:showAsAction="always"
-        android:title="@string/send_now"/>
+        android:title="@string/send_now"
+        app:showAsAction="always"/>
 
 </menu>

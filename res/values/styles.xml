@@ -10,6 +10,7 @@
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
+
     <!-- Undo-bar styles -->
     <style name="Root">
         <item name="android:layout_width">match_parent</item>

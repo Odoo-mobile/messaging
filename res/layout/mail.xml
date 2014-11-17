@@ -16,7 +16,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical" >
 
-        <android.widgets.SwipeRefreshLayout
+        <android.support.v4.widget.SwipeRefreshLayout
             android:id="@+id/swipe_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent" >
@@ -26,7 +26,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" >
             </ListView>
-        </android.widgets.SwipeRefreshLayout>
+        </android.support.v4.widget.SwipeRefreshLayout>
     </LinearLayout>
 
     <odoo.controls.fab.FloatingActionButton
