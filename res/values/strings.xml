@@ -57,6 +57,8 @@ When you process messages in your inbox, you can mark some as todo. From this me
     <string name="dialog_send_reply_positive_button_text">Send</string>
     <string name="dialog_send_reply_negative_button_text">Cancel</string>
     <string name="dialog_like_title">Voters</string>
+    <string name="title_working">Working...</string>
+    <string name="title_please_wait">Please wait...</string>
     <string name="label_no_voter_found">No Voter found</string>
 
 </resources>

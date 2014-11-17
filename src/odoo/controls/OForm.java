@@ -20,11 +20,14 @@ package odoo.controls;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import odoo.controls.OField.OFieldType;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.os.AsyncTask;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +36,7 @@ import android.widget.RelativeLayout;
 
 import com.odoo.R;
 import com.odoo.orm.OColumn;
+import com.odoo.orm.OColumn.ColumnDomain;
 import com.odoo.orm.OColumn.RelationType;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OModel;
@@ -57,6 +61,7 @@ public class OForm extends LinearLayout implements View.OnClickListener {
 
 	/** The Constant KEY_FALSE_BACKGROUND_SELECTOR. */
 	public static final String KEY_FALSE_BACKGROUND_SELECTOR = "false_background_selector";
+	public static final String KEY_AUTO_UI_GENERATE = "autoUIGenerate";
 
 	/** The Constant KEY_MODEL. */
 	public static final String KEY_MODEL = "model";
@@ -83,7 +88,7 @@ public class OForm extends LinearLayout implements View.OnClickListener {
 	HashMap<String, OColumn> mFieldColumns = new HashMap<String, OColumn>();
 
 	/** The m form field controls. */
-	List<OField> mFormFieldControls = new ArrayList<OField>();
+	HashMap<String, OField> mFormFieldControls = new HashMap<String, OField>();
 
 	/** The m on view click listener. */
 	OnViewClickListener mOnViewClickListener = null;
@@ -155,6 +160,8 @@ public class OForm extends LinearLayout implements View.OnClickListener {
 			mAttrs.put(KEY_FALSE_BACKGROUND_SELECTOR, mTypedArray
 					.getResourceId(R.styleable.OForm_false_background_selector,
 							-1));
+			mAttrs.put(KEY_AUTO_UI_GENERATE, mTypedArray.getBoolean(
+					R.styleable.OForm_autoUIGenerate, false));
 			mModel = OModel.get(mContext, mAttrs.getString(KEY_MODEL, null));
 			mTypedArray.recycle();
 		}
@@ -189,11 +196,11 @@ public class OForm extends LinearLayout implements View.OnClickListener {
 				setClickable(true);
 			}
 		}
-		int childs = mFormFieldControls.size();
-		for (int i = 0; i < childs; i++) {
-			View v = mFormFieldControls.get(i);
+		for (String key : mFormFieldControls.keySet()) {
+			View v = mFormFieldControls.get(key);
 			if (v instanceof OField) {
 				OField field = (OField) v;
+				field.setAutoUpdateUI(autoGenerateUI());
 				field.reInit();
 				OColumn column = mModel.getColumn(field.getFieldName());
 				OModel ref_model = null;
@@ -206,38 +213,52 @@ public class OForm extends LinearLayout implements View.OnClickListener {
 						ref_column = ref_model.getColumn(field.getRefColumn());
 					}
 					field.setColumn(column);
+					/**
+					 * Check for onChange of columns in EditMode
+					 */
+					if (column.hasOnChange() && editable) {
+						setOnChangeForColumn(field, column);
+					}
+
+					/**
+					 * Check for domain filter column.
+					 */
+					if (column.hasDomainFilterColumn() && editable) {
+						setOnDomainFilterCallBack(field, column);
+					}
 					OFieldType widget = null;
 					String label = field.getFieldName();
-					if (column != null) {
-						mFieldColumns.put(field.getFieldName(), column);
-						mFields.add(field.getTag().toString());
-						label = column.getLabel();
-						if (column.getRelationType() != null
-								&& column.getRelationType() == RelationType.ManyToOne) {
-							widget = OFieldType.MANY_TO_ONE;
+					mFieldColumns.put(field.getFieldName(), column);
+					mFields.add(field.getTag().toString());
+					label = column.getLabel();
+					if (column.getRelationType() != null
+							&& column.getRelationType() == RelationType.ManyToOne) {
+						widget = OFieldType.MANY_TO_ONE;
+						if (field.isSearchableWidget()) {
+							widget = OFieldType.MANY_TO_ONE_SEARCHABLE;
 						}
-						if (column.getRelationType() != null
-								&& (column.getRelationType() == RelationType.ManyToMany || column
-										.getRelationType() == RelationType.OneToMany)) {
-							widget = OFieldType.MANY_TO_MANY_TAGS;//
-						}
-						if (column.isFunctionalColumn()) {
-							Object value = mRecord.get(column.getName());
-							if (column.getType() == null)
-								column.setType(value.getClass());
-							field.setColumn(column);
-						}
-						if (column.getType().isAssignableFrom(OBlob.class)
-								|| (ref_column != null && ref_column.getType()
-										.isAssignableFrom(OBlob.class))) {
-							widget = OFieldType.BINARY;
-						}
-						if (column.getType().isAssignableFrom(OBoolean.class)) {
-							widget = OFieldType.BOOLEAN_WIDGET;
-						}
-						if (column.getType().isAssignableFrom(OHtml.class)) {
-							widget = OFieldType.WEB_VIEW;
-						}
+					}
+					if (column.getRelationType() != null
+							&& (column.getRelationType() == RelationType.ManyToMany || column
+									.getRelationType() == RelationType.OneToMany)) {
+						widget = OFieldType.MANY_TO_MANY_TAGS;
+					}
+					if (column.isFunctionalColumn()) {
+						Object value = mRecord.get(column.getName());
+						if (column.getType() == null)
+							column.setType(value.getClass());
+						field.setColumn(column);
+					}
+					if (column.getType().isAssignableFrom(OBlob.class)
+							|| (ref_column != null && ref_column.getType()
+									.isAssignableFrom(OBlob.class))) {
+						widget = OFieldType.BINARY;
+					}
+					if (column.getType().isAssignableFrom(OBoolean.class)) {
+						widget = OFieldType.BOOLEAN_WIDGET;
+					}
+					if (column.getType().isAssignableFrom(OHtml.class)) {
+						widget = OFieldType.WEB_VIEW;
 					}
 					if (widget != null) {
 						if (mRecord != null
@@ -277,6 +298,122 @@ public class OForm extends LinearLayout implements View.OnClickListener {
 		}
 	}
 
+	public boolean autoGenerateUI() {
+		return mAttrs.getBoolean(KEY_AUTO_UI_GENERATE, false);
+	}
+
+	private void setOnDomainFilterCallBack(final OField field, final OColumn col) {
+		LinkedHashMap<String, ColumnDomain> filter_domain = col
+				.getFilterDomains();
+		for (String k : filter_domain.keySet()) {
+			ColumnDomain dmn = filter_domain.get(k);
+			if (dmn.getColumn() != null) {
+				OField fld = mFormFieldControls.get(dmn.getColumn());
+				if (fld != null) {
+					fld.setOnFilterDomainCallBack(dmn,
+							new OnDomainFilterCallbacks() {
+
+								@Override
+								public void onFieldValueChanged(
+										ColumnDomain domain) {
+									col.addDomain(domain.getColumn(),
+											domain.getOperator(),
+											domain.getValue());
+									if (field.getWidget() != null
+											&& field.getWidget() == OFieldType.MANY_TO_ONE) {
+										col.setHasDomainFilterColumn(false);
+										field.setColumn(col);
+										field.reInit();
+									}
+								}
+							});
+				}
+			}
+		}
+	}
+
+	private void setOnChangeForColumn(OField field, final OColumn col) {
+		field.setOnChangeCallBack(new OnChangeCallback() {
+
+			@Override
+			public void onValueChange(ODataRow row) {
+				if (!col.isOnChangeBGProcess()) {
+					ODataRow vals = mModel.getOnChangeValue(col, row);
+					if (vals != null) {
+						for (String key : vals.keys()) {
+							if (mFormFieldControls.containsKey(key)) {
+								OField field = mFormFieldControls.get(key);
+								if (field.getWidget() != null) {
+									// Relation field
+									field.selectManyToOneRecord(vals
+											.getInt(key));
+								} else {
+									field.setText(vals.getString(key));
+								}
+							}
+						}
+					}
+				} else {
+					OnChangeBackgroundProcess bgProcess = new OnChangeBackgroundProcess(
+							mContext, mModel, col, row);
+					bgProcess.execute();
+				}
+			}
+		});
+	}
+
+	private class OnChangeBackgroundProcess extends
+			AsyncTask<Void, Void, ODataRow> {
+		private OModel mModel;
+		private OColumn mCol;
+		private ODataRow mRow;
+		private ProgressDialog mDialog;
+
+		public OnChangeBackgroundProcess(Context context, OModel model,
+				OColumn col, ODataRow row) {
+			mModel = model;
+			mCol = col;
+			mRow = row;
+			mDialog = new ProgressDialog(context);
+			mDialog.setTitle(context.getString(R.string.title_working));
+			mDialog.setMessage(context.getString(R.string.title_please_wait));
+			mDialog.setCancelable(false);
+		}
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			mDialog.show();
+		}
+
+		@Override
+		protected ODataRow doInBackground(Void... params) {
+			try {
+				Thread.sleep(500);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return mModel.getOnChangeValue(mCol, mRow);
+		}
+
+		@Override
+		protected void onPostExecute(ODataRow vals) {
+			super.onPostExecute(vals);
+			for (String key : vals.keys()) {
+				if (mFormFieldControls.containsKey(key)) {
+					OField field = mFormFieldControls.get(key);
+					if (field.getWidget() != null) {
+						// Relation field
+						field.selectManyToOneRecord(vals.getInt(key));
+					} else {
+						field.setText(vals.getString(key));
+					}
+				}
+			}
+			mDialog.dismiss();
+		}
+	}
+
 	/**
 	 * Find all fields.
 	 * 
@@ -291,7 +428,8 @@ public class OForm extends LinearLayout implements View.OnClickListener {
 				findAllFields((ViewGroup) v);
 			}
 			if (v instanceof OField) {
-				mFormFieldControls.add((OField) v);
+				OField field = (OField) v;
+				mFormFieldControls.put(field.getFieldName(), field);
 			}
 		}
 	}

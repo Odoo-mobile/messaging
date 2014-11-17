@@ -19,18 +19,21 @@
 package com.odoo.support.fragment;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.SyncStatusObserver;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.SearchView.OnQueryTextListener;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.SearchView;
-import android.widget.SearchView.OnQueryTextListener;
-import android.widgets.SwipeRefreshLayout;
 
 import com.odoo.App;
 import com.odoo.auth.OdooAccountManager;
@@ -59,6 +62,13 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 	private OnSearchViewChangeListener mOnSearchViewChangeListener = null;
 	private SwipeRefreshLayout mSwipeRefresh = null;
 	private String drawer_tag = null;
+	private Context mContext;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		mContext = getActivity();
+	}
 
 	/**
 	 * Gets the query listener.
@@ -111,13 +121,13 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 	};
 
 	public void startFragment(Fragment fragment, Boolean addToBackState) {
-		FragmentListener fragmentListener = (FragmentListener) getActivity();
+		FragmentListener fragmentListener = (FragmentListener) mContext;
 		fragmentListener.startMainFragment(fragment, addToBackState);
 	}
 
 	public OModel db() {
 		if (mDb == null)
-			mDb = (OModel) databaseHelper(getActivity());
+			mDb = (OModel) databaseHelper(mContext);
 		return mDb;
 	}
 
@@ -134,7 +144,7 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 	 * @return the string
 	 */
 	public String _s(int res_id) {
-		return getActivity().getResources().getString(res_id);
+		return mContext.getResources().getString(res_id);
 	}
 
 	/**
@@ -145,7 +155,7 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 	 * @return the string[]
 	 */
 	public String[] _sArray(int res_id) {
-		return getActivity().getResources().getStringArray(res_id);
+		return mContext.getResources().getStringArray(res_id);
 	}
 
 	/**
@@ -156,7 +166,7 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 	 * @return the drawable
 	 */
 	public Drawable _d(int res_id) {
-		return getActivity().getResources().getDrawable(res_id);
+		return mContext.getResources().getDrawable(res_id);
 	}
 
 	/**
@@ -167,7 +177,7 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 	 * @return the integer
 	 */
 	public Integer _i(int res_id) {
-		return getActivity().getResources().getInteger(res_id);
+		return mContext.getResources().getInteger(res_id);
 	}
 
 	/**
@@ -178,7 +188,7 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 	 * @return the int[]
 	 */
 	public int[] _iArray(int res_id) {
-		return getActivity().getResources().getIntArray(res_id);
+		return mContext.getResources().getIntArray(res_id);
 	}
 
 	/**
@@ -189,7 +199,7 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 	 * @return the int
 	 */
 	public int _c(int res_id) {
-		return getActivity().getResources().getColor(res_id);
+		return mContext.getResources().getColor(res_id);
 	}
 
 	/**
@@ -200,19 +210,23 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 	 * @return the float
 	 */
 	public Float _dim(int res_id) {
-		return getActivity().getResources().getDimension(res_id);
+		return mContext.getResources().getDimension(res_id);
 	}
 
 	public App app() {
-		return (App) getActivity().getApplicationContext();
+		return (App) mContext.getApplicationContext();
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		if (!getActivity().getActionBar().isShowing() && showActionbar)
-			getActivity().getActionBar().show();
 		scope = new AppScope(getActivity());
+		if (actionbar().isShowing() && !showActionbar)
+			actionbar().hide();
+		else if (!actionbar().isShowing() && showActionbar) {
+			actionbar().show();
+		}
+
 		if (scope.main().getNavItem() != null)
 			scope.main().setTitle(scope.main().getNavItem().getTitle());
 		if (mSyncStatusObserverListener != null) {
@@ -268,10 +282,13 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 	public void setHasSearchView(OnSearchViewChangeListener listener,
 			Menu menu, int menu_id) {
 		mOnSearchViewChangeListener = listener;
-		mSearchView = (SearchView) menu.findItem(menu_id).getActionView();
-		mSearchView.setOnCloseListener(closeListener);
-		mSearchView.setOnQueryTextListener(searchViewQueryListener);
-		mSearchView.setIconifiedByDefault(true);
+		mSearchView = (SearchView) MenuItemCompat.getActionView(menu
+				.findItem(menu_id));
+		if (mSearchView != null) {
+			mSearchView.setOnCloseListener(closeListener);
+			mSearchView.setOnQueryTextListener(searchViewQueryListener);
+			mSearchView.setIconifiedByDefault(true);
+		}
 	}
 
 	private SearchView.OnCloseListener closeListener = new SearchView.OnCloseListener() {
@@ -306,7 +323,7 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 			SwipeRefreshLayout.OnRefreshListener listener) {
 		mSwipeRefresh = (SwipeRefreshLayout) parent.findViewById(resource_id);
 		mSwipeRefresh.setOnRefreshListener(listener);
-		mSwipeRefresh.setColorScheme(android.R.color.holo_blue_bright,
+		mSwipeRefresh.setColorSchemeResources(android.R.color.holo_blue_bright,
 				android.R.color.holo_green_light,
 				android.R.color.holo_orange_light,
 				android.R.color.holo_red_light);
@@ -336,5 +353,10 @@ public abstract class BaseFragment extends Fragment implements OModuleHelper {
 
 	public PreferenceManager getPref() {
 		return new PreferenceManager(getActivity());
+	}
+
+	public ActionBar actionbar() {
+		scope = new AppScope(getActivity());
+		return scope.main().getActionbar();
 	}
 }

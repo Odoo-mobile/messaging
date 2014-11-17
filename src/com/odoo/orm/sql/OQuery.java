@@ -536,5 +536,4 @@ public class OQuery {
 		model.withFunctionalColumns(withFunctionalColumns);
 		return this;
 	}
-
 }

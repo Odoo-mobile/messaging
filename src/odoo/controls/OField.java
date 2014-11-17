@@ -25,6 +25,7 @@ import java.util.TimeZone;
 
 import odoo.controls.MultiTagsTextView.TokenListener;
 import odoo.controls.OManyToOneWidget.ManyToOneItemChangeListener;
+import odoo.controls.OSearchableMany2One.DialogListRowViewListener;
 import odoo.controls.OTagsView.CustomTagViewListener;
 import odoo.controls.OTagsView.NewTokenCreateListener;
 import android.annotation.SuppressLint;
@@ -55,19 +56,21 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.odoo.R;
 import com.odoo.orm.OColumn;
+import com.odoo.orm.OColumn.ColumnDomain;
 import com.odoo.orm.OColumn.RelationType;
 import com.odoo.orm.ODataRow;
 import com.odoo.orm.OM2ORecord;
 import com.odoo.orm.OModel;
 import com.odoo.orm.OModel.Command;
 import com.odoo.orm.ORelIds;
+import com.odoo.orm.types.OBoolean;
 import com.odoo.orm.types.ODateTime;
 import com.odoo.support.listview.OListAdapter;
 import com.odoo.util.Base64Helper;
 import com.odoo.util.ODate;
 import com.odoo.util.StringUtils;
-import com.odoo.R;
 
 /**
  * The Class OField.
@@ -142,6 +145,13 @@ public class OField extends LinearLayout implements
 
 	/** The Constant KEY_READ_MORE_BUTTON. */
 	public static final String KEY_READ_MORE_BUTTON = "readMoreButton";
+	public static final String KEY_WIDGET = "widget";
+	public static final String KEY_WIDGET_TITLE = "widgetTitle";
+
+	/**
+	 * Parent view. Updated for new UI look for API 21+
+	 */
+	private LinearLayout mParent = null;
 
 	/**
 	 * The Enum OFieldMode.
@@ -171,7 +181,7 @@ public class OField extends LinearLayout implements
 	public enum OFieldType {
 
 		/** The many to one. */
-		MANY_TO_ONE,
+		MANY_TO_ONE, MANY_TO_ONE_SEARCHABLE,
 		/** The many to many tags. */
 		MANY_TO_MANY_TAGS,
 		/** The binary. */
@@ -236,6 +246,8 @@ public class OField extends LinearLayout implements
 
 	/** The many to one widget. */
 	private OManyToOneWidget mManyToOne = null;
+	private OSearchableMany2One mManyToOneSearchable = null;
+	private DialogListRowViewListener mDialogListRowViewListener = null;
 
 	/** The many to many tags. */
 	private OTagsView mManyToManyTags = null;
@@ -279,6 +291,18 @@ public class OField extends LinearLayout implements
 
 	private OForm.OnViewClickListener mOForm_OnViewClickListener = null;
 
+	private boolean autoUpdateUI = false;
+	/**
+	 * Used for handling onChange of Control (if any)
+	 */
+	private OnChangeCallback mOnChangeCallBack = null;
+
+	/**
+	 * Used to filter data depends on another column at runtime
+	 */
+	private OnDomainFilterCallbacks mOnDomainFilterCallbacks = null;
+	private ColumnDomain mColumnDomain = null;
+
 	/**
 	 * Instantiates a new field.
 	 * 
@@ -316,6 +340,10 @@ public class OField extends LinearLayout implements
 	public OField(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init(context, attrs, defStyle);
+	}
+
+	public void setAutoUpdateUI(Boolean autoUpdate) {
+		autoUpdateUI = autoUpdate;
 	}
 
 	/**
@@ -357,6 +385,7 @@ public class OField extends LinearLayout implements
 	private void initControls() {
 		removeAllViews();
 		setOrientation(LinearLayout.VERTICAL);
+		setLayoutUI();
 		createLabel();
 		if (mFieldWidget == null) {
 			createTextViewControl();
@@ -364,6 +393,31 @@ public class OField extends LinearLayout implements
 			createWidget(mFieldWidget);
 		}
 
+	}
+
+	private void setLayoutUI() {
+		if (autoUpdateUI) {
+			int padd = (int) (mScaleFactor * 10);
+			if (!withLabel()) {
+				setPadding(padd, 5, padd, 5);
+			} else
+				setPadding(padd, padd, padd, padd);
+			setBackgroundColor(Color.WHITE);
+			post(new Runnable() {
+
+				@Override
+				public void run() {
+					LayoutParams params = (LayoutParams) getLayoutParams();
+					int margin = (int) (mScaleFactor * 5);
+					if (withLabel()) {
+						params.setMargins(margin, margin, margin, 0);
+					} else {
+						params.setMargins(margin, 0, margin, 0);
+					}
+					setLayoutParams(params);
+				}
+			});
+		}
 	}
 
 	/**
@@ -376,6 +430,9 @@ public class OField extends LinearLayout implements
 		switch (fieldWidget) {
 		case MANY_TO_ONE:
 			createManyToOneWidget();
+			break;
+		case MANY_TO_ONE_SEARCHABLE:
+			createManyToOneSearchable();
 			break;
 		case BINARY_FILE:
 		case BINARY_IMAGE:
@@ -411,6 +468,10 @@ public class OField extends LinearLayout implements
 	public OField setObjectEditable(Boolean editable) {
 		mManyToManyObjectEditable = editable;
 		return this;
+	}
+
+	public boolean isEditable() {
+		return (mAttributes.getBoolean(KEY_EDITABLE, false));
 	}
 
 	/**
@@ -904,6 +965,58 @@ public class OField extends LinearLayout implements
 		}
 	}
 
+	public String getWidgetTitle() {
+		return mAttributes.getString(KEY_WIDGET_TITLE, "");
+	}
+
+	// TODO
+	private void createManyToOneSearchable() {
+		mFieldWidget = OFieldType.MANY_TO_ONE_SEARCHABLE;
+		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+				LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+		mManyToOneSearchable = new OSearchableMany2One(mContext);
+		mManyToOneSearchable.setLayoutParams(params);
+		mManyToOneSearchable.setTitle(getWidgetTitle());
+		mManyToOneSearchable.setModel(mModel);
+		mManyToOneSearchable.setDefaultDomain(mColumn.getDomains());
+		mManyToOneSearchable.setOnChangeCallback(mOnChangeCallBack);
+		mManyToOneSearchable.setOnFilterDomainCallBack(mColumnDomain,
+				mOnDomainFilterCallbacks);
+		int custom_layout = mAttributes.getResource(KEY_CUSTOM_LAYOUT, -1);
+		if (custom_layout > -1) {
+			mManyToOneSearchable.setDisplayLayout(custom_layout);
+		}
+		if (mDialogListRowViewListener != null) {
+			mManyToOneSearchable
+					.setDialogListRowViewListener(mDialogListRowViewListener);
+		}
+		if (mControlRecord != null
+				&& mControlRecord.contains(mColumn.getName())) {
+			ODataRow mrec = mControlRecord.getM2ORecord(mColumn.getName())
+					.browse();
+			mManyToOneSearchable.setRecord(mrec);
+		}
+		mManyToOneSearchable
+				.reInit(mAttributes.getBoolean(KEY_EDITABLE, false));
+		addView(mManyToOneSearchable);
+	}
+
+	public void setManyToOneSearchableCallbacks(
+			DialogListRowViewListener callback) {
+		mDialogListRowViewListener = callback;
+	}
+
+	public void selectManyToOneRecord(int row_id) {
+		if (mManyToOne != null) {
+			mManyToOne.setRecordId(row_id);
+			mManyToOne.reInit();
+		}
+	}
+
+	public boolean withLabel() {
+		return (mAttributes.getBoolean(KEY_WITH_LABEL, true));
+	}
+
 	/**
 	 * Creates the label.
 	 */
@@ -913,15 +1026,15 @@ public class OField extends LinearLayout implements
 		if (mAttributes.getBoolean(KEY_WITH_LABEL, true)) {
 			mFieldLabel = new OLabel(mContext);
 			mFieldLabel.setLayoutParams(mLayoutParams);
-			mFieldLabel.setBottomBorderHeight(mAttributes.getResource(
-					KEY_BOTTOM_BORDER_HEIGHT, 2));
+			mFieldLabel.setBottomBorderHeight(0);// mAttributes.getResource(KEY_BOTTOM_BORDER_HEIGHT,
+													// 0));
 			if (mColumn != null) {
 				mFieldLabel.setLabel(mColumn.getLabel());
 			} else {
 				mFieldLabel.setLabel(mAttributes.getString(KEY_FIELD_NAME, ""));
 			}
 			Integer mAttrLabelTextAppearnce = mAttributes.getResource(
-					KEY_LABEL_TEXT_APPEARANCE, 0);
+					KEY_LABEL_TEXT_APPEARANCE, 2);
 			if (mAttrLabelTextAppearnce != 0)
 				mFieldLabel.setTextAppearance(mAttrLabelTextAppearnce);
 			mFieldLabel.setColor(mAttributes.getColor(KEY_LABEL_COLOR,
@@ -1140,6 +1253,10 @@ public class OField extends LinearLayout implements
 				R.styleable.OField_customLayoutOriantation, -1));
 		mAttributes.put(KEY_READ_MORE_BUTTON, mTypedArray.getBoolean(
 				R.styleable.OField_readMoreButton, false));
+		mAttributes.put(KEY_WIDGET,
+				mTypedArray.getInt(R.styleable.OField_widget, -1));
+		mAttributes.put(KEY_WIDGET_TITLE,
+				mTypedArray.getString(R.styleable.OField_widgetTitle));
 	}
 
 	/**
@@ -1187,6 +1304,15 @@ public class OField extends LinearLayout implements
 					&& mColumn.getType().isAssignableFrom(ODateTime.class)) {
 				text = ODate.getDate(mContext, text, TimeZone.getDefault()
 						.getID(), displayPattern);
+			}
+			if (mColumn != null) {
+				if (mColumn.getType().isAssignableFrom(OBoolean.class)) {
+					if (text.equals("true")) {
+						text = mColumn.getLabel();
+					} else {
+						text = "No " + mColumn.getLabel();
+					}
+				}
 			}
 			mFieldTextView.setText(text);
 		}
@@ -1336,6 +1462,10 @@ public class OField extends LinearLayout implements
 				return mSwitch.isChecked();
 			case MANY_TO_ONE:
 				return mFieldValue;
+			case MANY_TO_ONE_SEARCHABLE:
+				if (mManyToOneSearchable.getValue() != null)
+					return mManyToOneSearchable.getValue().getInt(
+							OColumn.ROW_ID);
 			case MANY_TO_MANY_TAGS:
 				List<Integer> rIds = new ArrayList<Integer>();
 				Integer base_record_id = (mControlRecord != null) ? mControlRecord
@@ -1363,6 +1493,13 @@ public class OField extends LinearLayout implements
 			case WEB_VIEW:
 				return "<p>" + getText().replaceAll("(\r\n|\n)", "<br />")
 						+ "</p>";
+			case BINARY_IMAGE:
+			case BINARY_ROUND_IMAGE:
+				if (mControlRecord != null
+						&& mControlRecord.contains(mColumn.getName())) {
+					return mControlRecord.get(mColumn.getName());
+				}
+				return null;
 			default:
 				return getText();
 			}
@@ -1439,5 +1576,19 @@ public class OField extends LinearLayout implements
 	public void addTagObject(Object tag) {
 		if (mManyToManyTags != null)
 			mManyToManyTags.addObject(tag);
+	}
+
+	public void setOnChangeCallBack(OnChangeCallback callback) {
+		mOnChangeCallBack = callback;
+	}
+
+	public void setOnFilterDomainCallBack(ColumnDomain domain,
+			OnDomainFilterCallbacks callback) {
+		mColumnDomain = domain;
+		mOnDomainFilterCallbacks = callback;
+	}
+
+	public boolean isSearchableWidget() {
+		return (mAttributes.getResource(KEY_WIDGET, -1) > -1);
 	}
 }

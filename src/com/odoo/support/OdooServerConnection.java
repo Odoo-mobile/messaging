@@ -64,11 +64,11 @@ public class OdooServerConnection {
 	public boolean testConnection(Context context, String serverURL)
 			throws OVersionException, SSLPeerUnverifiedException {
 		Log.d(TAG, "OdooServerConnection->testConnection()");
-		if (TextUtils.isEmpty(serverURL)) {
+		if (TextUtils.isEmpty(serverURL) && !serverURL.contains(".")) {
 			return false;
 		}
 		try {
-			odoo = new Odoo(serverURL, mAllowSelfSignedSSL);
+			odoo = new Odoo(context, serverURL, mAllowSelfSignedSSL);
 			mDbLists = odoo.getDatabaseList();
 			if (mDbLists == null) {
 				mDbLists = new JSONArray();
