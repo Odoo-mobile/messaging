@@ -238,7 +238,7 @@ public class OSyncDataUtils {
                                     List<Integer> m2mRowIds = new ArrayList<>();
                                     for (Integer id : m2mIds) {
                                         recKey = m2mModel.getModelName() + "_" + id;
-                                        int r_id = OModel.INVALID_ROW_ID;
+                                        int r_id;
                                         if (!recordsId.contains(recKey)) {
                                             OValues m2mValues = new OValues();
                                             m2mValues.put("id", id);

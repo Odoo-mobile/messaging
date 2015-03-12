@@ -15,24 +15,28 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http:www.gnu.org/licenses/>
  *
- * Created on 30/12/14 3:11 PM
+ * Created on 12/3/15 2:58 PM
  */
-package com.odoo.config;
+package com.odoo.addons.groups.services;
 
-import com.odoo.addons.groups.Groups;
-import com.odoo.addons.mail.Mail;
-import com.odoo.core.support.addons.AddonsHelper;
-import com.odoo.core.support.addons.OAddon;
+import android.content.Context;
+import android.os.Bundle;
 
-public class Addons extends AddonsHelper {
+import com.odoo.addons.groups.models.MailGroup;
+import com.odoo.core.service.OSyncAdapter;
+import com.odoo.core.service.OSyncService;
+import com.odoo.core.support.OUser;
 
-    /**
-     * Declare your required module here
-     * NOTE: For maintain sequence use object name in asc order.
-     * Ex.:
-     * OAddon partners = new OAddon(Partners.class).setDefault();
-     */
+public class MailGroupSyncService extends OSyncService {
+    public static final String TAG = MailGroupSyncService.class.getSimpleName();
 
-    OAddon a_mail = new OAddon(Mail.class).setDefault();
-    OAddon b_groups = new OAddon(Groups.class);
+    @Override
+    public OSyncAdapter getSyncAdapter(OSyncService service, Context context) {
+        return new OSyncAdapter(context, MailGroup.class, this, true);
+    }
+
+    @Override
+    public void performDataSync(OSyncAdapter adapter, Bundle extras, OUser user) {
+        // Nothing to pass
+    }
 }

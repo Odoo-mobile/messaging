@@ -85,9 +85,24 @@
             android:authorities="com.odoo.messaging.core.provider.content.sync.ir_model"
             android:multiprocess="true" />
 
-        <activity
-            android:name="com.odoo.addons.customers.CustomerDetails"
-            android:windowSoftInputMode="adjustPan" />
+        <!-- Messaging data //-->
+        <provider
+            android:label="@string/label_sync_groups"
+            android:multiprocess="true"
+            android:authorities="com.odoo.addons.groups.models.mail_group"
+            android:name=".addons.groups.providers.MailGroupProvider" />
+        <service
+            android:name="com.odoo.addons.groups.services.MailGroupSyncService"
+            android:exported="true"
+            android:process=":sync_groups">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/mail_group_sync_adapter" />
+        </service>
 
     </application>
 

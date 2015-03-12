@@ -15,24 +15,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http:www.gnu.org/licenses/>
  *
- * Created on 30/12/14 3:11 PM
+ * Created on 12/3/15 2:58 PM
  */
-package com.odoo.config;
+package com.odoo.addons.groups.providers;
 
-import com.odoo.addons.groups.Groups;
-import com.odoo.addons.mail.Mail;
-import com.odoo.core.support.addons.AddonsHelper;
-import com.odoo.core.support.addons.OAddon;
+import com.odoo.addons.groups.models.MailGroup;
+import com.odoo.core.orm.provider.BaseModelProvider;
 
-public class Addons extends AddonsHelper {
+public class MailGroupProvider extends BaseModelProvider {
+    public static final String TAG = MailGroupProvider.class.getSimpleName();
 
-    /**
-     * Declare your required module here
-     * NOTE: For maintain sequence use object name in asc order.
-     * Ex.:
-     * OAddon partners = new OAddon(Partners.class).setDefault();
-     */
-
-    OAddon a_mail = new OAddon(Mail.class).setDefault();
-    OAddon b_groups = new OAddon(Groups.class);
+    @Override
+    public String authority() {
+        return MailGroup.AUTHORITY;
+    }
 }

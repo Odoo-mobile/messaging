@@ -11,4 +11,16 @@
     <string name="label_log_note">Log note</string>
     <string name="label_send_message"><u>Send a message</u></string>
     <string name="label_log_an_internal_note"><u>Log an internal note</u></string>
+
+    <!-- Labels //-->
+    <string name="label_inbox">Inbox</string>
+    <string name="label_to_me">To: me</string>
+    <string name="label_to_do">To-do</string>
+    <string name="label_archives">Archives</string>
+    <string name="label_outbox">Outbox</string>
+    <string name="label_my_groups">My Groups</string>
+    <string name="label_join_group">Join a group</string>
+
+    <string name="label_sync_groups">Groups</string>
+    <string name="label_no_groups_found">No groups found</string>
 </resources>

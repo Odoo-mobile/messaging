@@ -172,8 +172,9 @@ public class OSyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             }
             // Getting data
+            String sortColumn = (model.getColumn("create_date").isLocal()) ? "id" : "create_date";
             JSONObject response = mOdoo.search_read(model.getModelName(),
-                    getFields(model), domain.get(), 0, mSyncDataLimit, "create_date", "DESC");
+                    getFields(model), domain.get(), 0, mSyncDataLimit, sortColumn, "DESC");
             OSyncDataUtils dataUtils = new OSyncDataUtils(mContext, mOdoo, model, user, response,
                     result, createRelationRecords);
             // Updating records on server if local are latest updated.

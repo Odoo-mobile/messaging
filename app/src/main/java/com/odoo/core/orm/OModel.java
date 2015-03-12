@@ -158,6 +158,11 @@ public class OModel {
         return this;
     }
 
+    public void makeCreateWriteDateLocal() {
+        create_date.setLocalColumn();
+        write_date.setLocalColumn();
+    }
+
     public boolean hasMailChatter() {
         return hasMailChatter;
     }
@@ -184,9 +189,10 @@ public class OModel {
     public List<OColumn> getColumns(Boolean local) {
         if (local != null) {
             List<OColumn> cols = new ArrayList<>();
-            for (OColumn column : getColumns())
+            for (OColumn column : getColumns()) {
                 if (local == column.isLocal())
                     cols.add(column);
+            }
             return cols;
         } else {
             return mColumns;
