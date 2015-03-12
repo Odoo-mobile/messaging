@@ -83,14 +83,4 @@ public class MailGroup extends OModel {
     public boolean allowUpdateRecordOnServer() {
         return false;
     }
-
-    @Override
-    public boolean checkForCreateDate() {
-        return false;
-    }
-
-    @Override
-    public boolean checkForWriteDate() {
-        return false;
-    }
 }

@@ -22,5 +22,7 @@
     <string name="label_join_group">Join a group</string>
 
     <string name="label_sync_groups">Groups</string>
+    <string name="label_sync_messages">Messages</string>
     <string name="label_no_groups_found">No groups found</string>
+    <string name="label_no_messages_found">No messages found</string>
 </resources>

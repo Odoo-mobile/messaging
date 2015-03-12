@@ -289,9 +289,12 @@ public class OSyncAdapter extends AbstractThreadedSyncAdapter {
                     for (Integer id : record.getUniqueIds()) {
                         OValues values = new OValues();
                         ODataRow rec = rel_model.browse(rel_model.selectRowId(id));
-                        values.put(related_column, rec.getInt(related_column));
-                        values.put("_is_dirty", "false");
-                        rel_model.update(rel_model.selectRowId(id), values);
+                        if (rec != null) {
+                            //FIXME: Wrongly working
+                            values.put(related_column, rec.getInt(related_column));
+                            values.put("_is_dirty", "false");
+                            rel_model.update(rel_model.selectRowId(id), values);
+                        }
                     }
                     break;
                 case ManyToMany:

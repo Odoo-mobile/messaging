@@ -91,6 +91,13 @@
             android:multiprocess="true"
             android:authorities="com.odoo.addons.groups.models.mail_group"
             android:name=".addons.groups.providers.MailGroupProvider" />
+        <provider
+            android:label="@string/label_sync_messages"
+            android:authorities="com.odoo.messaging.base.addons.mail.mail_message"
+            android:multiprocess="true"
+            android:name=".addons.mail.providers.MailProvider" />
+
+
         <service
             android:name="com.odoo.addons.groups.services.MailGroupSyncService"
             android:exported="true"
@@ -104,6 +111,18 @@
                 android:resource="@xml/mail_group_sync_adapter" />
         </service>
 
+        <service
+            android:name="com.odoo.addons.mail.services.MailSyncService"
+            android:exported="true"
+            android:process=":sync_messages">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/mail_messages_sync_adapter" />
+        </service>
     </application>
 
 </manifest>

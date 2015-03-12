@@ -20,9 +20,12 @@
 package com.odoo.base.addons.mail;
 
 import android.content.Context;
+import android.net.Uri;
 
+import com.odoo.addons.mail.models.MailNotification;
 import com.odoo.base.addons.ir.IrAttachment;
 import com.odoo.base.addons.res.ResPartner;
+import com.odoo.base.addons.res.ResUsers;
 import com.odoo.core.orm.ODataRow;
 import com.odoo.core.orm.OModel;
 import com.odoo.core.orm.OValues;
@@ -33,14 +36,19 @@ import com.odoo.core.orm.fields.types.OInteger;
 import com.odoo.core.orm.fields.types.OText;
 import com.odoo.core.orm.fields.types.OVarchar;
 import com.odoo.core.support.OUser;
+import com.odoo.core.utils.StringUtils;
 
 import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import odoo.ODomain;
+
 public class MailMessage extends OModel {
     public static final String TAG = MailMessage.class.getSimpleName();
+    public static final String AUTHORITY = "com.odoo.messaging.base.addons.mail.mail_message";
+
     OColumn author_id = new OColumn("Author", ResPartner.class, OColumn.RelationType.ManyToOne);
     OColumn email_from = new OColumn("Email From", OVarchar.class).setDefaultValue("false");
     OColumn subject = new OColumn("Subject", OVarchar.class).setSize(100);
@@ -53,11 +61,64 @@ public class MailMessage extends OModel {
             OColumn.RelationType.ManyToMany);
     OColumn type = new OColumn("Type", OVarchar.class);
 
+    OColumn partner_ids = new OColumn("To", ResPartner.class, OColumn.RelationType.ManyToMany);
+    OColumn notified_partner_ids = new OColumn("Notified partners", ResPartner.class,
+            OColumn.RelationType.ManyToMany);
+    OColumn parent_id = new OColumn("Parent", MailMessage.class, OColumn.RelationType.ManyToOne);
+    OColumn child_ids = new OColumn("Child", MailMessage.class, OColumn.RelationType.OneToMany)
+            .setRelatedColumn("parent_id");
+
+    OColumn notification_ids = new OColumn("Notifications", MailNotification.class,
+            OColumn.RelationType.OneToMany).setRelatedColumn("message_id");
+    OColumn vote_user_ids = new OColumn("Voters", ResUsers.class, OColumn.RelationType.ManyToMany);
+
     @Odoo.Functional(method = "authorName", depends = {"author_id", "email_from"}, store = true)
     OColumn author_name = new OColumn("Author Name", OVarchar.class).setLocalColumn();
 
+    @Odoo.Functional(method = "messageTitle", depends = {"record_name", "subject", "type"}, store = true)
+    OColumn message_title = new OColumn("Title", OVarchar.class).setSize(100).setLocalColumn();
+    @Odoo.Functional(method = "shortBody", depends = {"body"}, store = true)
+    OColumn short_body = new OColumn("Short Body", OVarchar.class).setSize(200).setLocalColumn();
+
     public MailMessage(Context context, OUser user) {
         super(context, "mail.message", user);
+    }
+
+    @Override
+    public ODomain defaultDomain() {
+        Integer user_id = getUser().getUser_id();
+        ODomain domain = new ODomain();
+        domain.add("|");
+        domain.add("partner_ids.user_ids", "in", new JSONArray().put(user_id));
+        domain.add("|");
+        domain.add("notification_ids.partner_id.user_ids", "in",
+                new JSONArray().put(user_id));
+        domain.add("author_id.user_ids", "in", new JSONArray().put(user_id));
+        return domain;
+    }
+
+    @Override
+    public Uri uri() {
+        return buildURI(AUTHORITY);
+    }
+
+    public String messageTitle(OValues row) {
+        String title = "false";
+        if (!row.getString("record_name").equals("false"))
+            title = row.getString("record_name");
+        if (!title.equals("false") && !row.getString("subject").equals("false"))
+            title += ": " + row.getString("subject");
+        if (title.equals("false") && !row.getString("subject").equals("false"))
+            title = row.getString("subject");
+        if (title.equals("false"))
+            title = StringUtils.capitalizeString(row.getString("type"));
+        return title;
+    }
+
+    public String shortBody(OValues row) {
+        String body = StringUtils.htmlToString(row.getString("body"));
+        int end = (body.length() > 100) ? 100 : body.length();
+        return body.substring(0, end);
     }
 
     public String authorName(OValues values) {
@@ -91,4 +152,20 @@ public class MailMessage extends OModel {
         }
         return ids;
     }
+
+    @Override
+    public boolean allowCreateRecordOnServer() {
+        return false;
+    }
+
+    @Override
+    public boolean allowDeleteRecordOnServer() {
+        return false;
+    }
+
+    @Override
+    public boolean allowUpdateRecordOnServer() {
+        return false;
+    }
+
 }
