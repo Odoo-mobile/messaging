@@ -39,7 +39,6 @@ import com.odoo.R;
 import com.odoo.addons.groups.models.MailGroup;
 import com.odoo.addons.mail.Mail;
 import com.odoo.core.orm.ODataRow;
-import com.odoo.core.orm.fields.OColumn;
 import com.odoo.core.support.addons.fragment.BaseFragment;
 import com.odoo.core.support.addons.fragment.ISyncStatusObserverListener;
 import com.odoo.core.support.drawer.ODrawerItem;
@@ -163,7 +162,7 @@ public class Groups extends BaseFragment implements OCursorListAdapter.OnViewBin
             menu.add(new ODrawerItem(TAG)
                     .setTitle(row.getString("name"))
                     .setInstance(new Mail())
-                    .setExtra(extra(row.getInt(OColumn.ROW_ID)))
+                    .setExtra(extra(row.getInt("id")))
                     .setIcon(R.drawable.ic_action_group_icon));
         }
         return menu;
@@ -171,6 +170,7 @@ public class Groups extends BaseFragment implements OCursorListAdapter.OnViewBin
 
     private Bundle extra(int id) {
         Bundle bundle = new Bundle();
+        bundle.putString(Mail.KEY_MAIL_TYPE, Mail.Type.Group.toString());
         bundle.putInt(KEY_GROUP_ID, id);
         return bundle;
     }

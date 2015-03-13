@@ -23,6 +23,9 @@ import android.database.Cursor;
 
 import com.odoo.core.orm.ODataRow;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class OCursorUtils {
     public static final String TAG = OCursorUtils.class.getSimpleName();
 
@@ -32,6 +35,22 @@ public class OCursorUtils {
             row.put(col, OCursorUtils.cursorValue(col, cr));
         }
         return row;
+    }
+
+    public static List<String> valuesToList(ODataRow row) {
+        List<String> values = new ArrayList<>();
+        for (String col : row.keys()) {
+            values.add(row.getString(col));
+        }
+        return values;
+    }
+
+    public static List<String> valuesToList(Cursor cr) {
+        List<String> values = new ArrayList<>();
+        for (String col : cr.getColumnNames()) {
+            values.add(OCursorUtils.cursorValue(col, cr) + "");
+        }
+        return values;
     }
 
     public static Object cursorValue(String column, Cursor cr) {

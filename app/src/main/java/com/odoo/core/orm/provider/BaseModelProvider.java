@@ -122,7 +122,7 @@ public class BaseModelProvider extends ContentProvider {
         return cr;
     }
 
-    private String[] removeRelationColumns(String[] projection) {
+    protected String[] removeRelationColumns(String[] projection) {
         HashSet<String> columns = new HashSet<>();
         if (projection != null && projection.length > 0 && mModel != null) {
             for (String key : projection) {

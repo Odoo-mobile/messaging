@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:background="#ebebeb"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:padding="@dimen/default_16dp"
+        android:id="@+id/mail_separator_title"
+        android:layout_width="match_parent"
+        android:textStyle="bold"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Yesterday"
+        android:fontFamily="@string/font_normal"
+        android:textColor="@color/body_text_3"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

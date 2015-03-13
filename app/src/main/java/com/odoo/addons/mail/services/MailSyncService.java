@@ -22,13 +22,19 @@ package com.odoo.addons.mail.services;
 import android.content.Context;
 import android.os.Bundle;
 
+import com.odoo.addons.groups.Groups;
 import com.odoo.base.addons.mail.MailMessage;
 import com.odoo.core.service.OSyncAdapter;
 import com.odoo.core.service.OSyncService;
 import com.odoo.core.support.OUser;
 
+import odoo.ODomain;
+
 public class MailSyncService extends OSyncService {
     public static final String TAG = MailSyncService.class.getSimpleName();
+    public static final String KEY_FILTER_TOREAD = "filter_to_read";
+    public static final String KEY_FILTER_STARRED = "filter_starred";
+    public static final String KEY_FILTER_GROUP = "filter_group";
 
     @Override
     public OSyncAdapter getSyncAdapter(OSyncService service, Context context) {
@@ -38,6 +44,20 @@ public class MailSyncService extends OSyncService {
     @Override
     public void performDataSync(OSyncAdapter adapter, Bundle extras, OUser user) {
         // Nothing to do
-        adapter.syncDataLimit(50);
+        adapter.syncDataLimit(30);
+        if (extras != null) {
+            ODomain domain = new ODomain();
+            if (extras.containsKey(KEY_FILTER_TOREAD)) {
+                domain.add("to_read", "=", true);
+            }
+            if (extras.containsKey(KEY_FILTER_STARRED)) {
+                domain.add("starred", "=", true);
+            }
+            if (extras.containsKey(KEY_FILTER_GROUP)) {
+                domain.add("res_id", "=", extras.getInt(Groups.KEY_GROUP_ID));
+                domain.add("model", "=", "mail.group");
+            }
+            adapter.setDomain(domain);
+        }
     }
 }

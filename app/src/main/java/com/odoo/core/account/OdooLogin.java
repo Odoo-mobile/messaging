@@ -211,7 +211,7 @@ public class OdooLogin extends ActionBarActivity implements View.OnClickListener
 
     // User Login
     private void loginUser() {
-        String serverURL = createServerURL((mSelfHostedURL) ? edtSelfHosted.getText().toString() : OConstants.URL_ODOO_ACCOUNTS);
+        String serverURL = createServerURL((mSelfHostedURL) ? edtSelfHosted.getText().toString() : OConstants.URL_ODOO);
         String databaseName = null;
         edtUsername = (EditText) findViewById(R.id.edtUserName);
         edtPassword = (EditText) findViewById(R.id.edtPassword);

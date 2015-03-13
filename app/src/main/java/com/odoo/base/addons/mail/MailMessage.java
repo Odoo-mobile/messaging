@@ -20,9 +20,11 @@
 package com.odoo.base.addons.mail;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 
 import com.odoo.addons.mail.models.MailNotification;
+import com.odoo.addons.mail.providers.MailProvider;
 import com.odoo.base.addons.ir.IrAttachment;
 import com.odoo.base.addons.res.ResPartner;
 import com.odoo.base.addons.res.ResUsers;
@@ -31,6 +33,7 @@ import com.odoo.core.orm.OModel;
 import com.odoo.core.orm.OValues;
 import com.odoo.core.orm.annotation.Odoo;
 import com.odoo.core.orm.fields.OColumn;
+import com.odoo.core.orm.fields.types.OBoolean;
 import com.odoo.core.orm.fields.types.ODateTime;
 import com.odoo.core.orm.fields.types.OInteger;
 import com.odoo.core.orm.fields.types.OText;
@@ -48,6 +51,8 @@ import odoo.ODomain;
 public class MailMessage extends OModel {
     public static final String TAG = MailMessage.class.getSimpleName();
     public static final String AUTHORITY = "com.odoo.messaging.base.addons.mail.mail_message";
+    private Context mContext;
+    private MailNotification notification;
 
     OColumn author_id = new OColumn("Author", ResPartner.class, OColumn.RelationType.ManyToOne);
     OColumn email_from = new OColumn("Email From", OVarchar.class).setDefaultValue("false");
@@ -80,26 +85,90 @@ public class MailMessage extends OModel {
     @Odoo.Functional(method = "shortBody", depends = {"body"}, store = true)
     OColumn short_body = new OColumn("Short Body", OVarchar.class).setSize(200).setLocalColumn();
 
+    @Odoo.Functional(method = "storeToRead", depends = {"notification_ids"}, store = true)
+    OColumn to_read = new OColumn("To Read", OBoolean.class).setDefaultValue(true);
+
+    @Odoo.Functional(method = "storeStarred", depends = {"notification_ids"}, store = true)
+    OColumn starred = new OColumn("Starred", OBoolean.class).setDefaultValue(false);
+
+    @Odoo.Functional(method = "storeToMe", depends = {"partner_ids"}, store = true)
+    OColumn to_me = new OColumn("To Me", OBoolean.class).setDefaultValue(false).setLocalColumn();
+
     public MailMessage(Context context, OUser user) {
         super(context, "mail.message", user);
+        mContext = context;
+        notification = new MailNotification(context, user);
     }
 
     @Override
     public ODomain defaultDomain() {
-        Integer user_id = getUser().getUser_id();
+        Integer partner_id = getUser().getPartner_id();
         ODomain domain = new ODomain();
         domain.add("|");
-        domain.add("partner_ids.user_ids", "in", new JSONArray().put(user_id));
+        domain.add("partner_ids", "in", new JSONArray().put(partner_id));
         domain.add("|");
-        domain.add("notification_ids.partner_id.user_ids", "in",
-                new JSONArray().put(user_id));
-        domain.add("author_id.user_ids", "in", new JSONArray().put(user_id));
+        domain.add("notified_partner_ids", "in", new JSONArray().put(partner_id));
+        domain.add("author_id", "=", partner_id);
         return domain;
+    }
+
+    @Override
+    public boolean checkForWriteDate() {
+        return false;
     }
 
     @Override
     public Uri uri() {
         return buildURI(AUTHORITY);
+    }
+
+    public Uri sortedUri() {
+        return uri().buildUpon().appendPath(MailProvider.KEY_SORTED_MESSAGES).build();
+    }
+
+    public Boolean storeToRead(OValues vals) {
+        try {
+            JSONArray ids = (JSONArray) vals.get("notification_ids");
+            if (ids.length() > 0) {
+                ODataRow noti = notification.browse(notification.selectRowId(ids.getInt(0)));
+                if (noti != null)
+                    return (noti.contains("is_read")) ? !noti
+                            .getBoolean("is_read") : !noti.getBoolean("read");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return vals.getBoolean("to_read");
+    }
+
+    public Boolean storeStarred(OValues vals) {
+        try {
+            JSONArray ids = (JSONArray) vals.get("notification_ids");
+            if (ids.length() > 0) {
+                ODataRow noti = notification.browse(notification.selectRowId(ids.getInt(0)));
+                if (noti != null)
+                    return noti.getBoolean("starred");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return vals.getBoolean("starred");
+    }
+
+    public Boolean storeToMe(OValues values) {
+        try {
+            JSONArray ids = (JSONArray) values.get("partner_ids");
+            if (ids.length() > 0) {
+                for (int i = 0; i < ids.length(); i++) {
+                    if (ids.getInt(i) == getUser().getPartner_id()) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public String messageTitle(OValues row) {
@@ -112,6 +181,7 @@ public class MailMessage extends OModel {
             title = row.getString("subject");
         if (title.equals("false"))
             title = StringUtils.capitalizeString(row.getString("type"));
+
         return title;
     }
 
@@ -135,13 +205,17 @@ public class MailMessage extends OModel {
         return "";
     }
 
-    public String getAuthorImage(int row_id) {
-        ODataRow row = browse(new String[]{"author_id"}, row_id);
-        if (row.getInt("author_id") != 0) {
-            ODataRow author_id = row.getM2ORecord("author_id").browse();
-            return author_id.getString("image_small");
+    public String getAuthorImage(int author_id) {
+        String image = "false";
+        ResPartner partner = (ResPartner) createInstance(ResPartner.class);
+        Cursor cr = mContext.getContentResolver().query(partner.uri().withAppendedPath(partner.uri(),
+                        author_id + ""),
+                new String[]{"image_small"}, null, null, null);
+        if (cr.moveToFirst()) {
+            image = cr.getString(cr.getColumnIndex("image_small"));
         }
-        return "false";
+        cr.close();
+        return image;
     }
 
     public List<Integer> getServerIds(String model, int res_server_id) {

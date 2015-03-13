@@ -27,9 +27,11 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/author_name"
+                android:id="@+id/subject"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="@color/body_text_1"
+                android:singleLine="true"
+                android:ellipsize="end"
                 android:fontFamily="@string/font_normal"
                 android:layout_width="0dp"
                 android:layout_weight="1"
@@ -38,7 +40,7 @@
             <TextView
                 android:id="@+id/date"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/body_text_2"
+                android:textColor="@color/android_blue"
                 android:fontFamily="@string/font_normal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -46,9 +48,9 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/subject"
+            android:id="@+id/author_name"
             android:textColor="@color/body_text_1"
-            android:fontFamily="@string/font_normal"
+            android:fontFamily="@string/font_condensed"
             android:singleLine="true"
             android:ellipsize="end"
             android:textAppearance="?android:attr/textAppearanceSmall"
