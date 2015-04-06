@@ -65,6 +65,7 @@ public class MailMessage extends OModel {
     OColumn attachment_ids = new OColumn("Attachments", IrAttachment.class,
             OColumn.RelationType.ManyToMany);
     OColumn type = new OColumn("Type", OVarchar.class);
+<<<<<<< HEAD
 
     OColumn partner_ids = new OColumn("To", ResPartner.class, OColumn.RelationType.ManyToMany);
     OColumn notified_partner_ids = new OColumn("Notified partners", ResPartner.class,
@@ -93,6 +94,15 @@ public class MailMessage extends OModel {
 
     @Odoo.Functional(method = "storeToMe", depends = {"partner_ids"}, store = true)
     OColumn to_me = new OColumn("To Me", OBoolean.class).setDefaultValue(false).setLocalColumn();
+=======
+    OColumn subtype_id = new OColumn("Subtype", MailMessageSubType.class, OColumn.RelationType.ManyToOne);
+    @Odoo.Functional(method = "authorName", depends = {"author_id", "email_from"}, store = true)
+    OColumn author_name = new OColumn("Author Name", OVarchar.class).setLocalColumn();
+
+    @Odoo.Functional(method = "hasAttachment", depends = {"attachment_ids"}, store = true)
+    OColumn has_attachments = new OColumn("Has Attachments", OBoolean.class).setLocalColumn()
+            .setDefaultValue(false);
+>>>>>>> 6f506e34a370857f8cf47581f30793376ff14e5c
 
     public MailMessage(Context context, OUser user) {
         super(context, "mail.message", user);
@@ -191,6 +201,18 @@ public class MailMessage extends OModel {
         return body.substring(0, end);
     }
 
+    public boolean hasAttachment(OValues values) {
+        try {
+            JSONArray attachment_ids = (JSONArray) values.get("attachment_ids");
+            if (attachment_ids.length() > 0) {
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public String authorName(OValues values) {
         try {
             if (!values.getString("author_id").equals("false")) {
@@ -228,6 +250,14 @@ public class MailMessage extends OModel {
     }
 
     @Override
+<<<<<<< HEAD
+=======
+    public boolean checkForWriteDate() {
+        return false;
+    }
+
+    @Override
+>>>>>>> 6f506e34a370857f8cf47581f30793376ff14e5c
     public boolean allowCreateRecordOnServer() {
         return false;
     }
@@ -241,5 +271,8 @@ public class MailMessage extends OModel {
     public boolean allowUpdateRecordOnServer() {
         return false;
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6f506e34a370857f8cf47581f30793376ff14e5c
 }

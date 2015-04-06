@@ -20,6 +20,7 @@
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />
 
     <permission
         android:name="com.odoo.permission.C2D_MESSAGE"
@@ -65,6 +66,17 @@
         <!-- Reminder Receivers// -->
         <receiver android:name="com.odoo.core.utils.reminder.ReminderReceiver" />
         <receiver android:name="com.odoo.core.utils.reminder.ReminderActionReceiver" />
+        <receiver android:name=".news.OdooNewsReceiver">
+            <intent-filter>
+                <action android:name="odoo.Odoo.ACTION_ODOO_UPDATES" />
+            </intent-filter>
+        </receiver>
+        
+        <receiver android:name=".server.notifications.OdooServerNotificationReceiver">
+            <intent-filter>
+                <action android:name="com.odoo.odoo.mobile.SERVER_NOTIFICATION" />
+            </intent-filter>
+        </receiver>
 
         <service android:name="com.odoo.core.auth.OdooAuthService">
             <intent-filter>

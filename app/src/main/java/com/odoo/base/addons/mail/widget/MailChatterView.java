@@ -26,6 +26,7 @@ import android.content.IntentFilter;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.AttributeSet;
@@ -72,6 +73,7 @@ public class MailChatterView extends LinearLayout implements
     private ChatterMessagesLoader messagesLoader;
     private App app;
     private Boolean loadAllMessages = false;
+    private boolean isExecuting = false;
 
     public MailChatterView(Context context) {
         super(context);
@@ -140,30 +142,32 @@ public class MailChatterView extends LinearLayout implements
 
     private void updateChatterList() {
         // Getting local messages
-        chatterItems.clear();
-        Cursor cr = mContext.getContentResolver().query(mailMessage.uri(),
-                null, "model = ? and res_id = ?",
-                new String[]{modelName, record_server_id + ""}, "date desc");
-        if (cr.moveToFirst()) {
-            int limit = (loadAllMessages) ? cr.getCount()
-                    : (cr.getCount() > 3) ? 3 : cr.getCount();
-            for (int i = 0; i < limit; i++) {
-                ODataRow row = OCursorUtils.toDatarow(cr);
-                chatterItems.add(row);
-                cr.moveToNext();
+        if (modelName != null) {
+            chatterItems.clear();
+            Cursor cr = mContext.getContentResolver().query(mailMessage.uri(),
+                    null, "model = ? and res_id = ?",
+                    new String[]{modelName, record_server_id + ""}, "date desc");
+            if (cr.moveToFirst()) {
+                int limit = (loadAllMessages) ? cr.getCount()
+                        : (cr.getCount() > 3) ? 3 : cr.getCount();
+                for (int i = 0; i < limit; i++) {
+                    ODataRow row = OCursorUtils.toDatarow(cr);
+                    chatterItems.add(row);
+                    cr.moveToNext();
+                }
             }
-        }
-        TextView loadMore = (TextView) findViewById(R.id.chatterLoadMoreMessages);
-        if (cr.getCount() > 3 && !loadAllMessages) {
-            loadMore.setVisibility(View.VISIBLE);
-            loadMore.setOnClickListener(this);
-        } else {
-            loadMore.setVisibility(View.GONE);
-        }
-        mListAdapter.notifyDataSetChanged(chatterItems);
-        if (chatterItems.isEmpty()) {
-            loadMore.setVisibility(View.VISIBLE);
-            loadMore.setText("No messages !");
+            TextView loadMore = (TextView) findViewById(R.id.chatterLoadMoreMessages);
+            if (cr.getCount() > 3 && !loadAllMessages) {
+                loadMore.setVisibility(View.VISIBLE);
+                loadMore.setOnClickListener(this);
+            } else {
+                loadMore.setVisibility(View.GONE);
+            }
+            mListAdapter.notifyDataSetChanged(chatterItems);
+            if (chatterItems.isEmpty()) {
+                loadMore.setVisibility(View.VISIBLE);
+                loadMore.setText("No messages !");
+            }
         }
     }
 
@@ -178,6 +182,17 @@ public class MailChatterView extends LinearLayout implements
     @Override
     public View getView(int position, View view, ViewGroup parent) {
         ODataRow row = (ODataRow) chatterItems.get(position);
+        if (row.getString("subtype_id").equals("false")) {
+            view.setBackgroundResource(R.color.base_chatter_view_note_background);
+        } else {
+            view.setBackgroundColor(Color.WHITE);
+        }
+        view.findViewById(R.id.imgAttachments).setVisibility(
+                (row.getBoolean("has_attachments")) ?
+                        View.VISIBLE :
+                        View.GONE
+        );
+
         if (row.getString("subject").equals("false")) {
             OControls.setGone(view, R.id.chatterSubject);
         } else {
@@ -280,13 +295,20 @@ public class MailChatterView extends LinearLayout implements
             findViewById(R.id.chatterProgress).setVisibility(View.GONE);
             findViewById(R.id.chatterOr).setVisibility(View.VISIBLE);
             updateChatterList();
+            isExecuting = false;
         }
     }
 
     private BroadcastReceiver dataChangeReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-
+            if (!isExecuting) {
+                if (messagesLoader != null)
+                    messagesLoader.cancel(true);
+                messagesLoader = new ChatterMessagesLoader();
+                messagesLoader.execute();
+                isExecuting = true;
+            }
         }
     };
 }
