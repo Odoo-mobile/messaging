@@ -30,9 +30,12 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -41,20 +44,24 @@ import com.odoo.addons.groups.Groups;
 import com.odoo.addons.mail.services.MailSyncService;
 import com.odoo.base.addons.mail.MailMessage;
 import com.odoo.core.orm.ODataRow;
+import com.odoo.core.orm.fields.OColumn;
 import com.odoo.core.support.addons.fragment.BaseFragment;
 import com.odoo.core.support.addons.fragment.ISyncStatusObserverListener;
 import com.odoo.core.support.drawer.ODrawerItem;
 import com.odoo.core.support.list.OCursorListAdapter;
 import com.odoo.core.utils.BitmapUtils;
+import com.odoo.core.utils.IntentUtils;
 import com.odoo.core.utils.OControls;
+import com.odoo.core.utils.OCursorUtils;
 import com.odoo.core.utils.ODateUtils;
 import com.odoo.core.utils.OResource;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Mail extends BaseFragment implements ISyncStatusObserverListener,
-        LoaderManager.LoaderCallbacks<Cursor>, OCursorListAdapter.OnViewBindListener, SwipeRefreshLayout.OnRefreshListener, OCursorListAdapter.OnViewCreateListener {
+        LoaderManager.LoaderCallbacks<Cursor>, OCursorListAdapter.OnViewBindListener, SwipeRefreshLayout.OnRefreshListener, OCursorListAdapter.OnViewCreateListener, AdapterView.OnItemClickListener, View.OnClickListener {
     public static final String TAG = Mail.class.getSimpleName();
     public static final String KEY_MAIL_TYPE = "mail_type";
     private ListView listView;
@@ -91,6 +98,8 @@ public class Mail extends BaseFragment implements ISyncStatusObserverListener,
         listAdapter.setOnViewCreateListener(this);
         listAdapter.setOnViewBindListener(this);
         listView.setAdapter(listAdapter);
+        listView.setOnItemClickListener(this);
+        setHasFloatingButton(mView, R.id.fabButton, listView, this);
         getLoaderManager().initLoader(0, null, this);
     }
 
@@ -100,24 +109,68 @@ public class Mail extends BaseFragment implements ISyncStatusObserverListener,
     }
 
     @Override
-    public void onViewBind(View view, Cursor cursor, ODataRow row) {
+    public void onViewBind(final View view, Cursor cursor, final ODataRow row) {
         OControls.setText(view, R.id.subject, row.getString("message_title"));
         OControls.setText(view, R.id.short_body, row.getString("short_body"));
         OControls.setText(view, R.id.author_name, row.getString("author_name"));
-        String date = ODateUtils.convertToDefault(row.getString("date")
-                , ODateUtils.DEFAULT_FORMAT, "MMM dd");
-        OControls.setText(view, R.id.date, date);
+        Bitmap bmp = BitmapUtils.getAlphabetImage(getActivity(), row.getString("author_name"));
+        OControls.setImage(view, R.id.author_image, bmp);
         MailMessage db = (MailMessage) db();
         String image = db.getAuthorImage(row.getInt("author_id"));
         if (!image.equals("false")) {
-            Bitmap bmp = BitmapUtils.getBitmapImage(getActivity(), image);
-            OControls.setImage(view, R.id.author_image, bmp);
+            Bitmap avatar = BitmapUtils.getBitmapImage(getActivity(), image);
+            OControls.setImage(view, R.id.author_image, avatar);
+        }
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                int more_counter = ((MailMessage) db()).getMoreCount(row.getInt(OColumn.ROW_ID));
+                if (more_counter > 0) {
+                    OControls.setText(view, R.id.more_counter, "+" + more_counter + " more");
+                } else {
+                    OControls.setText(view, R.id.more_counter, "");
+                }
+            }
+        }, 500);
+        Date date = ODateUtils.createDateObject(row.getString("date"), ODateUtils.DEFAULT_FORMAT, false);
+        String format = "MMM dd";
+        if (DateUtils.isToday(date.getTime())) {
+            format = "hh:mm a";
+        }
+        String dateStr = ODateUtils.convertToDefault(row.getString("date")
+                , ODateUtils.DEFAULT_FORMAT, format);
+        OControls.setText(view, R.id.date, dateStr);
+        ImageView starred = (ImageView) view.findViewById(R.id.mailStarred);
+        if (row.getBoolean("starred")) {
+            starred.setColorFilter(_c(R.color.android_orange_dark));
+            starred.setImageResource(R.drawable.ic_action_star_filled);
         } else {
-            OControls.setImage(view, R.id.author_image, R.drawable.avatar);
+            starred.setColorFilter(_c(R.color.body_text_2));
+            starred.setImageResource(R.drawable.ic_action_star_outline);
+        }
+        starred.setTag(row);
+        starred.setOnClickListener(this);
+
+        if (row.getBoolean("has_attachments")) {
+            OControls.setVisible(view, R.id.hasAttachment);
+        } else {
+            OControls.setGone(view, R.id.hasAttachment);
         }
         if (row.getBoolean("to_read")) {
-            view.setBackground(null);
+            // Making title bold
+            OControls.setTextColor(view, R.id.subject, _c(R.color.body_text_1));
+            OControls.setTextBold(view, R.id.subject);
+            OControls.setTextBold(view, R.id.author_name);
+            OControls.setTextColor(view, R.id.date, _c(R.color.android_blue_dark));
+            OControls.setTextBold(view, R.id.date);
+            view.setBackgroundColor(Color.TRANSPARENT);
         } else {
+            // Making title normal
+            OControls.setTextColor(view, R.id.subject, _c(R.color.body_text_2));
+            OControls.setTextNormal(view, R.id.subject);
+            OControls.setTextNormal(view, R.id.author_name);
+            OControls.setTextColor(view, R.id.date, _c(R.color.body_text_2));
+            OControls.setTextNormal(view, R.id.date);
             view.setBackgroundColor(Color.parseColor("#f5f5f5"));
         }
     }
@@ -143,15 +196,12 @@ public class Mail extends BaseFragment implements ISyncStatusObserverListener,
                 args.add("0");
                 break;
             case ToMe:
-                where += " and to_me = ? and to_read = ? and starred = ? and id != ?";
+                where += " and to_me = ? and id != ?";
                 args.add("true");
-                args.add("true");
-                args.add("false");
                 args.add("0");
                 break;
             case ToDo:
-                where += " and to_read = ? and starred = ? and id != ?";
-                args.add("true");
+                where += " and starred = ? and id != ?";
                 args.add("true");
                 args.add("0");
                 break;
@@ -212,6 +262,25 @@ public class Mail extends BaseFragment implements ISyncStatusObserverListener,
     }
 
     @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        ODataRow row = OCursorUtils.toDatarow((Cursor) listAdapter.getItem(position));
+        IntentUtils.startActivity(getActivity(), MailDetail.class, row.getPrimaryBundleData());
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.fabButton:
+                IntentUtils.startActivity(getActivity(), MailDetail.class, null);
+                break;
+            case R.id.mailStarred:
+                ODataRow row = (ODataRow) v.getTag();
+                // TODO: starred/unstarred
+                break;
+        }
+    }
+
+    @Override
     public List<ODrawerItem> drawerMenus(Context context) {
         List<ODrawerItem> menu = new ArrayList<>();
         menu.add(new ODrawerItem(TAG).setTitle(OResource.string(context, R.string.label_inbox))
@@ -268,6 +337,9 @@ public class Mail extends BaseFragment implements ISyncStatusObserverListener,
             switch (mType) {
                 case Inbox:
                     extra.putBoolean(MailSyncService.KEY_FILTER_TOREAD, true);
+                    break;
+                case ToMe:
+                    extra.putBoolean(MailSyncService.KEY_FILTER_TOME, true);
                     break;
                 case ToDo:
                     extra.putBoolean(MailSyncService.KEY_FILTER_STARRED, true);

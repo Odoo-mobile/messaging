@@ -46,7 +46,8 @@ public class OColumn {
     private Boolean isLocalColumn = false;
     private LinkedHashMap<String, ColumnDomain> columnDomains = new LinkedHashMap<>();
     private Integer condition_operator_index = 0;
-    private Integer recordSyncLimit = 0;
+    private Integer recordSyncLimit = -1;
+    private Boolean syncMasterRecords = true;
 
     //Annotation properties
     private Method mOnChangeMethod = null;
@@ -66,6 +67,15 @@ public class OColumn {
     public OColumn(String label, Class<?> type, RelationType relationType) {
         this(label, type);
         this.relationType = relationType;
+    }
+
+    public Boolean getSyncMasterRecords() {
+        return syncMasterRecords;
+    }
+
+    public OColumn setSyncMasterRecords(Boolean syncMasterRecords) {
+        this.syncMasterRecords = syncMasterRecords;
+        return this;
     }
 
     public OColumn setName(String name) {

@@ -105,7 +105,7 @@ public class Groups extends BaseFragment implements OCursorListAdapter.OnViewBin
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getActivity(), db().uri(), null, null, null, "has_followed desc, name");
+        return new CursorLoader(getActivity(), db().uri(), null, null, null, "id");
     }
 
     @Override
@@ -158,7 +158,7 @@ public class Groups extends BaseFragment implements OCursorListAdapter.OnViewBin
                 .setInstance(new Groups())
                 .setIcon(R.drawable.ic_action_social_group));
         for (ODataRow row : mailGroup.select(new String[]{"name"}, "has_followed = ?",
-                new String[]{"true"}, "has_followed desc, name")) {
+                new String[]{"true"}, "id")) {
             menu.add(new ODrawerItem(TAG)
                     .setTitle(row.getString("name"))
                     .setInstance(new Mail())

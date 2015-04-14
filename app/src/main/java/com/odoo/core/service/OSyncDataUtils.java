@@ -234,7 +234,7 @@ public class OSyncDataUtils {
                                     if (mCreateRelationRecords) {
                                         addUpdateRelationRecord(mModel, m2mModel.getTableName(), column.getType(),
                                                 name, null, column.getRelationType(),
-                                                (column.getRecordSyncLimit() > 0) ?
+                                                (column.getRecordSyncLimit() > -1) ?
                                                         m2mIds.subList(0, column.getRecordSyncLimit()) : m2mIds);
                                     }
                                     List<Integer> m2mRowIds = new ArrayList<>();
@@ -324,13 +324,15 @@ public class OSyncDataUtils {
                                          String column, String relatedColumn,
                                          OColumn.RelationType type, List<Integer> ids) {
         String key = relTable + "_" + column;
-        if (relationRecordsHashMap.containsKey(key)) {
-            SyncRelationRecords data = relationRecordsHashMap.get(key);
-            data.updateIds(ids);
-            relationRecordsHashMap.put(key, data);
-        } else {
-            relationRecordsHashMap.put(key,
-                    new SyncRelationRecords(baseModel, model, column, relatedColumn, type, ids));
+        if (baseModel.getColumn(column).getSyncMasterRecords()) {
+            if (relationRecordsHashMap.containsKey(key)) {
+                SyncRelationRecords data = relationRecordsHashMap.get(key);
+                data.updateIds(ids);
+                relationRecordsHashMap.put(key, data);
+            } else {
+                relationRecordsHashMap.put(key,
+                        new SyncRelationRecords(baseModel, model, column, relatedColumn, type, ids));
+            }
         }
     }
 

@@ -63,6 +63,11 @@ public class ResPartner extends OModel {
         setHasMailChatter(true);
     }
 
+    public static int myRowId(Context context, OUser user) {
+        ResPartner partner = new ResPartner(context, user);
+        return partner.selectRowId(user.getPartner_id());
+    }
+
     public String storeCompanyName(OValues value) {
         try {
             if (!value.getString("parent_id").equals("false")) {

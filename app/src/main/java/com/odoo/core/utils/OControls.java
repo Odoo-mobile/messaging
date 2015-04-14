@@ -2,6 +2,7 @@ package com.odoo.core.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -66,4 +67,13 @@ public class OControls {
         tv.setTextColor(color);
     }
 
+    public static void setTextBold(View parent, int txv_id) {
+        TextView tv = (TextView) parent.findViewById(txv_id);
+        tv.setTypeface(Typeface.create(tv.getTypeface(), Typeface.BOLD));
+    }
+
+    public static void setTextNormal(View parent, int txv_id) {
+        TextView tv = (TextView) parent.findViewById(txv_id);
+        tv.setTypeface(Typeface.create(tv.getTypeface(), Typeface.NORMAL));
+    }
 }

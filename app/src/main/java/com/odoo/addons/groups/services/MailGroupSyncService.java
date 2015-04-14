@@ -20,14 +20,19 @@
 package com.odoo.addons.groups.services;
 
 import android.content.Context;
+import android.content.SyncResult;
 import android.os.Bundle;
 
 import com.odoo.addons.groups.models.MailGroup;
+import com.odoo.addons.mail.models.MailFollowers;
+import com.odoo.core.service.ISyncFinishListener;
 import com.odoo.core.service.OSyncAdapter;
 import com.odoo.core.service.OSyncService;
 import com.odoo.core.support.OUser;
 
-public class MailGroupSyncService extends OSyncService {
+import odoo.ODomain;
+
+public class MailGroupSyncService extends OSyncService implements ISyncFinishListener {
     public static final String TAG = MailGroupSyncService.class.getSimpleName();
 
     @Override
@@ -38,5 +43,18 @@ public class MailGroupSyncService extends OSyncService {
     @Override
     public void performDataSync(OSyncAdapter adapter, Bundle extras, OUser user) {
         // Nothing to pass
+        if (adapter.getModel().getModelName().equals("mail.group")) {
+            adapter.onSyncFinish(this);
+        } else {
+            ODomain domain = new ODomain();
+            domain.add("res_model", "=", "mail.group");
+            domain.add("partner_id", "=", user.getPartner_id());
+            adapter.setDomain(domain);
+        }
+    }
+
+    @Override
+    public OSyncAdapter performNextSync(OUser user, SyncResult syncResult) {
+        return new OSyncAdapter(getApplicationContext(), MailFollowers.class, this, true);
     }
 }

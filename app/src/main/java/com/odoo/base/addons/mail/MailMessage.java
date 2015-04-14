@@ -23,7 +23,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
-import com.odoo.addons.mail.models.MailNotification;
 import com.odoo.addons.mail.providers.MailProvider;
 import com.odoo.base.addons.ir.IrAttachment;
 import com.odoo.base.addons.res.ResPartner;
@@ -52,7 +51,6 @@ public class MailMessage extends OModel {
     public static final String TAG = MailMessage.class.getSimpleName();
     public static final String AUTHORITY = "com.odoo.messaging.base.addons.mail.mail_message";
     private Context mContext;
-    private MailNotification notification;
 
     OColumn author_id = new OColumn("Author", ResPartner.class, OColumn.RelationType.ManyToOne);
     OColumn email_from = new OColumn("Email From", OVarchar.class).setDefaultValue("false");
@@ -65,36 +63,26 @@ public class MailMessage extends OModel {
     OColumn attachment_ids = new OColumn("Attachments", IrAttachment.class,
             OColumn.RelationType.ManyToMany);
     OColumn type = new OColumn("Type", OVarchar.class);
-<<<<<<< HEAD
 
     OColumn partner_ids = new OColumn("To", ResPartner.class, OColumn.RelationType.ManyToMany);
-    OColumn notified_partner_ids = new OColumn("Notified partners", ResPartner.class,
-            OColumn.RelationType.ManyToMany);
-    OColumn parent_id = new OColumn("Parent", MailMessage.class, OColumn.RelationType.ManyToOne);
+    OColumn parent_id = new OColumn("Parent", MailMessage.class, OColumn.RelationType.ManyToOne)
+            .setDefaultValue(0);
     OColumn child_ids = new OColumn("Child", MailMessage.class, OColumn.RelationType.OneToMany)
             .setRelatedColumn("parent_id");
 
-    OColumn notification_ids = new OColumn("Notifications", MailNotification.class,
-            OColumn.RelationType.OneToMany).setRelatedColumn("message_id");
     OColumn vote_user_ids = new OColumn("Voters", ResUsers.class, OColumn.RelationType.ManyToMany);
-
-    @Odoo.Functional(method = "authorName", depends = {"author_id", "email_from"}, store = true)
-    OColumn author_name = new OColumn("Author Name", OVarchar.class).setLocalColumn();
 
     @Odoo.Functional(method = "messageTitle", depends = {"record_name", "subject", "type"}, store = true)
     OColumn message_title = new OColumn("Title", OVarchar.class).setSize(100).setLocalColumn();
     @Odoo.Functional(method = "shortBody", depends = {"body"}, store = true)
     OColumn short_body = new OColumn("Short Body", OVarchar.class).setSize(200).setLocalColumn();
 
-    @Odoo.Functional(method = "storeToRead", depends = {"notification_ids"}, store = true)
-    OColumn to_read = new OColumn("To Read", OBoolean.class).setDefaultValue(true);
-
-    @Odoo.Functional(method = "storeStarred", depends = {"notification_ids"}, store = true)
+    OColumn to_read = new OColumn("To Read", OBoolean.class).setDefaultValue(false);
     OColumn starred = new OColumn("Starred", OBoolean.class).setDefaultValue(false);
 
     @Odoo.Functional(method = "storeToMe", depends = {"partner_ids"}, store = true)
     OColumn to_me = new OColumn("To Me", OBoolean.class).setDefaultValue(false).setLocalColumn();
-=======
+
     OColumn subtype_id = new OColumn("Subtype", MailMessageSubType.class, OColumn.RelationType.ManyToOne);
     @Odoo.Functional(method = "authorName", depends = {"author_id", "email_from"}, store = true)
     OColumn author_name = new OColumn("Author Name", OVarchar.class).setLocalColumn();
@@ -102,12 +90,10 @@ public class MailMessage extends OModel {
     @Odoo.Functional(method = "hasAttachment", depends = {"attachment_ids"}, store = true)
     OColumn has_attachments = new OColumn("Has Attachments", OBoolean.class).setLocalColumn()
             .setDefaultValue(false);
->>>>>>> 6f506e34a370857f8cf47581f30793376ff14e5c
 
     public MailMessage(Context context, OUser user) {
         super(context, "mail.message", user);
         mContext = context;
-        notification = new MailNotification(context, user);
     }
 
     @Override
@@ -122,6 +108,18 @@ public class MailMessage extends OModel {
         return domain;
     }
 
+    public int getMoreCount(int mail_id) {
+        ODataRow mail = browse(new String[]{"parent_id", "child_ids", "res_id", "model"}, mail_id);
+        if (mail.getInt("parent_id") != 0) {
+            return count("parent_id = ?", new String[]{mail.getString("parent_id")});
+        } else if (!mail.getString("model").equals("false") && !mail.getString("model").equals("mail.group")) {
+            return count("res_id = ? and model = ?", new String[]{mail.getString("res_id"),
+                    mail.getString("model")});
+        } else {
+            return mail.getO2MRecord("child_ids").getIds().size();
+        }
+    }
+
     @Override
     public boolean checkForWriteDate() {
         return false;
@@ -134,35 +132,6 @@ public class MailMessage extends OModel {
 
     public Uri sortedUri() {
         return uri().buildUpon().appendPath(MailProvider.KEY_SORTED_MESSAGES).build();
-    }
-
-    public Boolean storeToRead(OValues vals) {
-        try {
-            JSONArray ids = (JSONArray) vals.get("notification_ids");
-            if (ids.length() > 0) {
-                ODataRow noti = notification.browse(notification.selectRowId(ids.getInt(0)));
-                if (noti != null)
-                    return (noti.contains("is_read")) ? !noti
-                            .getBoolean("is_read") : !noti.getBoolean("read");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return vals.getBoolean("to_read");
-    }
-
-    public Boolean storeStarred(OValues vals) {
-        try {
-            JSONArray ids = (JSONArray) vals.get("notification_ids");
-            if (ids.length() > 0) {
-                ODataRow noti = notification.browse(notification.selectRowId(ids.getInt(0)));
-                if (noti != null)
-                    return noti.getBoolean("starred");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return vals.getBoolean("starred");
     }
 
     public Boolean storeToMe(OValues values) {
@@ -230,7 +199,7 @@ public class MailMessage extends OModel {
     public String getAuthorImage(int author_id) {
         String image = "false";
         ResPartner partner = (ResPartner) createInstance(ResPartner.class);
-        Cursor cr = mContext.getContentResolver().query(partner.uri().withAppendedPath(partner.uri(),
+        Cursor cr = mContext.getContentResolver().query(Uri.withAppendedPath(partner.uri(),
                         author_id + ""),
                 new String[]{"image_small"}, null, null, null);
         if (cr.moveToFirst()) {
@@ -250,14 +219,6 @@ public class MailMessage extends OModel {
     }
 
     @Override
-<<<<<<< HEAD
-=======
-    public boolean checkForWriteDate() {
-        return false;
-    }
-
-    @Override
->>>>>>> 6f506e34a370857f8cf47581f30793376ff14e5c
     public boolean allowCreateRecordOnServer() {
         return false;
     }
@@ -271,8 +232,5 @@ public class MailMessage extends OModel {
     public boolean allowUpdateRecordOnServer() {
         return false;
     }
-<<<<<<< HEAD
 
-=======
->>>>>>> 6f506e34a370857f8cf47581f30793376ff14e5c
 }

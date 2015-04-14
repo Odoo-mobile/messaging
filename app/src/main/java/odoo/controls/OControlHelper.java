@@ -31,4 +31,8 @@ public class OControlHelper {
     public static Typeface lightFont() {
         return Typeface.create("sans-serif-light", 0);
     }
+
+    public static Typeface normalFont() {
+        return Typeface.create("sans-serif", 0);
+    }
 }

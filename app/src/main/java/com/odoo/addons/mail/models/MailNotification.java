@@ -23,13 +23,13 @@ import android.content.Context;
 
 import com.odoo.base.addons.mail.MailMessage;
 import com.odoo.base.addons.res.ResPartner;
+import com.odoo.core.orm.ODataRow;
 import com.odoo.core.orm.OModel;
+import com.odoo.core.orm.OValues;
 import com.odoo.core.orm.annotation.Odoo;
 import com.odoo.core.orm.fields.OColumn;
 import com.odoo.core.orm.fields.types.OBoolean;
 import com.odoo.core.support.OUser;
-
-import odoo.ODomain;
 
 public class MailNotification extends OModel {
     public static final String TAG = MailNotification.class.getSimpleName();
@@ -42,8 +42,10 @@ public class MailNotification extends OModel {
     OColumn is_read = new OColumn("Is Read", OBoolean.class).setDefaultValue(true);
 
     OColumn starred = new OColumn("Starred", OBoolean.class).setDefaultValue(false);
-    OColumn partner_id = new OColumn("Partner", ResPartner.class, OColumn.RelationType.ManyToOne);
-    OColumn message_id = new OColumn("Message", MailMessage.class, OColumn.RelationType.ManyToOne);
+    OColumn partner_id = new OColumn("Partner", ResPartner.class, OColumn.RelationType.ManyToOne)
+            .setSyncMasterRecords(false);
+    OColumn message_id = new OColumn("Message", MailMessage.class, OColumn.RelationType.ManyToOne)
+            .setSyncMasterRecords(false);
 
 
     public MailNotification(Context context, OUser user) {
@@ -52,10 +54,23 @@ public class MailNotification extends OModel {
     }
 
     @Override
-    public ODomain defaultDomain() {
-        ODomain domain = new ODomain();
-        domain.add("partner_id", "=", getUser().getPartner_id());
-        return domain;
+    public void onSyncFinished() {
+        // Updating mails to_read and starred
+        MailMessage mails = new MailMessage(getContext(), getUser());
+        for (ODataRow row : select(null, "partner_id = ?",
+                new String[]{ResPartner.myRowId(getContext(), getUser()) + ""})) {
+            int mail_id = row.getInt("message_id");
+            OValues values = new OValues();
+            boolean to_read;
+            if (getColumn("read") != null) {
+                to_read = row.getBoolean("read");
+            } else {
+                to_read = !row.getBoolean("is_read");
+            }
+            values.put("to_read", to_read);
+            values.put("starred", row.getBoolean("starred"));
+            mails.update(mail_id, values);
+        }
     }
 
     @Override

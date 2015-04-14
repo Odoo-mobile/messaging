@@ -71,7 +71,7 @@
                 <action android:name="odoo.Odoo.ACTION_ODOO_UPDATES" />
             </intent-filter>
         </receiver>
-        
+
         <receiver android:name=".server.notifications.OdooServerNotificationReceiver">
             <intent-filter>
                 <action android:name="com.odoo.odoo.mobile.SERVER_NOTIFICATION" />
@@ -135,6 +135,8 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/mail_messages_sync_adapter" />
         </service>
+
+        <activity android:name=".addons.mail.MailDetail" />
     </application>
 
 </manifest>

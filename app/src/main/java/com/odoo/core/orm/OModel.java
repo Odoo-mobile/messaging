@@ -139,6 +139,10 @@ public class OModel implements ISyncServiceListener {
         }
     }
 
+    public Context getContext() {
+        return mContext;
+    }
+
     public SQLiteDatabase getReadableDatabase() {
         return sqLite.getReadableDatabase();
     }
@@ -600,14 +604,18 @@ public class OModel implements ISyncServiceListener {
         return null;
     }
 
-    public List<Integer> getServerIds() {
+    public List<Integer> getServerIds(String selection, String[] args) {
         List<Integer> ids = new ArrayList<>();
-        for (ODataRow row : select(new String[]{"id"})) {
+        for (ODataRow row : select(new String[]{"id"}, selection, args)) {
             if (row.getInt("id") != 0) {
                 ids.add(row.getInt("id"));
             }
         }
         return ids;
+    }
+
+    public List<Integer> getServerIds() {
+        return getServerIds(null, null);
     }
 
     public boolean isEmptyTable() {
@@ -880,11 +888,21 @@ public class OModel implements ISyncServiceListener {
     }
 
     public boolean update(int row_id, OValues values) {
-        int count = mContext.getContentResolver().update(uri().withAppendedPath(uri(), row_id + ""),
+        int count = mContext.getContentResolver().update(Uri.withAppendedPath(uri(), row_id + ""),
                 values.toContentValues(), null, null);
-        return (count > 0) ? true : false;
+        return (count > 0);
     }
 
+
+    public void executeRawQuery(String query) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL(query);
+    }
+
+    public Cursor executeQuery(String query, String[] args) {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.rawQuery(query, args);
+    }
 
     public List<ODataRow> query(String query) {
         return query(query, null);

@@ -19,6 +19,8 @@
  */
 package com.odoo.addons.mail;
 
-public class MailDetail {
+import android.support.v7.app.ActionBarActivity;
+
+public class MailDetail extends ActionBarActivity {
     public static final String TAG = MailDetail.class.getSimpleName();
 }

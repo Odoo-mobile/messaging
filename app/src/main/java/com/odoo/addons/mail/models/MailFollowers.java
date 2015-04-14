@@ -21,8 +21,11 @@ package com.odoo.addons.mail.models;
 
 import android.content.Context;
 
+import com.odoo.addons.groups.models.MailGroup;
 import com.odoo.base.addons.res.ResPartner;
+import com.odoo.core.orm.ODataRow;
 import com.odoo.core.orm.OModel;
+import com.odoo.core.orm.OValues;
 import com.odoo.core.orm.fields.OColumn;
 import com.odoo.core.orm.fields.types.OInteger;
 import com.odoo.core.orm.fields.types.OVarchar;
@@ -38,6 +41,21 @@ public class MailFollowers extends OModel {
     public MailFollowers(Context context, OUser user) {
         super(context, "mail.followers", user);
         makeCreateWriteDateLocal();
+    }
+
+    @Override
+    public void onSyncFinished() {
+        // Updating groups hasFollowed
+        MailGroup groups = (MailGroup) createInstance(MailGroup.class);
+        // Removing all followed group.
+        groups.executeRawQuery("update " + groups.getTableName() + " set has_followed = 'false'");
+        for (ODataRow row : select(null, "partner_id = ? and res_model = ?"
+                , new String[]{ResPartner.myRowId(getContext(), getUser()) + "", "mail.group"})) {
+            int group_id = groups.selectRowId(row.getInt("res_id"));
+            OValues values = new OValues();
+            values.put("has_followed", true);
+            groups.update(group_id, values);
+        }
     }
 
     @Override
